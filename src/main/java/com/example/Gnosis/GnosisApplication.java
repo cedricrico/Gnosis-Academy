@@ -18,6 +18,7 @@ public class GnosisApplication {
 		return "Landing.html";
 	}
 
+	
 	// Auth endpoints are handled by com.example.Gnosis.auth.AuthController.
 
 }

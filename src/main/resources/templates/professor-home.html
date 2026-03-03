@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Professor Home</title>
+</head>
+<body>
+<h1>Professor Dashboard</h1>
+<p><strong>Name:</strong> <span th:text="${professorName}">Professor Name</span></p>
+<p><strong>Professor ID:</strong> <span th:text="${professorId}">0000-00000</span></p>
+<p><strong>Session ID:</strong> <span th:text="${sessionId}">session-id</span></p>
+
+<form method="post" action="/professor/logout" th:action="@{/professor/logout}">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+    <button type="submit">Logout</button>
+</form>
+</body>
+</html>

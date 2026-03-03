@@ -3,6 +3,13 @@
 
     // Enhanced form validation
     var forms = document.querySelectorAll('.needs-validation');
+    var passwordInput = document.getElementById('password');
+    var confirmPasswordInput = document.getElementById('confirmPassword');
+    var studentIdInput = document.getElementById('studentId');
+    var strengthBar = document.getElementById('passwordStrength');
+    var strengthText = document.getElementById('passwordStrengthText');
+    var confirmPasswordFeedback = document.getElementById('confirmPasswordFeedback');
+    var studentIdPattern = /^\d{4}-\d{5}$/;
 
     // Password validation functions
     function checkPasswordStrength(password) {
@@ -32,10 +39,12 @@
     }
 
     function updatePasswordStrength() {
-        const password = document.getElementById('password').value;
+        if (!passwordInput || !strengthBar || !strengthText) {
+            return;
+        }
+
+        const password = passwordInput.value;
         const { strength, feedback } = checkPasswordStrength(password);
-        const strengthBar = document.getElementById('passwordStrength');
-        const strengthText = document.getElementById('passwordStrengthText');
         
         // Update progress bar
         const width = strength * 16.66; // 6 levels, each 16.66% of 100%
@@ -60,21 +69,24 @@
     }
 
     function checkPasswordMatch() {
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        const feedbackElement = document.getElementById('confirmPasswordFeedback');
+        if (!passwordInput || !confirmPasswordInput || !confirmPasswordFeedback) {
+            return true;
+        }
+
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
         
         if (confirmPassword.length > 0) {
             if (password !== confirmPassword) {
-                feedbackElement.textContent = 'Passwords do not match';
-                feedbackElement.style.display = 'block';
-                document.getElementById('confirmPassword').classList.add('is-invalid');
-                document.getElementById('confirmPassword').classList.remove('is-valid');
+                confirmPasswordFeedback.textContent = 'Passwords do not match';
+                confirmPasswordFeedback.style.display = 'block';
+                confirmPasswordInput.classList.add('is-invalid');
+                confirmPasswordInput.classList.remove('is-valid');
                 return false;
             } else {
-                feedbackElement.style.display = 'none';
-                document.getElementById('confirmPassword').classList.remove('is-invalid');
-                document.getElementById('confirmPassword').classList.add('is-valid');
+                confirmPasswordFeedback.style.display = 'none';
+                confirmPasswordInput.classList.remove('is-invalid');
+                confirmPasswordInput.classList.add('is-valid');
                 return true;
             }
         }
@@ -83,11 +95,22 @@
 
     // Initialize password functionality
     function initPasswordFeatures() {
-        const passwordInput = document.getElementById('password');
-        const confirmPasswordInput = document.getElementById('confirmPassword');
-        
+        if (studentIdInput) {
+            studentIdInput.addEventListener('input', function () {
+                var digitsOnly = this.value.replace(/\D/g, '').slice(0, 9);
+                this.value = digitsOnly.length > 4
+                    ? digitsOnly.slice(0, 4) + '-' + digitsOnly.slice(4)
+                    : digitsOnly;
+
+                if (studentIdPattern.test(this.value)) {
+                    this.classList.remove('is-invalid');
+                }
+            });
+        }
+
         if (passwordInput) {
             passwordInput.addEventListener('input', updatePasswordStrength);
+            passwordInput.addEventListener('input', checkPasswordMatch);
             passwordInput.addEventListener('blur', updatePasswordStrength);
         }
         
@@ -102,7 +125,6 @@
     
     function setupPasswordToggle() {
         const toggleBtn = document.getElementById('togglePassword');
-        const passwordInput = document.getElementById('password');
         const eyeIcon = document.getElementById('confirmEyeIcon');
         
         if (toggleBtn && passwordInput && eyeIcon) {
@@ -119,7 +141,6 @@
     
     function setupConfirmPasswordToggle() {
         const toggleBtn = document.getElementById('toggleConfirmPassword');
-        const confirmPasswordInput = document.getElementById('confirmPassword');
         const eyeIcon = document.getElementById('confirmEyeIcon2');
         
         if (toggleBtn && confirmPasswordInput && eyeIcon) {
@@ -138,18 +159,27 @@
         .forEach(function (form) {
             form.addEventListener('submit', function (event) {
                 // Check password match before submission
-                const password = document.getElementById('password').value;
-                const confirmPassword = document.getElementById('confirmPassword').value;
+                const password = passwordInput ? passwordInput.value : '';
+                const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : '';
                 
                 if (password !== confirmPassword && confirmPassword.length > 0) {
                     event.preventDefault();
                     event.stopPropagation();
                     
-                    const feedbackElement = document.getElementById('confirmPasswordFeedback');
-                    feedbackElement.textContent = 'Passwords do not match';
-                    feedbackElement.style.display = 'block';
-                    document.getElementById('confirmPassword').classList.add('is-invalid');
+                    if (confirmPasswordFeedback) {
+                        confirmPasswordFeedback.textContent = 'Passwords do not match';
+                        confirmPasswordFeedback.style.display = 'block';
+                    }
+                    if (confirmPasswordInput) {
+                        confirmPasswordInput.classList.add('is-invalid');
+                    }
                     return;
+                }
+
+                if (studentIdInput && !studentIdPattern.test(studentIdInput.value)) {
+                    studentIdInput.classList.add('is-invalid');
+                    event.preventDefault();
+                    event.stopPropagation();
                 }
 
                 if (!form.checkValidity()) {

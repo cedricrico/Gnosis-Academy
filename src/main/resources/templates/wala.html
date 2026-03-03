@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Session Test</title>
+</head>
+<body>
+    <h1>Session Test Page</h1>
+    <p><strong>Authenticated user:</strong> <span th:text="${studentId}">unknown</span></p>
+    <p><strong>Session ID:</strong> <span th:text="${sessionId}">n/a</span></p>
+    <p><strong>Created at (epoch ms):</strong> <span th:text="${createdAt}">0</span></p>
+    <p><strong>Last accessed (epoch ms):</strong> <span th:text="${lastAccessedAt}">0</span></p>
+    <p><strong>Timeout (seconds):</strong> <span th:text="${maxInactiveInterval}">0</span></p>
+
+    <form method="post" action="/logout" th:action="@{/logout}">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <button type="submit">Log out</button>
+    </form>
+</body>
+</html>

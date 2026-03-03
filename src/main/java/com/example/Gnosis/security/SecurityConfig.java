@@ -18,10 +18,16 @@ public class SecurityConfig {
 								"/landingPage",
 								"/loginPage",
 								"/registrationPage",
+								"/loginprofessor",
+								"/registerprofessor",
+								"/professor/**",
 								"/register",
 								"/error",
+								"/js/**",
+								"/css/**",
 								"/photos/**",
 								"/h2-console/**"
+
 						).permitAll()
 						.anyRequest().authenticated()
 				)
@@ -30,7 +36,7 @@ public class SecurityConfig {
 						.loginProcessingUrl("/login")
 						.usernameParameter("studentId")
 						.passwordParameter("password")
-						.defaultSuccessUrl("/landingPage", true)
+						.defaultSuccessUrl("/wala", true)
 						.failureUrl("/loginPage?error")
 						.permitAll()
 				)
