@@ -2,6 +2,8 @@ package com.example.Gnosis.web;
 
 import com.example.Gnosis.professor.ProfessorService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +19,7 @@ public class ProfessorController {
 		this.professorService = professorService;
 	}
 
-	@GetMapping("/loginprofessor")
+	@GetMapping({"/Professor-login", "/loginprofessor"})
 	public String loginProfessorPage(
 			@RequestParam(value = "error", required = false) String error,
 			@RequestParam(value = "registered", required = false) String registered,
@@ -36,7 +38,7 @@ public class ProfessorController {
 		return "loginprofessor";
 	}
 
-	@GetMapping("/registerprofessor")
+	@GetMapping({"/Professor-registration", "/registerprofessor"})
 	public String registerProfessorPage() {
 		return "registerprofessor";
 	}
@@ -68,44 +70,30 @@ public class ProfessorController {
 					password,
 					confirmPassword
 			);
-			return "redirect:/loginprofessor?registered";
+			return "redirect:/Professor-login?registered";
 		} catch (IllegalArgumentException e) {
 			redirectAttributes.addFlashAttribute("professorRegisterError", e.getMessage());
-			return "redirect:/registerprofessor";
+			return "redirect:/Professor-registration";
 		}
-	}
-
-	@PostMapping("/professor/login")
-	public String loginProfessor(
-			@RequestParam("professorId") String professorId,
-			@RequestParam("password") String password,
-			HttpSession session
-	) {
-		return professorService.authenticate(professorId, password)
-				.map(professor -> {
-					session.setAttribute("professorAuth", true);
-					session.setAttribute("professorId", professor.getProfessorId());
-					session.setAttribute("professorName", professor.getFirstName() + " " + professor.getLastName());
-					return "redirect:/professor/home";
-				})
-				.orElse("redirect:/loginprofessor?error");
 	}
 
 	@GetMapping("/professor/home")
-	public String professorHome(HttpSession session, Model model) {
-		Boolean professorAuth = (Boolean) session.getAttribute("professorAuth");
-		if (professorAuth == null || !professorAuth) {
-			return "redirect:/loginprofessor?error";
+	public String professorHome(Authentication authentication, HttpSession session, Model model) {
+		String professorId = authentication != null ? authentication.getName() : "unknown";
+		String professorName = professorId;
+
+		if (authentication != null && authentication.getPrincipal() instanceof UserDetails userDetails) {
+			professorId = userDetails.getUsername();
 		}
-		model.addAttribute("professorId", session.getAttribute("professorId"));
-		model.addAttribute("professorName", session.getAttribute("professorName"));
+		// If our custom principal is used, expose the full name in the UI.
+		if (authentication != null && authentication.getPrincipal() instanceof com.example.Gnosis.security.ProfessorUserDetails pud) {
+			professorId = pud.getProfessorId();
+			professorName = pud.getFullName();
+		}
+
+		model.addAttribute("professorId", professorId);
+		model.addAttribute("professorName", professorName);
 		model.addAttribute("sessionId", session.getId());
 		return "professor-home";
-	}
-
-	@PostMapping("/professor/logout")
-	public String professorLogout(HttpSession session) {
-		session.invalidate();
-		return "redirect:/loginprofessor?logout";
 	}
 }

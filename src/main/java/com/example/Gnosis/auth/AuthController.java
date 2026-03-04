@@ -17,7 +17,7 @@ public class AuthController {
 		this.userService = userService;
 	}
 
-	@GetMapping("/registrationPage")
+	@GetMapping({"/Student-registration", "/registrationPage"})
 	public String registrationPage(Model model) {
 		if (!model.containsAttribute("registerRequest")) {
 			model.addAttribute("registerRequest", new RegisterRequest());
@@ -42,13 +42,14 @@ public class AuthController {
 			return "Register.html";
 		}
 
-		return "redirect:/loginPage?registered";
+		return "redirect:/Student-login?registered";
 	}
 
-	@GetMapping("/loginPage")
+	@GetMapping({"/Student-login", "/loginPage"})
 	public String loginPage(
 			@RequestParam(value = "error", required = false) String error,
 			@RequestParam(value = "registered", required = false) String registered,
+			@RequestParam(value = "logout", required = false) String logout,
 			Model model
 	) {
 		if (error != null) {
@@ -56,6 +57,9 @@ public class AuthController {
 		}
 		if (registered != null) {
 			model.addAttribute("loginInfo", "Account created. Please log in.");
+		}
+		if (logout != null) {
+			model.addAttribute("loginInfo", "You have been logged out.");
 		}
 		return "Login.html";
 	}

@@ -13,7 +13,7 @@ public class PageController {
 		return "Landing.html";
 	}
 
-	@GetMapping("/wala")
+	@GetMapping("/student/home")
 	public String walaPage(Authentication authentication, HttpSession session, Model model) {
 		model.addAttribute("studentId", authentication != null ? authentication.getName() : "anonymous");
 		model.addAttribute("sessionId", session.getId());
