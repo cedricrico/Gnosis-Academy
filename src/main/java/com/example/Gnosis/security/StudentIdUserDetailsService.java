@@ -26,8 +26,7 @@ public class StudentIdUserDetailsService implements UserDetailsService {
 		return org.springframework.security.core.userdetails.User
 				.withUsername(user.getStudentId())
 				.password(user.getPasswordHash())
-				.authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+				.authorities(List.of(new SimpleGrantedAuthority("ROLE_STUDENT")))
 				.build();
 	}
 }
-
