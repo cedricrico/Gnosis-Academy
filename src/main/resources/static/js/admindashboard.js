@@ -117,126 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-
-    // Form Submission with Loading
-    const createClassForm = document.getElementById('createClassForm');
-    if (createClassForm) {
-        createClassForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Validate subjects
-            const subjectEntries = subjectsContainer.querySelectorAll('.subject-entry');
-            let isValid = true;
-            const subjects = [];
-            
-            subjectEntries.forEach((entry, index) => {
-                const subjectName = entry.querySelector('.subject-name').value.trim();
-                const subjectCode = entry.querySelector('.subject-code').value.trim();
-                const instructorSelect = entry.querySelector('.subject-instructor');
-                const instructorValue = instructorSelect.value;
-                const instructorText = instructorSelect.options[instructorSelect.selectedIndex].text;
-                const scheduleSlots = entry.querySelectorAll('.schedule-slot');
-                const scheduleData = [];
-                
-                if (!subjectName || !subjectCode || !instructorValue) {
-                    isValid = false;
-                    showToast('error', `Please fill in all fields for subject ${index + 1}`);
-                    return;
-                }
-                
-                // Validate schedule data
-                scheduleSlots.forEach(slot => {
-                    const dayCheckboxes = slot.querySelectorAll('.day-checkbox:checked');
-                    const startTime = slot.querySelector('.start-time').value;
-                    const endTime = slot.querySelector('.end-time').value;
-                    
-                    if (dayCheckboxes.length === 0) {
-                        isValid = false;
-                        showToast('error', `Please select at least one day for subject ${index + 1}`);
-                        return;
-                    }
-                    
-                    if (!startTime || !endTime) {
-                        isValid = false;
-                        showToast('error', `Please fill in start and end times for subject ${index + 1}`);
-                        return;
-                    }
-                    
-                    const selectedDays = Array.from(dayCheckboxes).map(cb => cb.value);
-                    scheduleData.push({
-                        days: selectedDays,
-                        startTime: startTime,
-                        endTime: endTime
-                    });
-                });
-                
-                // Check for duplicate subject codes
-                if (subjects.some(s => s.code === subjectCode)) {
-                    isValid = false;
-                    showToast('error', `Subject code ${subjectCode} is duplicated`);
-                    return;
-                }
-                
-                subjects.push({
-                    name: subjectName,
-                    code: subjectCode,
-                    instructor: {
-                        id: instructorValue,
-                        name: instructorText
-                    },
-                    schedule: scheduleData
-                });
-            });
-            
-            if (!isValid) return;
-            
-            showLoading();
-            
-            // Simulate API call
-            setTimeout(() => {
-                hideLoading();
-                showToast('success', 'Class created successfully with ' + subjects.length + ' subjects!');
-                // Reset form
-                this.reset();
-                
-                // Reset subjects container to initial state
-                subjectsContainer.innerHTML = `
-                    <div class="subject-entry mb-3 p-3 border rounded">
-                        <div class="row align-items-center">
-                            <div class="col-md-4">
-                                <input type="text" class="form-control subject-name" placeholder="Subject Name" required>
-                            </div>
-                            <div class="col-md-3">
-                                <input type="text" class="form-control subject-code" placeholder="Subject Code" required>
-                            </div>
-                            <div class="col-md-4">
-                                <select class="form-select subject-instructor" required>
-                                    <option value="" selected>Select Instructor</option>
-                                    <option value="1">Dr. John Smith</option>
-                                    <option value="2">Prof. Sarah Johnson</option>
-                                    <option value="3">Dr. Michael Brown</option>
-                                    <option value="4">Prof. Emily Davis</option>
-                                </select>
-                            </div>
-                            <div class="col-md-1 text-center">
-                                <button type="button" class="btn btn-outline-danger remove-subject p-2" style="min-width: 40px;">×</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                // Re-attach remove functionality to initial subject entry
-                const initialRemoveBtn = subjectsContainer.querySelector('.remove-subject');
-                if (initialRemoveBtn) {
-                    initialRemoveBtn.addEventListener('click', function() {
-                        if (subjectsContainer.children.length > 1) {
-                            this.closest('.subject-entry').remove();
-                        }
-                    });
-                }
-            }, 1500);
-        });
-    }
+    // Class create/edit/delete is handled by admin-classes-crud.js (API-backed).
 
     // Toast Notification System
     const successToast = document.getElementById('successToast');
@@ -263,6 +144,45 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function hideLoading() {
         loadingSpinner.classList.add('d-none');
+    }
+
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+
+    async function fetchAdminJson(url, options = {}) {
+        const method = (options.method || 'GET').toUpperCase();
+        const headers = { ...(options.headers || {}) };
+
+        if (!headers['Content-Type'] && method !== 'GET' && method !== 'HEAD') {
+            headers['Content-Type'] = 'application/json';
+        }
+        if (csrfToken && method !== 'GET' && method !== 'HEAD') {
+            headers[csrfHeader] = csrfToken;
+        }
+
+        const response = await fetch(url, {
+            credentials: 'same-origin',
+            ...options,
+            method,
+            headers
+        });
+
+        const contentType = response.headers.get('content-type') || '';
+        let payload = null;
+        if (contentType.includes('application/json')) {
+            payload = await response.json();
+        }
+
+        if (!response.ok) {
+            const message = payload && payload.message ? payload.message : `Request failed (${response.status})`;
+            throw new Error(message);
+        }
+
+        if (!contentType.includes('application/json')) {
+            throw new Error('Admin session required. Please log in again.');
+        }
+
+        return payload;
     }
 
     // Confirmation Modal
@@ -768,7 +688,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add Instructor Form Submission
     const addInstructorForm = document.getElementById('addInstructorForm');
     if (addInstructorForm) {
-        addInstructorForm.addEventListener('submit', function(e) {
+        addInstructorForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const firstName = document.getElementById('firstName').value.trim();
@@ -791,46 +711,69 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             showLoading();
-            
-            // Simulate API call
-            setTimeout(() => {
-                hideLoading();
-                
-                // Generate employee ID
-                const employeeId = 'EMP' + String(Math.floor(Math.random() * 9000) + 1000).padStart(4, '0');
-                const fullName = `${firstName} ${middleInitial ? middleInitial + '. ' : ''}${lastName}`;
-                const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@school.edu`;
-                
-                // Add to instructors table
-                const tbody = document.querySelector('#instructor-management-section table tbody');
-                const newRow = document.createElement('tr');
-                newRow.innerHTML = `
-                    <td>Dr. ${fullName}</td>
-                    <td><span class="badge bg-success">Active</span></td>
-                    <td>
-                        <button class="btn btn-outline-primary btn-sm">
-                            <icon></icon>
-                        </button>
-                        <button class="btn btn-outline-warning btn-sm">
-                            <icon></icon>
-                        </button>
-                        <button class="btn btn-outline-danger btn-sm">
-                            <icon></icon>
-                        </button>
-                    </td>
-                    <td>${employeeId}</td>
-                    <td>${department}</td>
-                    <td>${email}</td>
-                `;
-                
-                tbody.insertBefore(newRow, tbody.firstChild);
-                
-                // Reset form
+            try {
+                await fetchAdminJson('/api/admin/professors', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        firstName,
+                        middleInitial,
+                        lastName,
+                        age: Number(age),
+                        sex,
+                        department,
+                        password
+                    })
+                });
+
                 addInstructorForm.reset();
-                
-                showToast('success', `Instructor ${fullName} added successfully with ID ${employeeId}`);
-            }, 1500);
+                await loadInstructorsFromDb();
+                showToast('success', 'Instructor added successfully.');
+            } catch (error) {
+                showToast('error', error.message || 'Unable to add instructor.');
+            } finally {
+                hideLoading();
+            }
         });
+    }
+
+    async function loadInstructorsFromDb() {
+        try {
+            const payload = await fetchAdminJson('/api/admin/professors/directory');
+            const tableBody = document.querySelector('#instructor-management-section table tbody');
+            if (!tableBody) {
+                return;
+            }
+
+            if (!Array.isArray(payload) || payload.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No instructors found.</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = payload.map(professor => {
+                const id = professor.professorId || '-';
+                const name = professor.fullName || '-';
+                const department = professor.department || '-';
+                const position = professor.position || '-';
+                const emailLabel = `${name.toLowerCase().replace(/[^a-z0-9]+/g, '.')}@school.edu`;
+
+                return `
+                    <tr>
+                        <td>${name}</td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td>
+                            <button class="btn btn-outline-primary btn-sm"><icon></icon></button>
+                            <button class="btn btn-outline-warning btn-sm"><icon></icon></button>
+                            <button class="btn btn-outline-danger btn-sm"><icon></icon></button>
+                        </td>
+                        <td>${id}</td>
+                        <td>${department} ${position !== '-' ? `(${position})` : ''}</td>
+                        <td>${emailLabel}</td>
+                    </tr>
+                `;
+            }).join('');
+        } catch (error) {
+            showToast('error', error.message || 'Unable to load instructors from database.');
+        }
     }
     
     // Allow switching between tabs when in student management mode
@@ -943,12 +886,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Student Management Functionality
-    const students = [
-        { id: "S001", fullName: "Alice Johnson", course: "Computer Science", section: "Section A", status: "Active" },
-        { id: "S002", fullName: "Bob Williams", course: "Business Administration", section: "Section B", status: "Dropped" },
-        { id: "S003", fullName: "Charlie Brown", course: "Engineering", section: "Section C", status: "Active" },
-        { id: "S004", fullName: "Diana Miller", course: "Arts and Sciences", section: "Section A", status: "Active" }
-    ];
+    const students = [];
 
     // Keep track of the currently expanded row
     let currentlyExpandedRow = null;
@@ -1160,29 +1098,57 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Function to save student changes
-    function saveStudentChanges(form) {
+    async function saveStudentChanges(form) {
         const studentId = form.getAttribute("data-id");
-        const student = students.find(s => s.id === studentId);
-        
-        if (student) {
-            student.fullName = form.querySelector(".edit-full-name").value;
-            student.course = form.querySelector(".edit-course").value;
-            student.section = form.querySelector(".edit-section").value;
-            student.status = form.querySelector(".edit-status").value;
-            
-            // Hide the panel
+        const payload = {
+            fullName: form.querySelector(".edit-full-name").value,
+            course: form.querySelector(".edit-course").value,
+            section: form.querySelector(".edit-section").value,
+            status: form.querySelector(".edit-status").value
+        };
+
+        showLoading();
+        try {
+            await fetchAdminJson(`/api/admin/students/${encodeURIComponent(studentId)}`, {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+            });
+
             hideStudentDetails(studentId);
-            
-            // Re-render the table
-            renderStudentsTable();
-            
-            // Show success message
+            await loadStudentsFromDb();
             showToast("success", "Student information updated successfully!");
+        } catch (error) {
+            showToast("error", error.message || "Unable to update student.");
+        } finally {
+            hideLoading();
+        }
+    }
+
+    async function loadStudentsFromDb() {
+        try {
+            const payload = await fetchAdminJson('/api/admin/students');
+            students.length = 0;
+
+            if (Array.isArray(payload)) {
+                payload.forEach(student => {
+                    students.push({
+                        id: student.studentId || '',
+                        fullName: student.fullName || '',
+                        course: student.course || '-',
+                        section: student.section || '-',
+                        status: student.status || 'Active'
+                    });
+                });
+            }
+
+            renderStudentsTable();
+        } catch (error) {
+            showToast("error", error.message || "Unable to load students from database.");
         }
     }
 
     // Add new student
-    document.getElementById("addStudentForm").addEventListener("submit", function(e) {
+    document.getElementById("addStudentForm").addEventListener("submit", async function(e) {
         e.preventDefault();
         
         const studentId = document.getElementById("addStudentId").value;
@@ -1190,50 +1156,54 @@ document.addEventListener('DOMContentLoaded', function() {
         const course = document.getElementById("addCourse").value;
         const section = document.getElementById("addSection").value;
         const status = document.getElementById("addStatus").value;
+        const password = document.getElementById("addPassword").value;
         
         // Basic validation
-        if (!studentId || !fullName || !course || !section || !status) {
+        if (!studentId || !fullName || !course || !section || !status || !password) {
             showToast("error", "Please fill in all fields");
             return;
         }
-        
-        // Check if student ID already exists
-        if (students.some(s => s.id === studentId)) {
-            showToast("error", "Student ID already exists");
-            return;
+
+        showLoading();
+        try {
+            await fetchAdminJson('/api/admin/students', {
+                method: 'POST',
+                body: JSON.stringify({
+                    studentId,
+                    fullName,
+                    course,
+                    section,
+                    status,
+                    password
+                })
+            });
+
+            const collapseElement = document.getElementById("studentFormCollapse");
+            const bsCollapse = bootstrap.Collapse.getInstance(collapseElement);
+            if (bsCollapse) {
+                bsCollapse.hide();
+            } else {
+                collapseElement.classList.remove("show");
+            }
+
+            document.getElementById("addStudentForm").reset();
+            await loadStudentsFromDb();
+            showToast("success", "Student added successfully!");
+        } catch (error) {
+            showToast("error", error.message || "Unable to add student.");
+        } finally {
+            hideLoading();
         }
-        
-        // Add new student
-        students.push({
-            id: studentId,
-            fullName: fullName,
-            course: course,
-            section: section,
-            status: status
-        });
-        
-        // Collapse the form
-        const collapseElement = document.getElementById("studentFormCollapse");
-        const bsCollapse = bootstrap.Collapse.getInstance(collapseElement);
-        if (bsCollapse) {
-            bsCollapse.hide();
-        } else {
-            collapseElement.classList.remove("show");
-        }
-        
-        // Reset form
-        document.getElementById("addStudentForm").reset();
-        
-        // Re-render the table
-        renderStudentsTable();
-        
-        // Show success message
-        showToast("success", "Student added successfully!");
     });
 
     // Initialize students table on page load
     if (document.getElementById("student-management-section")) {
-        renderStudentsTable();
+        loadStudentsFromDb();
+    }
+
+    // Initialize instructor table from DB.
+    if (document.getElementById("instructor-management-section")) {
+        loadInstructorsFromDb();
     }
 
     // Profile section functionality

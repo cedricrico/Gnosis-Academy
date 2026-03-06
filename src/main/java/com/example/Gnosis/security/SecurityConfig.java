@@ -13,6 +13,50 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 	@Order(1)
 	@Bean
+	public SecurityFilterChain adminSecurityFilterChain(
+			HttpSecurity http,
+			AdminUserDetailsService adminUserDetailsService,
+			PasswordEncoder passwordEncoder
+	) throws Exception {
+		DaoAuthenticationProvider adminAuthProvider = new DaoAuthenticationProvider(adminUserDetailsService);
+		adminAuthProvider.setPasswordEncoder(passwordEncoder);
+
+		http
+				.securityMatcher(
+						"/admin-login",
+						"/admin/login",
+						"/admin/dashboard",
+						"/admin/logout",
+						"/api/admin/**",
+						"/admin/**"
+				)
+				.authenticationProvider(adminAuthProvider)
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers("/admin-login", "/admin/login").permitAll()
+						.requestMatchers("/api/admin/**").hasRole("ADMIN")
+						.requestMatchers("/admin/**").hasRole("ADMIN")
+						.anyRequest().authenticated()
+				)
+				.formLogin(form -> form
+						.loginPage("/admin-login")
+						.loginProcessingUrl("/admin/login")
+						.usernameParameter("username")
+						.passwordParameter("password")
+						.defaultSuccessUrl("/admin/dashboard", true)
+						.failureUrl("/admin-login?error")
+						.permitAll()
+				)
+				.logout(logout -> logout
+						.logoutUrl("/admin/logout")
+						.logoutSuccessUrl("/admin-login?logout")
+						.permitAll()
+				);
+
+		return http.build();
+	}
+
+	@Order(2)
+	@Bean
 	public SecurityFilterChain professorSecurityFilterChain(
 			HttpSecurity http,
 			ProfessorIdUserDetailsService professorIdUserDetailsService,
@@ -64,7 +108,7 @@ public class SecurityConfig {
 		return http.build();
 	}
 
-	@Order(2)
+	@Order(3)
 	@Bean
 	public SecurityFilterChain securityFilterChain(
 			HttpSecurity http,
@@ -82,6 +126,9 @@ public class SecurityConfig {
 								"/landingPage",
 								"/Student-login",
 								"/Student-registration",
+								"/Professor-landing",
+								"/professor-landing",
+
 								// Backward-compatible aliases (safe to keep while you update old links).
 								"/loginPage",
 								"/registrationPage",

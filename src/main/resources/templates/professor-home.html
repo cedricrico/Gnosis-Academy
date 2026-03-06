@@ -11,6 +11,25 @@
 <p><strong>Professor ID:</strong> <span th:text="${professorId}">0000-00000</span></p>
 <p><strong>Session ID:</strong> <span th:text="${sessionId}">session-id</span></p>
 
+<h2>Assigned Classes</h2>
+<div th:if="${#lists.isEmpty(assignedClasses)}">
+    <p>No assigned classes yet.</p>
+</div>
+<div th:unless="${#lists.isEmpty(assignedClasses)}">
+    <ul>
+        <li th:each="schoolClass : ${assignedClasses}">
+            <strong th:text="${schoolClass.courseName + ' - ' + schoolClass.sectionName}">Course - Section</strong>
+            <ul>
+                <li th:each="subject : ${schoolClass.subjects}"
+                    th:if="${subject.instructorId == professorId or #strings.equalsIgnoreCase(subject.instructorName, professorName)}"
+                    th:text="${subject.code + ': ' + subject.name}">
+                    CODE: Subject
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
 <form method="post" action="/professor/logout" th:action="@{/professor/logout}">
     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
     <button type="submit">Logout</button>

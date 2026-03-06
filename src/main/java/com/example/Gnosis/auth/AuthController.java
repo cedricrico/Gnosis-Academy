@@ -22,7 +22,7 @@ public class AuthController {
 		if (!model.containsAttribute("registerRequest")) {
 			model.addAttribute("registerRequest", new RegisterRequest());
 		}
-		return "Register.html";
+		return "Register";
 	}
 
 	@PostMapping("/register")
@@ -32,14 +32,14 @@ public class AuthController {
 			Model model
 	) {
 		if (bindingResult.hasErrors()) {
-			return "Register.html";
+			return "Register";
 		}
 
 		try {
 			userService.register(registerRequest);
 		} catch (IllegalArgumentException e) {
 			model.addAttribute("registerError", e.getMessage());
-			return "Register.html";
+			return "Register";
 		}
 
 		return "redirect:/Student-login?registered";
@@ -61,7 +61,7 @@ public class AuthController {
 		if (logout != null) {
 			model.addAttribute("loginInfo", "You have been logged out.");
 		}
-		return "Login.html";
+		return "Login";
 	}
 
 }

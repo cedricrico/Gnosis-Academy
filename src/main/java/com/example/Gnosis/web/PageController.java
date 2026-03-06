@@ -1,5 +1,6 @@
 package com.example.Gnosis.web;
 
+import com.example.Gnosis.schoolclass.SchoolClassService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -8,6 +9,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class PageController {
+	private final SchoolClassService schoolClassService;
+
+	public PageController(SchoolClassService schoolClassService) {
+		this.schoolClassService = schoolClassService;
+	}
+
 	@GetMapping({"/", "/landingPage"})
 	public String landingPage() {
 		return "Landing.html";
@@ -20,6 +27,7 @@ public class PageController {
 		model.addAttribute("createdAt", session.getCreationTime());
 		model.addAttribute("lastAccessedAt", session.getLastAccessedTime());
 		model.addAttribute("maxInactiveInterval", session.getMaxInactiveInterval());
+		model.addAttribute("classes", schoolClassService.findForStudents());
 		return "wala.html";
 	}
 }

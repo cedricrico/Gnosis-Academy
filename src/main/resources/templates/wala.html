@@ -13,6 +13,23 @@
     <p><strong>Last accessed (epoch ms):</strong> <span th:text="${lastAccessedAt}">0</span></p>
     <p><strong>Timeout (seconds):</strong> <span th:text="${maxInactiveInterval}">0</span></p>
 
+    <h2>Available Classes</h2>
+    <div th:if="${#lists.isEmpty(classes)}">
+        <p>No classes available yet.</p>
+    </div>
+    <div th:unless="${#lists.isEmpty(classes)}">
+        <ul>
+            <li th:each="schoolClass : ${classes}">
+                <strong th:text="${schoolClass.courseName + ' - ' + schoolClass.sectionName}">Course - Section</strong>
+                <ul>
+                    <li th:each="subject : ${schoolClass.subjects}">
+                        <span th:text="${subject.code + ': ' + subject.name + ' - ' + subject.instructorName}">CODE: Subject - Instructor</span>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
     <form method="post" action="/logout" th:action="@{/logout}">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         <button type="submit">Log out</button>

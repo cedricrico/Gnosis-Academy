@@ -5,25 +5,25 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>Teach for Us - Gnosis Academy</title>
-    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap">
-    <link rel="stylesheet" href="assets/css/Landingstyle.css">
-    <link rel="stylesheet" href="assets/css/Registerstyles.css">
-    <link rel="stylesheet" href="assets/css/cssRegisterstyles.css">
-    <link rel="stylesheet" href="assets/css/instructor-landingStyle.css">
-    <link rel="stylesheet" href="assets/css/Login.css">
+    <link rel="stylesheet" href="../static/css/instructor-landingStyle.css" th:href="@{/css/instructor-landingStyle.css}">
+
 </head>
 
 <body>
     <nav class="navbar navbar-expand-md sticky-top bg-white py-3">
-        <div class="container"><a class="navbar-brand d-flex align-items-center" href="/Landing.html"><span class="d-flex justify-content-center align-items-center me-2"><img width="40" height="40" src="assets/img/Logo.jpg" alt="Logo"></span><span class="fs-4"><strong>Gnosis</strong></span><span class="fs-4 text-primary"><strong>Academy</strong></span></a><button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+        <div class="container"><a class="navbar-brand d-flex align-items-center" href="/professor-landing"  th:onlick="|window.location.href='@{/Professor-landing}'|"><span class="d-flex justify-content-center align-items-center me-2"><img width="40" height="40" src="assets/img/Logo.jpg" alt="Logo"></span><span class="fs-4"><strong>Gnosis</strong></span><span class="fs-4 text-primary"><strong>Academy</strong></span></a><button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navcol-1">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item"></li>
                     <li class="nav-item"><a class="nav-link active" href="#instructor-section">Teach for Us</a></li>
                     <li class="nav-item"><a class="nav-link" href="#benefits">Benefits</a></li>
                     <li class="nav-item"><a class="nav-link" href="#how-to-apply">How to Apply</a></li>
-                </ul><button class="btn btn-outline-primary me-2" type="button">Log In</button><button class="btn btn-primary" type="button">Register</button>
+                </ul>
+                <button class="btn btn-outline-primary me-2" type="button" th:onclick="|window.location.href='@{/Professor-login}'|">Log In</button>
+                <button class="btn btn-primary" type="button" th:onclick="|window.location.href='@{/Professor-registration}'|">Register</button>
             </div>
         </div>
     </nav>

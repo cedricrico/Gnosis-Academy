@@ -34,6 +34,15 @@ public class User {
 	@Column(nullable = false, length = 16)
 	private String sex;
 
+	@Column(length = 128)
+	private String course;
+
+	@Column(name = "section_name", length = 128)
+	private String sectionName;
+
+	@Column(length = 32)
+	private String status;
+
 	@Column(nullable = false, length = 100)
 	private String passwordHash;
 
@@ -73,20 +82,64 @@ public class User {
 		return firstName;
 	}
 
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
 	public String getMiddleInitial() {
 		return middleInitial;
+	}
+
+	public void setMiddleInitial(String middleInitial) {
+		this.middleInitial = middleInitial;
 	}
 
 	public String getLastName() {
 		return lastName;
 	}
 
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
 	public Integer getAge() {
 		return age;
 	}
 
+	public void setAge(Integer age) {
+		this.age = age;
+	}
+
 	public String getSex() {
 		return sex;
+	}
+
+	public void setSex(String sex) {
+		this.sex = sex;
+	}
+
+	public String getCourse() {
+		return course;
+	}
+
+	public void setCourse(String course) {
+		this.course = course;
+	}
+
+	public String getSectionName() {
+		return sectionName;
+	}
+
+	public void setSectionName(String sectionName) {
+		this.sectionName = sectionName;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	public String getPasswordHash() {

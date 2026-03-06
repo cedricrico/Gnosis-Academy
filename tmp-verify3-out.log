@@ -1,0 +1,46 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.3)
+
+2026-03-06T19:53:22.539+08:00  INFO 16944 --- [Gnosis] [           main] com.example.Gnosis.GnosisApplication     : Starting GnosisApplication v0.0.1-SNAPSHOT using Java 25.0.1 with PID 16944 (C:\Users\Neil\Desktop\Gnosis-Academy\target\Gnosis-0.0.1-SNAPSHOT.jar started by Neil in C:\Users\Neil\Desktop\Gnosis-Academy)
+2026-03-06T19:53:22.543+08:00  INFO 16944 --- [Gnosis] [           main] com.example.Gnosis.GnosisApplication     : The following 1 profile is active: "h2"
+2026-03-06T19:53:23.205+08:00  INFO 16944 --- [Gnosis] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-03-06T19:53:23.247+08:00  INFO 16944 --- [Gnosis] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 35 ms. Found 2 JPA repository interfaces.
+2026-03-06T19:53:23.670+08:00  INFO 16944 --- [Gnosis] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8082 (http)
+2026-03-06T19:53:23.681+08:00  INFO 16944 --- [Gnosis] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-03-06T19:53:23.682+08:00  INFO 16944 --- [Gnosis] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.18]
+2026-03-06T19:53:23.707+08:00  INFO 16944 --- [Gnosis] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1104 ms
+2026-03-06T19:53:23.850+08:00  INFO 16944 --- [Gnosis] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-03-06T19:53:23.892+08:00  INFO 16944 --- [Gnosis] [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.4.Final
+2026-03-06T19:53:24.276+08:00  INFO 16944 --- [Gnosis] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-03-06T19:53:24.298+08:00  INFO 16944 --- [Gnosis] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-03-06T19:53:24.435+08:00  INFO 16944 --- [Gnosis] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:gnosisdb user=SA
+2026-03-06T19:53:24.437+08:00  INFO 16944 --- [Gnosis] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-03-06T19:53:24.474+08:00  INFO 16944 --- [Gnosis] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:h2:mem:gnosisdb]
+	Database driver: H2 JDBC Driver
+	Database dialect: H2Dialect
+	Database version: 2.4.240
+	Default catalog/schema: GNOSISDB/PUBLIC
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: 100
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-03-06T19:53:25.033+08:00  INFO 16944 --- [Gnosis] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-03-06T19:53:25.077+08:00  INFO 16944 --- [Gnosis] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-03-06T19:53:25.128+08:00  INFO 16944 --- [Gnosis] [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-03-06T19:53:25.348+08:00  WARN 16944 --- [Gnosis] [           main] r$InitializeUserDetailsManagerConfigurer : Found 2 UserDetailsService beans, with names [professorIdUserDetailsService, studentIdUserDetailsService]. Global Authentication Manager will not use a UserDetailsService for username/password login. Consider publishing a single UserDetailsService bean.
+2026-03-06T19:53:25.672+08:00  INFO 16944 --- [Gnosis] [           main] o.s.b.h.a.H2ConsoleAutoConfiguration     : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:gnosisdb'
+2026-03-06T19:53:25.742+08:00  INFO 16944 --- [Gnosis] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8082 (http) with context path '/'
+2026-03-06T19:53:25.753+08:00  INFO 16944 --- [Gnosis] [           main] com.example.Gnosis.GnosisApplication     : Started GnosisApplication in 3.562 seconds (process running for 3.995)
+2026-03-06T19:53:25.970+08:00  INFO 16944 --- [Gnosis] [nio-8082-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-06T19:53:25.971+08:00  INFO 16944 --- [Gnosis] [nio-8082-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-03-06T19:53:25.972+08:00  INFO 16944 --- [Gnosis] [nio-8082-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms

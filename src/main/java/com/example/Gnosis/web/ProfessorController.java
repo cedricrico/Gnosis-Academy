@@ -1,6 +1,7 @@
 package com.example.Gnosis.web;
 
 import com.example.Gnosis.professor.ProfessorService;
+import com.example.Gnosis.schoolclass.SchoolClassService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,9 +15,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class ProfessorController {
 	private final ProfessorService professorService;
+	private final SchoolClassService schoolClassService;
 
-	public ProfessorController(ProfessorService professorService) {
+	public ProfessorController(ProfessorService professorService, SchoolClassService schoolClassService) {
 		this.professorService = professorService;
+		this.schoolClassService = schoolClassService;
 	}
 
 	@GetMapping({"/Professor-login", "/loginprofessor"})
@@ -94,6 +97,7 @@ public class ProfessorController {
 		model.addAttribute("professorId", professorId);
 		model.addAttribute("professorName", professorName);
 		model.addAttribute("sessionId", session.getId());
+		model.addAttribute("assignedClasses", schoolClassService.findForProfessor(professorId, professorName));
 		return "professor-home";
 	}
 }

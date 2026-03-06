@@ -32,6 +32,7 @@
                 <div class="mb-3"><label class="form-label" for="password">Password</label>
                     <div class="input-group"><input class="form-control" type="password" id="password" name="password" required=""><button class="btn btn-outline-secondary" id="togglePassword" type="button"><img id="confirmEyeIcon" alt="Toggle Password Visibility" height="20" src="/photos/visible.png" width="20"></button></div>
                 </div>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="rememberMe"><label class="form-check-label" for="rememberMe">Remember me</label></div><button class="btn btn-primary w-100" type="submit">Submit</button>
             </form>
             <div class="alert alert-success mt-3" role="alert" th:if="${loginInfo}" th:text="${loginInfo}"></div>
