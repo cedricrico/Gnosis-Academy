@@ -46,6 +46,24 @@ public class SecurityConfig {
 						.failureUrl("/admin-login?error")
 						.permitAll()
 				)
+				.exceptionHandling(ex -> ex
+						.authenticationEntryPoint((request, response, authException) -> {
+							String uri = request.getRequestURI();
+							if (uri != null && uri.startsWith("/api/admin/")) {
+								response.sendError(401);
+								return;
+							}
+							response.sendRedirect("/admin-login");
+						})
+						.accessDeniedHandler((request, response, accessDeniedException) -> {
+							String uri = request.getRequestURI();
+							if (uri != null && uri.startsWith("/api/admin/")) {
+								response.sendError(403);
+								return;
+							}
+							response.sendRedirect("/admin-login?forbidden");
+						})
+				)
 				.logout(logout -> logout
 						.logoutUrl("/admin/logout")
 						.logoutSuccessUrl("/admin-login?logout")

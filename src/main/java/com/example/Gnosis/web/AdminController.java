@@ -15,11 +15,15 @@ public class AdminController {
 	@GetMapping("/admin-login")
 	public String adminLoginPage(
 			@RequestParam(value = "error", required = false) String error,
+			@RequestParam(value = "forbidden", required = false) String forbidden,
 			@RequestParam(value = "logout", required = false) String logout,
 			Model model
 	) {
 		if (error != null) {
 			model.addAttribute("loginError", "Invalid admin username or password");
+		}
+		if (forbidden != null) {
+			model.addAttribute("loginError", "You must log in as an admin to access that page.");
 		}
 		if (logout != null) {
 			model.addAttribute("loginInfo", "You have been logged out.");

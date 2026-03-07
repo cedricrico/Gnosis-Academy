@@ -46,6 +46,11 @@ public class ProfessorController {
 		return "registerprofessor";
 	}
 
+	@GetMapping({"/Professor-landing", "/professor-landing"})
+	public String professorLandingPage() {
+		return "instructor-landing";
+	}
+
 	@PostMapping("/professor/register")
 	public String registerProfessor(
 			@RequestParam("professorId") String professorId,
@@ -100,4 +105,14 @@ public class ProfessorController {
 		model.addAttribute("assignedClasses", schoolClassService.findForProfessor(professorId, professorName));
 		return "professor-home";
 	}
+
+
+
+	@GetMapping("/Professor-landing, /professor-landing")
+	public String Professor_landing_page(){
+		return "instructor-landing";
+
+		
+	}
+
 }
