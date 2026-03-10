@@ -8,6 +8,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 
 @Configuration
 public class SecurityConfig {
@@ -31,6 +33,7 @@ public class SecurityConfig {
 						"/admin/**"
 				)
 				.authenticationProvider(adminAuthProvider)
+				.securityContext(sc -> sc.securityContextRepository(adminSecurityContextRepository()))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/admin-login", "/admin/login").permitAll()
 						.requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -66,6 +69,12 @@ public class SecurityConfig {
 				)
 				.logout(logout -> logout
 						.logoutUrl("/admin/logout")
+						.invalidateHttpSession(false)
+						.addLogoutHandler((request, response, authentication) -> {
+							if (request.getSession(false) != null) {
+								request.getSession(false).removeAttribute("ADMIN_SECURITY_CONTEXT");
+							}
+						})
 						.logoutSuccessUrl("/admin-login?logout")
 						.permitAll()
 				);
@@ -95,6 +104,7 @@ public class SecurityConfig {
 				// Logout CSRF failures commonly present as 403/Whitelabel; logging out is safe to exempt.
 				.csrf(csrf -> csrf.ignoringRequestMatchers("/professor/logout"))
 				.authenticationProvider(professorAuthProvider)
+				.securityContext(sc -> sc.securityContextRepository(professorSecurityContextRepository()))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(
 								"/Professor-login",
@@ -119,6 +129,12 @@ public class SecurityConfig {
 				)
 				.logout(logout -> logout
 						.logoutUrl("/professor/logout")
+						.invalidateHttpSession(false)
+						.addLogoutHandler((request, response, authentication) -> {
+							if (request.getSession(false) != null) {
+								request.getSession(false).removeAttribute("PROFESSOR_SECURITY_CONTEXT");
+							}
+						})
 						.logoutSuccessUrl("/Professor-login?logout")
 						.permitAll()
 				);
@@ -138,6 +154,7 @@ public class SecurityConfig {
 
 		http
 				.authenticationProvider(studentAuthProvider)
+				.securityContext(sc -> sc.securityContextRepository(studentSecurityContextRepository()))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(
 								"/",
@@ -171,6 +188,12 @@ public class SecurityConfig {
 				)
 				.logout(logout -> logout
 						.logoutUrl("/logout")
+						.invalidateHttpSession(false)
+						.addLogoutHandler((request, response, authentication) -> {
+							if (request.getSession(false) != null) {
+								request.getSession(false).removeAttribute("STUDENT_SECURITY_CONTEXT");
+							}
+						})
 						.logoutSuccessUrl("/Student-login?logout")
 						.permitAll()
 				);
@@ -185,5 +208,23 @@ public class SecurityConfig {
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
+	}
+
+	private SecurityContextRepository adminSecurityContextRepository() {
+		HttpSessionSecurityContextRepository repo = new HttpSessionSecurityContextRepository();
+		repo.setSpringSecurityContextKey("ADMIN_SECURITY_CONTEXT");
+		return repo;
+	}
+
+	private SecurityContextRepository professorSecurityContextRepository() {
+		HttpSessionSecurityContextRepository repo = new HttpSessionSecurityContextRepository();
+		repo.setSpringSecurityContextKey("PROFESSOR_SECURITY_CONTEXT");
+		return repo;
+	}
+
+	private SecurityContextRepository studentSecurityContextRepository() {
+		HttpSessionSecurityContextRepository repo = new HttpSessionSecurityContextRepository();
+		repo.setSpringSecurityContextKey("STUDENT_SECURITY_CONTEXT");
+		return repo;
 	}
 }

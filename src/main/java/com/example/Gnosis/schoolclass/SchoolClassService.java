@@ -3,6 +3,9 @@ package com.example.Gnosis.schoolclass;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +22,7 @@ import java.util.Set;
 public class SchoolClassService {
 	private static final TypeReference<List<SchoolClassDto.SubjectDto>> SUBJECT_LIST_TYPE = new TypeReference<>() {
 	};
+	private static final Logger log = LoggerFactory.getLogger(SchoolClassService.class);
 
 	private final SchoolClassRepository schoolClassRepository;
 	private final ObjectMapper objectMapper = new ObjectMapper();
@@ -29,10 +33,15 @@ public class SchoolClassService {
 
 	@Transactional(readOnly = true)
 	public List<SchoolClassDto> findAll() {
-		return schoolClassRepository.findAllByOrderByCreatedAtDesc()
-				.stream()
-				.map(this::toDto)
-				.toList();
+		try {
+			return schoolClassRepository.findAllByOrderByCreatedAtDesc()
+					.stream()
+					.map(this::toDto)
+					.toList();
+		} catch (DataAccessException ex) {
+			log.warn("Unable to load school classes from database. Returning empty list.", ex);
+			return List.of();
+		}
 	}
 
 	@Transactional(readOnly = true)
@@ -66,6 +75,20 @@ public class SchoolClassService {
 	@Transactional(readOnly = true)
 	public List<SchoolClassDto> findForStudents() {
 		return findAll();
+	}
+
+	@Transactional(readOnly = true)
+	public List<SchoolClassDto> findForStudent(String course, String sectionName) {
+		String courseNormalized = trimToNull(course);
+		String sectionNormalized = trimToNull(sectionName);
+		if (courseNormalized == null || sectionNormalized == null) {
+			return List.of();
+		}
+
+		return findAll().stream()
+				.filter(schoolClass -> equalsIgnoreCase(trimToNull(schoolClass.getCourseName()), courseNormalized)
+						&& equalsIgnoreCase(trimToNull(schoolClass.getSectionName()), sectionNormalized))
+				.toList();
 	}
 
 	@Transactional(readOnly = true)
