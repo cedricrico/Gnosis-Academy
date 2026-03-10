@@ -70,7 +70,17 @@ public class AdminStudentService {
 		User user = userRepository.findByStudentId(studentId)
 				.orElseThrow(() -> new NoSuchElementException("Student not found: " + studentId));
 
+		String updatedStudentId = payload.studentId().trim();
+		if (!STUDENT_ID_PATTERN.matcher(updatedStudentId).matches()) {
+			throw new IllegalArgumentException("Student ID must match 0000-00000.");
+		}
+		if (!updatedStudentId.equalsIgnoreCase(user.getStudentId())
+				&& userRepository.existsByStudentId(updatedStudentId)) {
+			throw new IllegalArgumentException("Student ID already exists.");
+		}
+
 		NameParts nameParts = parseFullName(payload.fullName());
+		user.setStudentId(updatedStudentId);
 		user.setFirstName(nameParts.firstName());
 		user.setMiddleInitial(nameParts.middleInitial());
 		user.setLastName(nameParts.lastName());

@@ -189,7 +189,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (!response.ok) {
-            const message = payload && payload.message ? payload.message : `Request failed (${response.status})`;
+            let message = payload && payload.message ? payload.message : '';
+            if (!message || message === 'No message available') {
+                if (payload && payload.error) {
+                    message = payload.error;
+                } else if (response.statusText) {
+                    message = response.statusText;
+                } else {
+                    message = `Request failed (${response.status})`;
+                }
+            }
             throw new Error(message);
         }
 
@@ -1435,6 +1444,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <input type="hidden" class="edit-student-id" value="${student.id}">
                                 <div class="row mb-3">
                                     <div class="col-md-4">
+                                        <label class="form-label">Student ID</label>
+                                        <input class="form-control edit-student-id-input" type="text" value="${student.id}" pattern="^[0-9]{4}-[0-9]{5}$" maxlength="10" inputmode="numeric" required>
+                                    </div>
+                                    <div class="col-md-4">
                                         <label class="form-label">Full Name</label>
                                         <input class="form-control edit-full-name" type="text" value="${student.fullName}" required>
                                     </div>
@@ -1442,14 +1455,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <label class="form-label">Course</label>
                                         <input class="form-control edit-course" type="text" value="${student.course || ''}">
                                     </div>
-                                    <div class="col-md-4">
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
                                         <label class="form-label">Section</label>
                                         <select class="form-select edit-section-select">
                                             ${buildSectionOptions(student.section)}
                                         </select>
                                     </div>
-                                </div>
-                                <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label class="form-label">Status</label>
                                         <select class="form-select edit-status" required>
@@ -1561,6 +1574,17 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
+        document.querySelectorAll(".edit-student-id-input").forEach(input => {
+            input.addEventListener("input", function() {
+                const digits = this.value.replace(/\D/g, '').slice(0, 9);
+                if (digits.length <= 4) {
+                    this.value = digits;
+                } else {
+                    this.value = `${digits.slice(0, 4)}-${digits.slice(4)}`;
+                }
+            });
+        });
+
         // Add click event to student rows to toggle details
         document.querySelectorAll(".student-row").forEach(row => {
             row.addEventListener("click", function(e) {
@@ -1660,16 +1684,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to save student changes
     async function saveStudentChanges(form) {
         const studentId = form.getAttribute("data-id");
+        const updatedStudentId = form.querySelector(".edit-student-id-input")?.value?.trim() || '';
         const fullName = form.querySelector(".edit-full-name").value.trim();
         const course = form.querySelector(".edit-course").value.trim();
         const sectionSelect = form.querySelector(".edit-section-select");
         const section = sectionSelect ? sectionSelect.value.trim() : "";
+        if (!updatedStudentId) {
+            showToast("error", "Student ID is required.");
+            return;
+        }
+        if (!/^\d{4}-\d{5}$/.test(updatedStudentId)) {
+            showToast("error", "Student ID must be in format: 0000-00000");
+            return;
+        }
         if (!fullName) {
             showToast("error", "Full name is required.");
             return;
         }
 
         const payload = {
+            studentId: updatedStudentId,
             fullName,
             course,
             section,

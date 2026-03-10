@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -45,6 +46,11 @@ public class AdminApiExceptionHandler {
 				.map(violation -> violation.getMessage())
 				.orElse("Validation failed.");
 		return ResponseEntity.badRequest().body(Map.of("message", message));
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<Map<String, String>> handleUnreadableBody(HttpMessageNotReadableException exception) {
+		return ResponseEntity.badRequest().body(Map.of("message", "Invalid request payload."));
 	}
 
 	@ExceptionHandler(DataIntegrityViolationException.class)

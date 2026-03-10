@@ -6,40 +6,83 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('professor-login-form');
     const showIcon = '/assets/img/visible.png';
     const hideIcon = '/assets/img/hide.png';
-    
-    // Add input event listener for real-time validation
-    if (professorIdInput) {
-        professorIdInput.addEventListener('input', function() {
-            const value = this.value;
-            // Auto-add dash after 4 digits if not present
-            if (value.length === 4 && !value.includes('-')) {
-                this.value = value + '-';
-            }
-        });
+
+    if (!professorIdInput || !professorPasswordInput || !toggleBtn || !eyeIcon || !form) {
+        return;
     }
-    
-    // Form validation
-    if (form && professorIdInput) {
-        form.addEventListener('submit', function(event) {
-            const idValue = professorIdInput.value;
-            const pattern = /^\d{4}-\d{5}$/;
-            
-            if (!pattern.test(idValue)) {
-                professorIdInput.classList.add('is-invalid');
-                event.preventDefault();
-                event.stopPropagation();
-            } else {
-                professorIdInput.classList.remove('is-invalid');
-            }
-        });
+
+    function formatEmployeeId(value) {
+        const digits = value.replace(/\D/g, '').slice(0, 9);
+        if (digits.length <= 4) {
+            return digits;
+        }
+        return `${digits.slice(0, 4)}-${digits.slice(4)}`;
     }
-    
-    // Password visibility toggle
-    if (toggleBtn && professorPasswordInput && eyeIcon) {
-        toggleBtn.addEventListener('click', function() {
-            const isPassword = professorPasswordInput.type === 'password';
-            professorPasswordInput.type = isPassword ? 'text' : 'password';
-            eyeIcon.src = isPassword ? hideIcon : showIcon;
-        });
+
+    function canTypeMoreDigits(input) {
+        const selectionStart = input.selectionStart ?? input.value.length;
+        const selectionEnd = input.selectionEnd ?? input.value.length;
+        const selectedLength = Math.max(0, selectionEnd - selectionStart);
+        const currentDigits = input.value.replace(/\D/g, '');
+        return currentDigits.length - selectedLength < 9;
     }
+
+    function validateEmployeeId() {
+        const value = professorIdInput.value.trim();
+        const pattern = /^\d{4}-\d{5}$/;
+        const isValid = pattern.test(value);
+        professorIdInput.setCustomValidity(isValid ? '' : 'Employee ID must be in the format 0000-00000');
+        professorIdInput.classList.toggle('is-invalid', !isValid);
+        return isValid;
+    }
+
+    function validatePassword() {
+        const value = professorPasswordInput.value.trim();
+        const isValid = value.length > 0;
+        professorPasswordInput.setCustomValidity(isValid ? '' : 'Password is required');
+        professorPasswordInput.classList.toggle('is-invalid', !isValid);
+        return isValid;
+    }
+
+    professorIdInput.addEventListener('input', function() {
+        this.value = formatEmployeeId(this.value);
+        if (this.value.trim() !== '') {
+            validateEmployeeId();
+        }
+    });
+
+    professorIdInput.addEventListener('keydown', function(event) {
+        if (event.ctrlKey || event.metaKey || event.altKey) {
+            return;
+        }
+        const isDigit = /^[0-9]$/.test(event.key);
+        if (isDigit && !canTypeMoreDigits(this)) {
+            event.preventDefault();
+        }
+    });
+
+    professorIdInput.addEventListener('blur', validateEmployeeId);
+
+    professorPasswordInput.addEventListener('input', function() {
+        if (this.value.trim() !== '') {
+            validatePassword();
+        }
+    });
+
+    professorPasswordInput.addEventListener('blur', validatePassword);
+
+    form.addEventListener('submit', function(event) {
+        const idOk = validateEmployeeId();
+        const passwordOk = validatePassword();
+        if (!idOk || !passwordOk) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+    });
+
+    toggleBtn.addEventListener('click', function() {
+        const isPassword = professorPasswordInput.type === 'password';
+        professorPasswordInput.type = isPassword ? 'text' : 'password';
+        eyeIcon.src = isPassword ? hideIcon : showIcon;
+    });
 });
