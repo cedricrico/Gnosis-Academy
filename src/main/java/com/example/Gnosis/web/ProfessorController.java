@@ -43,7 +43,7 @@ public class ProfessorController {
 
 	@GetMapping({"/Professor-registration", "/registerprofessor"})
 	public String registerProfessorPage() {
-		return "registerprofessor";
+		return "registeremployee";
 	}
 
 	@GetMapping({"/Professor-landing", "/professor-landing"})
@@ -53,28 +53,24 @@ public class ProfessorController {
 
 	@PostMapping("/professor/register")
 	public String registerProfessor(
-			@RequestParam("professorId") String professorId,
+			@RequestParam("employeeId") String employeeId,
 			@RequestParam("firstName") String firstName,
 			@RequestParam(value = "middleInitial", required = false) String middleInitial,
 			@RequestParam("lastName") String lastName,
-			@RequestParam("age") Integer age,
-			@RequestParam("sex") String sex,
+			@RequestParam("email") String email,
 			@RequestParam("department") String department,
-			@RequestParam("position") String position,
 			@RequestParam("password") String password,
 			@RequestParam("confirmPassword") String confirmPassword,
 			RedirectAttributes redirectAttributes
 	) {
 		try {
 			professorService.register(
-					professorId,
+					employeeId,
 					firstName,
 					middleInitial,
 					lastName,
-					age,
-					sex,
+					email,
 					department,
-					position,
 					password,
 					confirmPassword
 			);
@@ -87,22 +83,22 @@ public class ProfessorController {
 
 	@GetMapping("/professor/home")
 	public String professorHome(Authentication authentication, HttpSession session, Model model) {
-		String professorId = authentication != null ? authentication.getName() : "unknown";
-		String professorName = professorId;
+		String employeeId = authentication != null ? authentication.getName() : "unknown";
+		String professorName = employeeId;
 
 		if (authentication != null && authentication.getPrincipal() instanceof UserDetails userDetails) {
-			professorId = userDetails.getUsername();
+			employeeId = userDetails.getUsername();
 		}
 		// If our custom principal is used, expose the full name in the UI.
 		if (authentication != null && authentication.getPrincipal() instanceof com.example.Gnosis.security.ProfessorUserDetails pud) {
-			professorId = pud.getProfessorId();
+			employeeId = pud.getEmployeeId();
 			professorName = pud.getFullName();
 		}
 
-		model.addAttribute("professorId", professorId);
+		model.addAttribute("professorId", employeeId);
 		model.addAttribute("professorName", professorName);
 		model.addAttribute("sessionId", session.getId());
-		model.addAttribute("assignedClasses", schoolClassService.findForProfessor(professorId, professorName));
+		model.addAttribute("assignedClasses", schoolClassService.findForProfessor(employeeId, professorName));
 		return "professor-home";
 	}
 

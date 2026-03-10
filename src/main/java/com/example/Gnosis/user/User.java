@@ -16,16 +16,16 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false, unique = true, length = 32)
+	@Column(name = "student_id", nullable = false, unique = true, length = 32)
 	private String studentId;
 
-	@Column(nullable = false, length = 128)
+	@Column(name = "first_name", nullable = false, length = 128)
 	private String firstName;
 
-	@Column(length = 1)
+	@Column(name = "middle_initial", length = 1)
 	private String middleInitial;
 
-	@Column(nullable = false, length = 128)
+	@Column(name = "last_name", nullable = false, length = 128)
 	private String lastName;
 
 	@Column(nullable = false)
@@ -43,10 +43,10 @@ public class User {
 	@Column(length = 32)
 	private String status;
 
-	@Column(nullable = false, length = 100)
+	@Column(name = "password_hash", nullable = false, length = 100)
 	private String passwordHash;
 
-	@Column(nullable = false)
+	@Column(name = "created_at", nullable = false)
 	private Instant createdAt = Instant.now();
 
 	protected User() {

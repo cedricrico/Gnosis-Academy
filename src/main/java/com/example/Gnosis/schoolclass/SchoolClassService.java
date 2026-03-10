@@ -1,5 +1,6 @@
 package com.example.Gnosis.schoolclass;
 
+import com.example.Gnosis.professor.ProfessorRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,10 +26,15 @@ public class SchoolClassService {
 	private static final Logger log = LoggerFactory.getLogger(SchoolClassService.class);
 
 	private final SchoolClassRepository schoolClassRepository;
+	private final ProfessorRepository professorRepository;
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
-	public SchoolClassService(SchoolClassRepository schoolClassRepository) {
+	public SchoolClassService(
+			SchoolClassRepository schoolClassRepository,
+			ProfessorRepository professorRepository
+	) {
 		this.schoolClassRepository = schoolClassRepository;
+		this.professorRepository = professorRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -113,12 +119,16 @@ public class SchoolClassService {
 		String courseCode = requireNonBlank(payload.getCourseCode(), "Course is required.");
 		String courseName = requireNonBlank(payload.getCourseName(), "Course name is required.");
 		String sectionName = requireNonBlank(payload.getSectionName(), "Section is required.");
+		requireMaxLength(courseCode, 32, "Course code is too long.");
+		requireMaxLength(courseName, 128, "Course name is too long.");
+		requireMaxLength(sectionName, 128, "Section name is too long.");
 
 		List<SchoolClassDto.SubjectDto> sanitizedSubjects = sanitizeSubjects(payload.getSubjects());
 		String subjectsJson = toJson(sanitizedSubjects);
 		SchoolClassDto.SubjectDto firstSubject = sanitizedSubjects.get(0);
 		SchoolClassDto.ScheduleSlotDto firstSlot = firstSubject.getSchedule().get(0);
 		String joinedDays = String.join(",", firstSlot.getDays());
+		requireMaxLength(joinedDays, 64, "Schedule days are too long.");
 
 		schoolClass.setCourseCode(courseCode);
 		schoolClass.setCourseName(courseName);
@@ -126,8 +136,10 @@ public class SchoolClassService {
 		schoolClass.setSectionName(sectionName);
 		schoolClass.setSubjectName(firstSubject.getName());
 		schoolClass.setSubjectCode(firstSubject.getCode());
-		schoolClass.setProfessorId(trimToNull(firstSubject.getInstructorId()) != null ? firstSubject.getInstructorId() : "UNASSIGNED");
+		schoolClass.setProfessorId(firstSubject.getInstructorId());
 		schoolClass.setScheduleDays(joinedDays);
+		requireMaxLength(firstSlot.getStartTime(), 16, "Start time is too long.");
+		requireMaxLength(firstSlot.getEndTime(), 16, "End time is too long.");
 		schoolClass.setStartTime(firstSlot.getStartTime());
 		schoolClass.setEndTime(firstSlot.getEndTime());
 		schoolClass.setStatus("ACTIVE");
@@ -148,11 +160,21 @@ public class SchoolClassService {
 			}
 
 			SchoolClassDto.SubjectDto cleanSubject = new SchoolClassDto.SubjectDto();
-			cleanSubject.setName(requireNonBlank(subject.getName(), "Subject name is required."));
+			String subjectName = requireNonBlank(subject.getName(), "Subject name is required.");
+			requireMaxLength(subjectName, 128, "Subject name is too long.");
+			cleanSubject.setName(subjectName);
 			String cleanCode = requireNonBlank(subject.getCode(), "Subject code is required.");
+			requireMaxLength(cleanCode, 64, "Subject code is too long.");
 			cleanSubject.setCode(cleanCode);
-			cleanSubject.setInstructorId(trimToNull(subject.getInstructorId()));
-			cleanSubject.setInstructorName(requireNonBlank(subject.getInstructorName(), "Instructor is required."));
+			String instructorId = requireNonBlank(subject.getInstructorId(), "Instructor is required.");
+			requireMaxLength(instructorId, 32, "Instructor ID is too long.");
+			if (!professorRepository.existsByEmployeeId(instructorId)) {
+				throw new IllegalArgumentException("Instructor not found: " + instructorId);
+			}
+			cleanSubject.setInstructorId(instructorId);
+			String instructorName = requireNonBlank(subject.getInstructorName(), "Instructor is required.");
+			requireMaxLength(instructorName, 128, "Instructor name is too long.");
+			cleanSubject.setInstructorName(instructorName);
 
 			String codeKey = cleanCode.toUpperCase(Locale.ROOT);
 			if (!seenCodes.add(codeKey)) {
@@ -200,6 +222,8 @@ public class SchoolClassService {
 			if (startTime.compareTo(endTime) >= 0) {
 				throw new IllegalArgumentException("End time must be after start time for subject " + subjectCode + ".");
 			}
+			requireMaxLength(startTime, 16, "Start time is too long for subject " + subjectCode + ".");
+			requireMaxLength(endTime, 16, "End time is too long for subject " + subjectCode + ".");
 
 			SchoolClassDto.ScheduleSlotDto cleanSlot = new SchoolClassDto.ScheduleSlotDto();
 			cleanSlot.setDays(cleanedDays);
@@ -288,6 +312,12 @@ public class SchoolClassService {
 			throw new IllegalArgumentException(message);
 		}
 		return trimmed;
+	}
+
+	private static void requireMaxLength(String value, int maxLength, String message) {
+		if (value != null && value.length() > maxLength) {
+			throw new IllegalArgumentException(message);
+		}
 	}
 
 	private static String trimToNull(String value) {

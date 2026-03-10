@@ -22,13 +22,11 @@ public class RegisterRequest {
 	@Pattern(regexp = "^[A-Za-z]+([ '\\-][A-Za-z]+)*$")
 	private String lastName;
 
-	@NotNull
 	@Min(1)
 	@Max(130)
 	private Integer age;
 
-	@NotBlank
-	@Pattern(regexp = "^(male|female|other)$")
+	@Pattern(regexp = "^(male|female|other)?$")
 	private String sex;
 
 	@NotBlank
@@ -37,6 +35,7 @@ public class RegisterRequest {
 
 	@NotBlank
 	@Size(min = 8, max = 72)
+	@Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$")
 	private String password;
 
 	@NotBlank

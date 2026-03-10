@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return Array.from(select.options)
             .filter(option => normalizeText(option.value) && normalizeText(option.text) !== 'Select Instructor')
             .map(option => ({
-                professorId: normalizeText(option.value),
+                employeeId: normalizeText(option.value),
                 fullName: normalizeText(option.text)
             }));
     }
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const optionsHtml = ['<option value="">Select Instructor</option>'];
 
         instructorOptions.forEach(option => {
-            const value = normalizeText(option.professorId);
+            const value = normalizeText(option.employeeId);
             const name = normalizeText(option.fullName);
             if (!value || !name) {
                 return;
@@ -577,3 +577,4 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     })();
 });
+

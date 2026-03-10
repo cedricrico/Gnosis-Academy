@@ -1,8 +1,13 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const idNumberInput = document.getElementById('idNumber');
+    const idNumberInput = document.getElementById('studentId');
     const passwordInput = document.getElementById('password');
     const toggleBtn = document.getElementById('togglePassword');
     const eyeIcon = document.getElementById('confirmEyeIcon');
+    const form = document.getElementById('student-login-form');
+
+    if (!idNumberInput || !passwordInput || !toggleBtn || !eyeIcon || !form) {
+        return;
+    }
     
     // Add input event listener for real-time validation
     idNumberInput.addEventListener('input', function() {
@@ -14,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Form validation
-    const form = document.querySelector('form');
     form.addEventListener('submit', function(event) {
         const idValue = idNumberInput.value;
         const pattern = /^\d{4}-\d{5}$/;
@@ -32,6 +36,6 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleBtn.addEventListener('click', function() {
         const isPassword = passwordInput.type === 'password';
         passwordInput.type = isPassword ? 'text' : 'password';
-        eyeIcon.src = isPassword ? '/photos/hide.png' : '/photos/visible.png';
+        eyeIcon.src = isPassword ? '/assets/img/hide.png' : '/assets/img/visible.png';
     });
 });

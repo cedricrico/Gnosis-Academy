@@ -55,7 +55,7 @@ public class SchoolClass {
 	private String status;
 
 	@Lob
-	@Column(nullable = false)
+	@Column(nullable = false, columnDefinition = "LONGTEXT")
 	private String subjectsJson;
 
 	@Column(nullable = false)

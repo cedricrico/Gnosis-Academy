@@ -59,17 +59,32 @@ document.addEventListener('DOMContentLoaded', function() {
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
+
+            const targetSection = this.getAttribute('href');
+            if (!targetSection) {
+                return;
+            }
+
+            const targetEl = document.querySelector(targetSection);
+            if (!targetEl) {
+                return;
+            }
             
             // Remove active class from all links and sections
-            navLinks.forEach(l => l.parentElement.classList.remove('active'));
+            navLinks.forEach(l => {
+                if (l.parentElement) {
+                    l.parentElement.classList.remove('active');
+                }
+            });
             contentSections.forEach(section => section.classList.remove('active'));
             
             // Add active class to clicked link
-            this.parentElement.classList.add('active');
+            if (this.parentElement) {
+                this.parentElement.classList.add('active');
+            }
             
             // Show corresponding section
-            const targetSection = this.getAttribute('href');
-            document.querySelector(targetSection).classList.add('active');
+            targetEl.classList.add('active');
         });
     });
 
@@ -185,16 +200,52 @@ document.addEventListener('DOMContentLoaded', function() {
         return payload;
     }
 
+    const instructorDirectory = new Map();
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function toSafeId(value) {
+        return String(value ?? '').replace(/[^A-Za-z0-9_-]/g, '_');
+    }
+
+    function parseNameParts(fullNameRaw) {
+        const fullName = String(fullNameRaw ?? '').trim();
+        if (!fullName) {
+            return { firstName: '', middleInitial: '', lastName: '' };
+        }
+        const parts = fullName.split(/\s+/);
+        if (parts.length === 1) {
+            return { firstName: parts[0], middleInitial: '', lastName: parts[0] };
+        }
+        const firstName = parts[0];
+        const lastName = parts[parts.length - 1];
+        let middleInitial = '';
+        if (parts.length > 2) {
+            middleInitial = parts[1].replace(/\./g, '').charAt(0);
+        }
+        return { firstName, middleInitial, lastName };
+    }
+
     // Confirmation Modal
     const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
     const confirmActionBtn = document.getElementById('confirmAction');
     
-    // Example: Add confirmation to delete buttons
+    // Example: Add confirmation to generic delete buttons (exclude instructor delete).
     const deleteButtons = document.querySelectorAll('.btn-outline-danger');
     deleteButtons.forEach(btn => {
+        if (btn.classList.contains('delete-instructor')) {
+            return;
+        }
         btn.addEventListener('click', function() {
             confirmationModal.show();
-            
+
             // Store the action to be confirmed
             confirmActionBtn.onclick = function() {
                 showLoading();
@@ -687,26 +738,59 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add Instructor Form Submission
     const addInstructorForm = document.getElementById('addInstructorForm');
+    const formatEmployeeId = (value) => {
+        const raw = String(value || '');
+        if (/[A-Za-z]/.test(raw)) {
+            return raw.trim();
+        }
+        const digits = raw.replace(/\D/g, '').slice(0, 9);
+        if (digits.length <= 4) {
+            return digits;
+        }
+        return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+    };
+
+    const employeeIdInputs = [
+        document.getElementById('employeeId'),
+        document.getElementById('editInstructorEmployeeId')
+    ].filter(Boolean);
+
+    employeeIdInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            const formatted = formatEmployeeId(this.value);
+            if (this.value !== formatted) {
+                const cursorAtEnd = this.selectionStart === this.value.length;
+                this.value = formatted;
+                if (cursorAtEnd) {
+                    this.setSelectionRange(this.value.length, this.value.length);
+                }
+            }
+        });
+
+        input.addEventListener('blur', function() {
+            this.value = formatEmployeeId(this.value);
+        });
+    });
     if (addInstructorForm) {
         addInstructorForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            const employeeId = document.getElementById('employeeId').value.trim();
             const firstName = document.getElementById('firstName').value.trim();
             const middleInitial = document.getElementById('middleInitial').value.trim();
             const lastName = document.getElementById('lastName').value.trim();
-            const age = document.getElementById('age').value;
-            const sex = document.getElementById('sex').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const department = document.getElementById('department').value;
             
             // Basic validation
-            if (!firstName || !lastName || !age || !sex || !password || !department) {
+            if (!employeeId || !firstName || !lastName || !email || !password || !department) {
                 showToast('error', 'Please fill in all required fields');
                 return;
             }
-            
-            if (age < 18 || age > 99) {
-                showToast('error', 'Age must be between 18 and 99');
+
+            if (!/^\d{4}-\d{5}$/.test(employeeId)) {
+                showToast('error', 'Employee ID must match 0000-00000.');
                 return;
             }
             
@@ -715,12 +799,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 await fetchAdminJson('/api/admin/professors', {
                     method: 'POST',
                     body: JSON.stringify({
+                        employeeId,
                         firstName,
                         middleInitial,
                         lastName,
-                        age: Number(age),
-                        sex,
                         department,
+                        email,
                         password
                     })
                 });
@@ -733,6 +817,56 @@ document.addEventListener('DOMContentLoaded', function() {
             } finally {
                 hideLoading();
             }
+        });
+    }
+
+    let instructorSearchQuery = '';
+
+    function filterInstructorsTable(query) {
+        const tableBody = document.querySelector('#instructor-management-section table tbody');
+        if (!tableBody) {
+            return;
+        }
+        const normalized = query.trim().toLowerCase();
+        const rows = tableBody.querySelectorAll('tr.accordion-toggle');
+        rows.forEach(row => {
+            const rowText = row.textContent.toLowerCase();
+            const match = normalized === '' || rowText.includes(normalized);
+            row.style.display = match ? '' : 'none';
+            const detailRow = row.nextElementSibling;
+            if (detailRow && detailRow.classList.contains('instructor-details-row')) {
+                if (!match) {
+                    detailRow.style.display = 'none';
+                    const collapse = detailRow.querySelector('.instructor-detail-collapse');
+                    if (collapse && collapse.classList.contains('show')) {
+                        if (typeof bootstrap !== 'undefined' && bootstrap.Collapse) {
+                            const instance = bootstrap.Collapse.getInstance(collapse)
+                                || bootstrap.Collapse.getOrCreateInstance(collapse, { toggle: false });
+                            instance.hide();
+                        } else {
+                            collapse.classList.remove('show');
+                        }
+                    }
+                } else {
+                    detailRow.style.display = '';
+                }
+            }
+        });
+    }
+
+    const instructorSearchInput = document.getElementById('searchInstructor');
+    const instructorSearchBtn = document.getElementById('searchInstructorBtn');
+    if (instructorSearchInput) {
+        instructorSearchInput.addEventListener('input', function() {
+            instructorSearchQuery = this.value;
+            filterInstructorsTable(instructorSearchQuery);
+        });
+    }
+    if (instructorSearchBtn && instructorSearchInput) {
+        instructorSearchBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            instructorSearchQuery = instructorSearchInput.value;
+            filterInstructorsTable(instructorSearchQuery);
         });
     }
 
@@ -749,31 +883,296 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            tableBody.innerHTML = payload.map(professor => {
-                const id = professor.professorId || '-';
+            instructorDirectory.clear();
+
+            tableBody.innerHTML = payload.map((professor, index) => {
+                const employeeId = professor.employeeId || '';
                 const name = professor.fullName || '-';
                 const department = professor.department || '-';
-                const position = professor.position || '-';
-                const emailLabel = `${name.toLowerCase().replace(/[^a-z0-9]+/g, '.')}@school.edu`;
+                const email = professor.email || '-';
+                const status = 'Active';
+                const safeId = toSafeId(employeeId || `${name}-${index}`);
+                const detailId = `instructorDetails-${safeId}`;
+
+                if (employeeId) {
+                    instructorDirectory.set(employeeId, {
+                        employeeId,
+                        fullName: name,
+                        department,
+                        email,
+                        status
+                    });
+                }
+
+                const viewIcon = `<svg class="bi bi-eye" fill="currentColor" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8z"></path><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"></path></svg>`;
+                const editIcon = `<svg class="bi bi-pencil" fill="currentColor" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"></path></svg>`;
+                const deleteIcon = `<svg class="bi bi-trash" fill="currentColor" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2 5v1h12V5H2z" fill-rule="evenodd"></path></svg>`;
 
                 return `
-                    <tr>
-                        <td>${name}</td>
-                        <td><span class="badge bg-success">Active</span></td>
+                    <tr aria-controls="${escapeHtml(detailId)}" aria-expanded="false" class="accordion-toggle" data-bs-target="#${escapeHtml(detailId)}" role="button" tabindex="0" data-employee-id="${escapeHtml(employeeId)}">
+                        <td>${escapeHtml(name)}</td>
+                        <td>${escapeHtml(employeeId || '-')}</td>
+                        <td>${escapeHtml(department)}</td>
+                        <td>${escapeHtml(email)}</td>
                         <td>
-                            <button class="btn btn-outline-primary btn-sm"><icon></icon></button>
-                            <button class="btn btn-outline-warning btn-sm"><icon></icon></button>
-                            <button class="btn btn-outline-danger btn-sm"><icon></icon></button>
+                            <button class="btn btn-outline-primary btn-sm view-instructor" data-id="${escapeHtml(employeeId)}" title="View Details">${viewIcon}<span class="ms-1">View</span></button>
+                            <button class="btn btn-outline-warning btn-sm edit-instructor" data-id="${escapeHtml(employeeId)}" title="Edit Instructor">${editIcon}<span class="ms-1">Edit</span></button>
+                            <button class="btn btn-outline-danger btn-sm delete-instructor" data-id="${escapeHtml(employeeId)}" title="Delete Instructor">${deleteIcon}<span class="ms-1">Delete</span></button>
                         </td>
-                        <td>${id}</td>
-                        <td>${department} ${position !== '-' ? `(${position})` : ''}</td>
-                        <td>${emailLabel}</td>
+                        <td><span class="badge bg-success">${escapeHtml(status)}</span></td>
+                    </tr>
+                    <tr class="instructor-details-row">
+                        <td colspan="6" class="p-0">
+                            <div id="${escapeHtml(detailId)}" class="collapse instructor-detail-collapse">
+                                <div class="p-3">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <div class="card h-100">
+                                                <div class="card-body text-center">
+                                                    <div class="bg-light rounded-circle d-inline-flex justify-content-center align-items-center mb-3" style="width:80px;height:80px;">
+                                                        <svg class="bi bi-person-fill" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" style="font-size:2.5rem;">
+                                                            <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"></path>
+                                                        </svg>
+                                                    </div>
+                                                    <h5 class="mb-1">${escapeHtml(name)}</h5>
+                                                    <p class="text-muted mb-2">${escapeHtml(department)} Department</p>
+                                                    <div class="small text-muted">${escapeHtml(email)}</div>
+                                                    <div class="small text-muted mt-1">ID: ${escapeHtml(employeeId || '-')}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="card h-100">
+                                                <div class="card-header bg-light">
+                                                    <h6 class="mb-0">Instructor Details</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row mb-2">
+                                                        <div class="col-sm-4"><strong>Employee ID</strong></div>
+                                                        <div class="col-sm-8">${escapeHtml(employeeId || '-')}</div>
+                                                    </div>
+                                                    <div class="row mb-2">
+                                                        <div class="col-sm-4"><strong>Email</strong></div>
+                                                        <div class="col-sm-8">${escapeHtml(email)}</div>
+                                                    </div>
+                                                    <div class="row mb-2">
+                                                        <div class="col-sm-4"><strong>Department</strong></div>
+                                                        <div class="col-sm-8">${escapeHtml(department)}</div>
+                                                    </div>
+                                                    <button class="btn btn-outline-secondary btn-sm mt-2 close-instructor-details" data-target="${escapeHtml(detailId)}">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
                     </tr>
                 `;
             }).join('');
+
+            bindInstructorCollapseEvents();
+            if (instructorSearchQuery) {
+                filterInstructorsTable(instructorSearchQuery);
+            }
         } catch (error) {
             showToast('error', error.message || 'Unable to load instructors from database.');
         }
+    }
+
+    function showInstructorDetailsById(employeeId) {
+        if (!employeeId) {
+            return;
+        }
+        const detailId = `instructorDetails-${toSafeId(employeeId)}`;
+        const detailEl = document.getElementById(detailId);
+        if (!detailEl) {
+            return;
+        }
+
+        // Close any other open instructor panels first
+        document.querySelectorAll('#instructor-management-section .instructor-detail-collapse.show').forEach(openEl => {
+            if (openEl === detailEl) {
+                return;
+            }
+            if (typeof bootstrap !== 'undefined' && bootstrap.Collapse) {
+                const instance = bootstrap.Collapse.getInstance(openEl)
+                    || bootstrap.Collapse.getOrCreateInstance(openEl, { toggle: false });
+                instance.hide();
+            } else {
+                openEl.classList.remove('show');
+            }
+        });
+
+        if (typeof bootstrap !== 'undefined' && bootstrap.Collapse) {
+            const collapse = bootstrap.Collapse.getInstance(detailEl)
+                || bootstrap.Collapse.getOrCreateInstance(detailEl, { toggle: false });
+            if (detailEl.classList.contains('show')) {
+                collapse.hide();
+            } else {
+                collapse.show();
+            }
+        } else {
+            detailEl.classList.toggle('show');
+        }
+    }
+
+    function fillEditInstructorModal(employeeId) {
+        const data = instructorDirectory.get(employeeId);
+        if (!data) {
+            showToast('error', 'Instructor not found.');
+            return false;
+        }
+        const nameParts = parseNameParts(data.fullName);
+        const idField = document.getElementById('editInstructorId');
+        const firstNameField = document.getElementById('editInstructorFirstName');
+        const middleField = document.getElementById('editInstructorMiddleInitial');
+        const lastNameField = document.getElementById('editInstructorLastName');
+        const emailField = document.getElementById('editInstructorEmail');
+        const departmentField = document.getElementById('editInstructorDepartment');
+        const statusField = document.getElementById('editInstructorStatus');
+
+        if (idField) idField.value = data.employeeId;
+        const editEmployeeIdField = document.getElementById('editInstructorEmployeeId');
+        if (editEmployeeIdField) editEmployeeIdField.value = formatEmployeeId(data.employeeId);
+        if (firstNameField) firstNameField.value = nameParts.firstName || '';
+        if (middleField) middleField.value = nameParts.middleInitial || '';
+        if (lastNameField) lastNameField.value = nameParts.lastName || '';
+        if (emailField) emailField.value = data.email || '';
+        if (departmentField) departmentField.value = data.department || '';
+        if (statusField) statusField.value = data.status || 'Active';
+        return true;
+    }
+
+    document.addEventListener('click', function(e) {
+        const viewBtn = e.target.closest('.view-instructor');
+        if (viewBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const employeeId = viewBtn.getAttribute('data-id')
+                || viewBtn.closest('tr')?.getAttribute('data-employee-id');
+            if (!employeeId) {
+                showToast('error', 'Missing employee ID.');
+                return;
+            }
+            showInstructorDetailsById(employeeId);
+            return;
+        }
+
+        const editBtn = e.target.closest('.edit-instructor');
+        if (editBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const employeeId = editBtn.getAttribute('data-id');
+            if (!employeeId) {
+                showToast('error', 'Missing employee ID.');
+                return;
+            }
+            if (fillEditInstructorModal(employeeId)) {
+                const modalEl = document.getElementById('editInstructorModal');
+                if (modalEl) {
+                    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                }
+            }
+            return;
+        }
+
+        const deleteBtn = e.target.closest('.delete-instructor');
+        if (deleteBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const employeeId = deleteBtn.getAttribute('data-id');
+            if (!employeeId) {
+                showToast('error', 'Missing employee ID.');
+                return;
+            }
+
+            if (confirmationModal && confirmActionBtn) {
+                confirmationModal.show();
+                confirmActionBtn.onclick = async function() {
+                    showLoading();
+                    try {
+                        await fetchAdminJson(`/api/admin/professors/${encodeURIComponent(employeeId)}`, {
+                            method: 'DELETE'
+                        });
+                        confirmationModal.hide();
+                        await loadInstructorsFromDb();
+                        showToast('success', 'Instructor deleted.');
+                    } catch (error) {
+                        showToast('error', error.message || 'Unable to delete instructor.');
+                    } finally {
+                        hideLoading();
+                    }
+                };
+            } else if (window.confirm('Delete this instructor?')) {
+                fetchAdminJson(`/api/admin/professors/${encodeURIComponent(employeeId)}`, {
+                    method: 'DELETE'
+                }).then(() => loadInstructorsFromDb());
+            }
+            return;
+        }
+
+        const closeBtn = e.target.closest('.close-instructor-details');
+        if (closeBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const targetId = closeBtn.getAttribute('data-target');
+            const detailEl = targetId ? document.getElementById(targetId) : null;
+            if (detailEl) {
+                const collapse = bootstrap.Collapse.getInstance(detailEl)
+                    || bootstrap.Collapse.getOrCreateInstance(detailEl, { toggle: false });
+                collapse.hide();
+            }
+        }
+    });
+
+    const saveInstructorChangesBtn = document.getElementById('saveInstructorChanges');
+    if (saveInstructorChangesBtn) {
+        saveInstructorChangesBtn.addEventListener('click', async function() {
+            const employeeId = document.getElementById('editInstructorId')?.value?.trim();
+            const employeeIdEdit = document.getElementById('editInstructorEmployeeId')?.value?.trim();
+            const firstName = document.getElementById('editInstructorFirstName')?.value?.trim();
+            const middleInitial = document.getElementById('editInstructorMiddleInitial')?.value?.trim();
+            const lastName = document.getElementById('editInstructorLastName')?.value?.trim();
+            const email = document.getElementById('editInstructorEmail')?.value?.trim();
+            const department = document.getElementById('editInstructorDepartment')?.value?.trim();
+
+            if (!employeeId || !employeeIdEdit || !firstName || !lastName || !email || !department) {
+                showToast('error', 'Please fill in all required fields.');
+                return;
+            }
+
+            if (employeeIdEdit !== employeeId && !/^\d{4}-\d{5}$/.test(employeeIdEdit)) {
+                showToast('error', 'Employee ID must match 0000-00000.');
+                return;
+            }
+
+            showLoading();
+            try {
+                await fetchAdminJson(`/api/admin/professors/${encodeURIComponent(employeeId)}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        employeeId: employeeIdEdit,
+                        firstName,
+                        middleInitial,
+                        lastName,
+                        department,
+                        email
+                    })
+                });
+
+                const modalEl = document.getElementById('editInstructorModal');
+                if (modalEl) {
+                    bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                }
+                await loadInstructorsFromDb();
+                showToast('success', 'Instructor updated successfully.');
+            } catch (error) {
+                showToast('error', error.message || 'Unable to update instructor.');
+            } finally {
+                hideLoading();
+            }
+        });
     }
     
     // Allow switching between tabs when in student management mode
@@ -805,9 +1204,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('click', function(e) {
         // Check if we're clicking on an accordion toggle in the instructor management section
         if (e.target.closest('#instructor-management-section .accordion-toggle')) {
+            if (e.target.closest('.view-instructor, .edit-instructor, .delete-instructor, .close-instructor-details')) {
+                return;
+            }
             const clickedRow = e.target.closest('tr');
             const targetCollapse = clickedRow.getAttribute('data-bs-target');
-            
+
             // Find all accordion toggles in the same table
             const allToggles = document.querySelectorAll('#instructor-management-section .accordion-toggle');
             
@@ -817,33 +1219,54 @@ document.addEventListener('DOMContentLoaded', function() {
                     const otherTarget = toggle.getAttribute('data-bs-target');
                     const collapseElement = document.querySelector(otherTarget);
                     if (collapseElement) {
-                        const bsCollapse = bootstrap.Collapse.getInstance(collapseElement);
+                        const bsCollapse = bootstrap.Collapse.getInstance(collapseElement)
+                            || bootstrap.Collapse.getOrCreateInstance(collapseElement);
                         if (bsCollapse) {
                             bsCollapse.hide();
                         }
                     }
                 }
             });
+
+            if (targetCollapse && !clickedRow.hasAttribute('data-bs-toggle')) {
+                const collapseElement = document.querySelector(targetCollapse);
+                if (collapseElement) {
+                    const bsCollapse = bootstrap.Collapse.getInstance(collapseElement)
+                        || bootstrap.Collapse.getOrCreateInstance(collapseElement, { toggle: false });
+                    if (bsCollapse) {
+                        bsCollapse.toggle();
+                    }
+                }
+            }
         }
     });
 
-    // Ensure only one instructor detail view is open at a time
-    const instructorDetailCollapses = document.querySelectorAll('#instructor-management-section .collapse');
-    instructorDetailCollapses.forEach(collapse => {
-        collapse.addEventListener('show.bs.collapse', function() {
-            // Hide all other collapses in the same section
-            const section = this.closest('#instructor-management-section');
-            const otherCollapses = section.querySelectorAll('.collapse.show');
-            otherCollapses.forEach(other => {
-                if (other !== this) {
-                    const bsCollapse = bootstrap.Collapse.getInstance(other);
-                    if (bsCollapse) {
-                        bsCollapse.hide();
-                    }
+    function bindInstructorCollapseEvents() {
+        const instructorDetailCollapses = document.querySelectorAll('#instructor-management-section .instructor-detail-collapse');
+        instructorDetailCollapses.forEach(collapse => {
+            if (collapse.dataset.bound === 'true') {
+                return;
+            }
+            collapse.dataset.bound = 'true';
+            collapse.addEventListener('show.bs.collapse', function() {
+                // Hide all other collapses in the same section
+                const section = this.closest('#instructor-management-section');
+                if (!section) {
+                    return;
                 }
+                const otherCollapses = section.querySelectorAll('.collapse.show');
+                otherCollapses.forEach(other => {
+                    if (other !== this) {
+                        const bsCollapse = bootstrap.Collapse.getInstance(other)
+                            || bootstrap.Collapse.getOrCreateInstance(other);
+                        if (bsCollapse) {
+                            bsCollapse.hide();
+                        }
+                    }
+                });
             });
         });
-    });
+    }
 
     // Responsive table enhancements
     function makeTablesResponsive() {
@@ -887,9 +1310,62 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Student Management Functionality
     const students = [];
+    let availableSections = [];
 
     // Keep track of the currently expanded row
     let currentlyExpandedRow = null;
+
+    async function loadAvailableSections() {
+        try {
+            const payload = await fetchAdminJson('/api/admin/classes');
+            const sectionMap = new Map();
+
+            if (Array.isArray(payload)) {
+                payload.forEach(entry => {
+                    const section = (entry.sectionName || '').trim();
+                    if (!section) {
+                        return;
+                    }
+                    const courseLabel = (entry.courseName || entry.courseCode || '').trim();
+                    const key = `${courseLabel}::${section}`;
+                    if (!sectionMap.has(key)) {
+                        sectionMap.set(key, { section, courseLabel });
+                    }
+                });
+            }
+
+            availableSections = Array.from(sectionMap.values());
+        } catch (error) {
+            availableSections = [];
+        }
+    }
+
+    function buildSectionOptions(currentSection) {
+        const options = [];
+        const normalizedCurrent = (currentSection || '').trim();
+        let hasMatch = false;
+
+        availableSections.forEach(entry => {
+            const label = entry.courseLabel ? `${entry.courseLabel} - ${entry.section}` : entry.section;
+            const selected = normalizedCurrent && entry.section === normalizedCurrent;
+            if (selected) {
+                hasMatch = true;
+            }
+            options.push(
+                `<option value="${escapeHtml(entry.section)}" data-course="${escapeHtml(entry.courseLabel || '')}" ${selected ? 'selected' : ''}>${escapeHtml(label)}</option>`
+            );
+        });
+
+        if (normalizedCurrent && !hasMatch) {
+            options.unshift(`<option value="${escapeHtml(normalizedCurrent)}" selected>${escapeHtml(normalizedCurrent)}</option>`);
+        }
+
+        if (options.length === 0) {
+            options.push('<option value="">No sections available</option>');
+        }
+
+        return options.join('');
+    }
 
     // Function to render students table
     function renderStudentsTable() {
@@ -913,6 +1389,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     </button>
                     <button class="btn btn-outline-warning btn-sm edit-student" data-id="${student.id}">
                         <icon></icon> Edit
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm delete-student" data-id="${student.id}">
+                        <icon></icon> Delete
                     </button>
                 </td>
             `;
@@ -965,7 +1444,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Section</label>
-                                        <input class="form-control edit-section" type="text" value="${student.section || ''}">
+                                        <select class="form-select edit-section-select">
+                                            ${buildSectionOptions(student.section)}
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="row mb-3">
@@ -1007,6 +1488,55 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
+        document.querySelectorAll(".edit-section-select").forEach(select => {
+            select.addEventListener("change", function() {
+                const courseLabel = this.options[this.selectedIndex]?.dataset?.course;
+                if (!courseLabel) {
+                    return;
+                }
+                const courseInput = this.closest("form")?.querySelector(".edit-course");
+                if (courseInput && !courseInput.value.trim()) {
+                    courseInput.value = courseLabel;
+                }
+            });
+        });
+
+        // Add event listeners to delete buttons
+        document.querySelectorAll(".delete-student").forEach(button => {
+            button.addEventListener("click", function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const studentId = this.getAttribute("data-id");
+                if (!studentId) {
+                    showToast("error", "Missing student ID.");
+                    return;
+                }
+
+                if (confirmationModal && confirmActionBtn) {
+                    confirmationModal.show();
+                    confirmActionBtn.onclick = async function() {
+                        showLoading();
+                        try {
+                            await fetchAdminJson(`/api/admin/students/${encodeURIComponent(studentId)}`, {
+                                method: 'DELETE'
+                            });
+                            confirmationModal.hide();
+                            await loadStudentsFromDb();
+                            showToast("success", "Student deleted successfully!");
+                        } catch (error) {
+                            showToast("error", error.message || "Unable to delete student.");
+                        } finally {
+                            hideLoading();
+                        }
+                    };
+                } else if (window.confirm("Delete this student?")) {
+                    fetchAdminJson(`/api/admin/students/${encodeURIComponent(studentId)}`, {
+                        method: 'DELETE'
+                    }).then(() => loadStudentsFromDb());
+                }
+            });
+        });
+
         // Add event listeners to close buttons
         document.querySelectorAll(".close-details").forEach(button => {
             button.addEventListener("click", function() {
@@ -1040,6 +1570,42 @@ document.addEventListener('DOMContentLoaded', function() {
                     toggleStudentDetails(studentId, "view");
                 }
             });
+        });
+    }
+
+    let studentSearchQuery = '';
+
+    function filterStudentsTable(query) {
+        const tableBody = document.getElementById("studentsTableBody");
+        if (!tableBody) {
+            return;
+        }
+        const normalized = query.trim().toLowerCase();
+        const rows = tableBody.querySelectorAll("tr.student-row");
+        rows.forEach(row => {
+            const rowText = row.textContent.toLowerCase();
+            const match = normalized === '' || rowText.includes(normalized);
+            row.style.display = match ? '' : 'none';
+            const detailRow = row.nextElementSibling;
+            if (detailRow && detailRow.classList.contains('student-detail-row')) {
+                detailRow.style.display = match ? '' : 'none';
+            }
+        });
+    }
+
+    const studentSearchInput = document.getElementById('searchStudent');
+    const studentSearchBtn = document.getElementById('searchStudentBtn');
+    if (studentSearchInput) {
+        studentSearchInput.addEventListener('input', function() {
+            studentSearchQuery = this.value;
+            filterStudentsTable(studentSearchQuery);
+        });
+    }
+    if (studentSearchBtn && studentSearchInput) {
+        studentSearchBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            studentSearchQuery = studentSearchInput.value;
+            filterStudentsTable(studentSearchQuery);
         });
     }
 
@@ -1096,7 +1662,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const studentId = form.getAttribute("data-id");
         const fullName = form.querySelector(".edit-full-name").value.trim();
         const course = form.querySelector(".edit-course").value.trim();
-        const section = form.querySelector(".edit-section").value.trim();
+        const sectionSelect = form.querySelector(".edit-section-select");
+        const section = sectionSelect ? sectionSelect.value.trim() : "";
         if (!fullName) {
             showToast("error", "Full name is required.");
             return;
@@ -1128,6 +1695,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function loadStudentsFromDb() {
         try {
+            await loadAvailableSections();
             const payload = await fetchAdminJson('/api/admin/students');
             students.length = 0;
 
@@ -1144,17 +1712,73 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             renderStudentsTable();
+            if (studentSearchQuery) {
+                filterStudentsTable(studentSearchQuery);
+            }
         } catch (error) {
             showToast("error", error.message || "Unable to load students from database.");
         }
+    }
+
+    function formatStudentId(value) {
+        const digits = value.replace(/\D/g, '').slice(0, 9);
+        if (digits.length <= 4) {
+            return digits;
+        }
+        return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+    }
+
+    function isValidStudentId(value) {
+        return /^\d{4}-\d{5}$/.test(value.trim());
+    }
+
+    function isValidFullName(value) {
+        const trimmed = value.trim();
+        const pattern = /^[A-Za-z]+([ '\-][A-Za-z]+)*$/;
+        return trimmed.length >= 2 && pattern.test(trimmed);
+    }
+
+    function applyInputValidity(input, isValid, message) {
+        if (!input) {
+            return;
+        }
+        input.setCustomValidity(isValid ? '' : message);
+        if (isValid) {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+        } else {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+        }
+    }
+
+    const addStudentIdInput = document.getElementById("addStudentId");
+    if (addStudentIdInput) {
+        addStudentIdInput.addEventListener('input', function() {
+            this.value = formatStudentId(this.value);
+            applyInputValidity(this, isValidStudentId(this.value), 'Student ID must be in format: 0000-00000');
+        });
+        addStudentIdInput.addEventListener('blur', function() {
+            applyInputValidity(this, isValidStudentId(this.value), 'Student ID must be in format: 0000-00000');
+        });
+    }
+
+    const addStudentFullNameInput = document.getElementById("addFullName");
+    if (addStudentFullNameInput) {
+        addStudentFullNameInput.addEventListener('input', function() {
+            applyInputValidity(this, isValidFullName(this.value), 'Full name must be at least 2 letters and contain letters only');
+        });
+        addStudentFullNameInput.addEventListener('blur', function() {
+            applyInputValidity(this, isValidFullName(this.value), 'Full name must be at least 2 letters and contain letters only');
+        });
     }
 
     // Add new student
     document.getElementById("addStudentForm").addEventListener("submit", async function(e) {
         e.preventDefault();
         
-        const studentId = document.getElementById("addStudentId").value;
-        const fullName = document.getElementById("addFullName").value;
+        const studentId = document.getElementById("addStudentId").value.trim();
+        const fullName = document.getElementById("addFullName").value.trim();
         const course = document.getElementById("addCourse").value;
         const section = document.getElementById("addSection").value;
         const status = document.getElementById("addStatus").value;
@@ -1163,6 +1787,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Basic validation
         if (!studentId || !fullName || !course || !section || !status || !password) {
             showToast("error", "Please fill in all fields");
+            return;
+        }
+        if (!isValidStudentId(studentId)) {
+            showToast("error", "Student ID must be in format: 0000-00000");
+            return;
+        }
+        if (!isValidFullName(fullName)) {
+            showToast("error", "Full name must be at least 2 letters and contain letters only");
             return;
         }
 
@@ -1252,6 +1884,69 @@ document.addEventListener('DOMContentLoaded', function() {
             changePasswordForm.reset();
         });
     }
+
+    // Password toggles: Admin profile
+    const toggleCurrentPassword = document.getElementById('toggleCurrentPassword');
+    const currentPasswordInput = document.getElementById('currentPassword');
+    const toggleCurrentPasswordIcon = document.getElementById('toggleCurrentPasswordIcon');
+
+    if (toggleCurrentPassword && currentPasswordInput && toggleCurrentPasswordIcon) {
+        toggleCurrentPassword.addEventListener('click', function() {
+            const showing = currentPasswordInput.type === 'text';
+            currentPasswordInput.type = showing ? 'password' : 'text';
+            toggleCurrentPasswordIcon.src = showing ? '/assets/img/hide.png' : '/assets/img/visible.png';
+        });
+    }
+
+    const toggleNewPassword = document.getElementById('toggleNewPassword');
+    const newPasswordInput = document.getElementById('newPassword');
+    const toggleNewPasswordIcon = document.getElementById('toggleNewPasswordIcon');
+
+    if (toggleNewPassword && newPasswordInput && toggleNewPasswordIcon) {
+        toggleNewPassword.addEventListener('click', function() {
+            const showing = newPasswordInput.type === 'text';
+            newPasswordInput.type = showing ? 'password' : 'text';
+            toggleNewPasswordIcon.src = showing ? '/assets/img/hide.png' : '/assets/img/visible.png';
+        });
+    }
+
+    const toggleConfirmNewPassword = document.getElementById('toggleConfirmNewPassword');
+    const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
+    const toggleConfirmNewPasswordIcon = document.getElementById('toggleConfirmNewPasswordIcon');
+
+    if (toggleConfirmNewPassword && confirmNewPasswordInput && toggleConfirmNewPasswordIcon) {
+        toggleConfirmNewPassword.addEventListener('click', function() {
+            const showing = confirmNewPasswordInput.type === 'text';
+            confirmNewPasswordInput.type = showing ? 'password' : 'text';
+            toggleConfirmNewPasswordIcon.src = showing ? '/assets/img/hide.png' : '/assets/img/visible.png';
+        });
+    }
+
+    // Password toggle: Add Instructor
+    const toggleInstructorPassword = document.getElementById('toggleInstructorPassword');
+    const instructorPassword = document.getElementById('password');
+    const instructorPasswordIcon = document.getElementById('instructorPasswordIcon');
+
+    if (toggleInstructorPassword && instructorPassword && instructorPasswordIcon) {
+        toggleInstructorPassword.addEventListener('click', function() {
+            const showing = instructorPassword.type === 'text';
+            instructorPassword.type = showing ? 'password' : 'text';
+            instructorPasswordIcon.src = showing ? '/assets/img/hide.png' : '/assets/img/visible.png';
+        });
+    }
+
+    // Password toggle: Add Student
+    const toggleStudentPassword = document.getElementById('toggleStudentPassword');
+    const studentPassword = document.getElementById('addPassword');
+    const studentPasswordIcon = document.getElementById('studentPasswordIcon');
+
+    if (toggleStudentPassword && studentPassword && studentPasswordIcon) {
+        toggleStudentPassword.addEventListener('click', function() {
+            const showing = studentPassword.type === 'text';
+            studentPassword.type = showing ? 'password' : 'text';
+            studentPasswordIcon.src = showing ? '/assets/img/hide.png' : '/assets/img/visible.png';
+        });
+    }
     
     // Handle dropdown profile link separately since it's not in the sidebar
     const dropdownProfileLink = document.querySelector('.dropdown-menu a[href="#profile-section"]');
@@ -1277,3 +1972,4 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+

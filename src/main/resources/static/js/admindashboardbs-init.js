@@ -1,6 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
 
 	var toastTriggers = document.querySelectorAll('[data-bs-toggle="toast"]');
+	if (typeof bootstrap === 'undefined') {
+		return;
+	}
 
 	for (let toastTrigger of toastTriggers) {
 		toastTrigger.addEventListener('click', function () {

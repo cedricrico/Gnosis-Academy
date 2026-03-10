@@ -8,20 +8,20 @@ import java.util.Collection;
 import java.util.List;
 
 public class ProfessorUserDetails implements UserDetails {
-	private final String professorId;
+	private final String employeeId;
 	private final String passwordHash;
 	private final String firstName;
 	private final String lastName;
 
-	public ProfessorUserDetails(String professorId, String passwordHash, String firstName, String lastName) {
-		this.professorId = professorId;
+	public ProfessorUserDetails(String employeeId, String passwordHash, String firstName, String lastName) {
+		this.employeeId = employeeId;
 		this.passwordHash = passwordHash;
 		this.firstName = firstName;
 		this.lastName = lastName;
 	}
 
-	public String getProfessorId() {
-		return professorId;
+	public String getEmployeeId() {
+		return employeeId;
 	}
 
 	public String getFullName() {
@@ -40,7 +40,7 @@ public class ProfessorUserDetails implements UserDetails {
 
 	@Override
 	public String getUsername() {
-		return professorId;
+		return employeeId;
 	}
 
 	@Override

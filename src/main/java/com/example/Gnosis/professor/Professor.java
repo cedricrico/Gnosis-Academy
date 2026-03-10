@@ -17,7 +17,7 @@ public class Professor {
 	private Long id;
 
 	@Column(nullable = false, unique = true, length = 32)
-	private String professorId;
+	private String employeeId;
 
 	@Column(nullable = false, length = 128)
 	private String firstName;
@@ -28,17 +28,11 @@ public class Professor {
 	@Column(nullable = false, length = 128)
 	private String lastName;
 
-	@Column(nullable = false)
-	private Integer age;
-
-	@Column(nullable = false, length = 16)
-	private String sex;
-
 	@Column(nullable = false, length = 64)
 	private String department;
 
-	@Column(nullable = false, length = 128)
-	private String position;
+	@Column(nullable = false, unique = true, length = 128)
+	private String email;
 
 	@Column(nullable = false, length = 100)
 	private String passwordHash;
@@ -50,24 +44,20 @@ public class Professor {
 	}
 
 	public Professor(
-			String professorId,
+			String employeeId,
 			String firstName,
 			String middleInitial,
 			String lastName,
-			Integer age,
-			String sex,
 			String department,
-			String position,
+			String email,
 			String passwordHash
 	) {
-		this.professorId = professorId;
+		this.employeeId = employeeId;
 		this.firstName = firstName;
 		this.middleInitial = middleInitial;
 		this.lastName = lastName;
-		this.age = age;
-		this.sex = sex;
 		this.department = department;
-		this.position = position;
+		this.email = email;
 		this.passwordHash = passwordHash;
 	}
 
@@ -75,36 +65,52 @@ public class Professor {
 		return id;
 	}
 
-	public String getProfessorId() {
-		return professorId;
+	public String getEmployeeId() {
+		return employeeId;
+	}
+
+	public void setEmployeeId(String employeeId) {
+		this.employeeId = employeeId;
 	}
 
 	public String getFirstName() {
 		return firstName;
 	}
 
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
 	public String getMiddleInitial() {
 		return middleInitial;
+	}
+
+	public void setMiddleInitial(String middleInitial) {
+		this.middleInitial = middleInitial;
 	}
 
 	public String getLastName() {
 		return lastName;
 	}
 
-	public Integer getAge() {
-		return age;
-	}
-
-	public String getSex() {
-		return sex;
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
 	}
 
 	public String getDepartment() {
 		return department;
 	}
 
-	public String getPosition() {
-		return position;
+	public void setDepartment(String department) {
+		this.department = department;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 	public String getPasswordHash() {

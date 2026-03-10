@@ -4,24 +4,21 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>Gnosis Welcome Page</title>
-    <link rel="stylesheet" href="/css/Landingstyle.css" th:href="@{/css/Landingstyle.css}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <title>Untitled1</title>
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap">
-
+    <link rel="stylesheet" href="/assets/css/Landingstyle.css">
 </head>
 
 <body>
     <nav class="navbar navbar-expand-md sticky-top bg-white py-3">
-        <div class="container"><a class="navbar-brand d-flex align-items-center" href="#"><span class="d-flex justify-content-center align-items-center me-3"><img width="40" height="40" src="/photos/Logo.jpg" alt="Logo"></span><span class="fs-4"><strong>Gnosis</strong></span><span class="fs-4 text-primary"><strong>Academy</strong></span></a><button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+        <div class="container"><a class="navbar-brand d-flex align-items-center" href="#"><span class="d-flex justify-content-center align-items-center me-3"><img width="40" height="40" src="/assets/img/Logo.jpg" alt="Logo"></span><span class="fs-4"><strong>Gnosis</strong></span><span class="fs-4 text-primary"><strong>Academy</strong></span></a><button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navcol-1">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item"><a class="nav-link active" href="#home">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="#courses">Courses</a></li>
                     <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
-                </ul>
-                <button class="btn btn-outline-primary me-2" type="button"  th:onclick="|window.location.href='@{/Student-login}'|">Log In</button>
-                <button class="btn btn-primary" type="button"  th:onclick="|window.location.href='@{/Student-registration}'|">Register</button>
+                </ul><a class="btn btn-outline-primary me-2" href="/Student-login" th:href="@{/Student-login}">Log In</a><a class="btn btn-primary" href="/Student-registration" th:href="@{/Student-registration}">Register</a>
             </div>
         </div>
     </nav>
@@ -31,14 +28,11 @@
                 <div class="col-md-6 text-center text-md-start">
                     <h1 class="display-4 fw-bold text-dark mb-4 fade-in-up"><span class="text-gradient">Transform Your Career</span><br>with <strong>Gnosis Academy</strong></h1>
                     <p class="lead text-muted mb-5 fade-in-up" style="animation-delay:0.2s;"> Master in-demand tech skills with our comprehensive online courses. Learn from industry experts and accelerate your career. </p>
-                    <div class="d-flex flex-column gap-3 flex-sm-row fade-in-up" style="animation-delay:0.4s;">
-                        <button th:onclick="|window.location.href='@{/Student-login}'|" class="btn btn-primary btn-lg px-5" >Start Learning</button>
-
-                        <button class="btn btn-outline-primary btn-lg px-5" th:onclick="|window.location.href='@{/professor-landing}'|">Teach With Us!</button></div>
+                    <div class="d-flex flex-column gap-3 flex-sm-row fade-in-up" style="animation-delay:0.4s;"><button class="btn btn-primary btn-lg px-5">Start Learning</button><button class="btn btn-outline-primary btn-lg px-5">View Courses</button></div>
                 </div>
                 <div class="col-md-6 text-center pt-5 pt-md-0">
                     <div class="position-relative d-inline-block">
-                        <div class="bg-primary rounded-4 position-absolute top-0 start-0 w-100 h-100" style="z-index:-1;transform:translate(15px, 15px);opacity:0.1;"></div><img class="img-fluid border rounded-4 shadow-sm" src="/photos/Learning.png" alt="Home Image" style="max-width:100%;height:auto;">
+                        <div class="bg-primary rounded-4 position-absolute top-0 start-0 w-100 h-100" style="z-index:-1;transform:translate(15px, 15px);opacity:0.1;"></div><img class="img-fluid border rounded-4 shadow-sm" src="/assets/img/Learning.png" alt="Home Image" style="max-width:100%;height:auto;">
                     </div>
                 </div>
             </div>
@@ -55,7 +49,7 @@
             <div class="row g-4">
                 <div class="col-md-4">
                     <div class="card border-0 h-100 course-card">
-                        <div class="position-relative"><img class="d-block w-100 card-img-top" src="/photos/Web.png" alt="Course Image">
+                        <div class="position-relative"><img class="d-block w-100 card-img-top" src="/assets/img/Web.png" alt="Course Image">
                             <div class="position-absolute top-0 end-0 m-3"><span class="badge bg-primary px-3 py-2">POPULAR</span></div>
                         </div>
                         <div class="card-body p-4">
@@ -70,7 +64,7 @@
                 </div>
                 <div class="col-md-4">
                     <div class="card border-0 h-100 course-card">
-                        <div class="position-relative"><img class="d-block w-100 card-img-top" src="/photos/datasci.png" alt="Course Image">
+                        <div class="position-relative"><img class="d-block w-100 card-img-top" src="/assets/img/datasci.png" alt="Course Image">
                             <div class="position-absolute top-0 end-0 m-3"><span class="badge bg-success px-3 py-2">NEW</span></div>
                         </div>
                         <div class="card-body p-4">
@@ -85,7 +79,7 @@
                 </div>
                 <div class="col-md-4">
                     <div class="card border-0 h-100 course-card">
-                        <div class="position-relative"><img class="d-block w-100 card-img-top" src="/photos/Server-rafiki.png" alt="Course Image">
+                        <div class="position-relative"><img class="d-block w-100 card-img-top" src="/assets/img/Server-rafiki.png" alt="Course Image">
                             <div class="position-absolute top-0 end-0 m-3"><span class="badge text-dark bg-warning px-3 py-2">HOT</span></div>
                         </div>
                         <div class="card-body p-4">
@@ -106,7 +100,7 @@
             <div class="row align-items-center">
                 <div class="col-md-6 mb-4 mb-md-0">
                     <div class="position-relative">
-                        <div class="bg-primary rounded-4 position-absolute top-0 start-0 w-100 h-100" style="z-index:-1;transform:translate(20px, 20px);opacity:0.1;"></div><img class="img-fluid rounded-4 shadow" src="/photos/About.png" alt="About Us">
+                        <div class="bg-primary rounded-4 position-absolute top-0 start-0 w-100 h-100" style="z-index:-1;transform:translate(20px, 20px);opacity:0.1;"></div><img class="img-fluid rounded-4 shadow" src="/assets/img/About.png" alt="About Us">
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -132,7 +126,7 @@
     <footer class="bg-light py-5">
         <div class="container">
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4">
-                <div class="col mb-4 mb-lg-0"><a class="navbar-brand d-flex align-items-center mb-4" href="#"><span class="d-flex justify-content-center align-items-center me-2"><img width="40" height="40" src="/photos/Logo.jpg" alt="Logo"></span><span class="fs-4"><strong>Gnosis</strong></span><span class="fs-4 text-primary"><strong>Academy</strong></span></a>
+                <div class="col mb-4 mb-lg-0"><a class="navbar-brand d-flex align-items-center mb-4" href="#"><span class="d-flex justify-content-center align-items-center me-2"><img width="40" height="40" src="/assets/img/Logo.jpg" alt="Logo"></span><span class="fs-4"><strong>Gnosis</strong></span><span class="fs-4 text-primary"><strong>Academy</strong></span></a>
                     <p class="text-muted mb-4">Empowering learners to achieve their professional goals through high-quality tech education.</p>
                     <div class="d-flex"><a class="text-decoration-none me-3" href="#">
                             <div class="bs-icon-circle bs-icon-sm bs-icon-primary bs-icon"><svg class="bi bi-facebook" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
@@ -200,8 +194,8 @@
         </svg></button><svg class="bi bi-chevron-up" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
         <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"></path>
     </svg>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    <script defer src="/js/Landingscript.js?v=20260303" th:src="@{/js/Landingscript.js(v=20260303)}"></script>
+    <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/Landingscript.js"></script>
 </body>
 
 </html>

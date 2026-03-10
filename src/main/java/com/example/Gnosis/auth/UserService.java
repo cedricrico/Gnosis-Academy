@@ -25,14 +25,17 @@ public class UserService {
 			throw new IllegalArgumentException("Student ID already exists");
 		}
 
+		Integer age = request.getAge() != null ? request.getAge() : 18;
+		String sex = normalizeSex(request.getSex());
+
 		String passwordHash = passwordEncoder.encode(request.getPassword());
 		User user = new User(
 				request.getStudentId(),
 				request.getFirstName(),
 				emptyToNull(request.getMiddleInitial()),
 				request.getLastName(),
-				request.getAge(),
-				request.getSex(),
+				age,
+				sex,
 				passwordHash
 		);
 		// Self-registered students should start unassigned.
@@ -58,6 +61,14 @@ public class UserService {
 		}
 		String trimmed = value.trim();
 		return trimmed.isEmpty() ? null : trimmed;
+	}
+
+	private static String normalizeSex(String value) {
+		String trimmed = emptyToNull(value);
+		if (trimmed == null) {
+			return "other";
+		}
+		return trimmed.toLowerCase();
 	}
 }
 

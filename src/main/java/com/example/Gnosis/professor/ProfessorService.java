@@ -18,42 +18,47 @@ public class ProfessorService {
 
 	@Transactional
 	public Professor register(
-			String professorId,
+			String employeeId,
 			String firstName,
 			String middleInitial,
 			String lastName,
-			Integer age,
-			String sex,
+			String email,
 			String department,
-			String position,
 			String password,
 			String confirmPassword
 	) {
+		String normalizedEmployeeId = requireValue(employeeId, "Employee ID is required");
+		String normalizedFirstName = requireValue(firstName, "First name is required");
+		String normalizedLastName = requireValue(lastName, "Last name is required");
+		String normalizedEmail = requireValue(email, "Email is required");
+		String normalizedDepartment = requireValue(department, "Department is required");
+
 		if (!password.equals(confirmPassword)) {
 			throw new IllegalArgumentException("Passwords do not match");
 		}
-		if (professorRepository.existsByProfessorId(professorId)) {
-			throw new IllegalArgumentException("Professor ID already exists");
+		if (professorRepository.existsByEmployeeId(normalizedEmployeeId)) {
+			throw new IllegalArgumentException("Employee ID already exists");
+		}
+		if (professorRepository.existsByEmail(normalizedEmail)) {
+			throw new IllegalArgumentException("Email already exists");
 		}
 
 		String passwordHash = passwordEncoder.encode(password);
 		Professor professor = new Professor(
-				professorId,
-				firstName,
+				normalizedEmployeeId,
+				normalizedFirstName,
 				emptyToNull(middleInitial),
-				lastName,
-				age,
-				sex,
-				department,
-				position,
+				normalizedLastName,
+				normalizedDepartment,
+				normalizedEmail,
 				passwordHash
 		);
 		return professorRepository.save(professor);
 	}
 
 	@Transactional(readOnly = true)
-	public Optional<Professor> authenticate(String professorId, String rawPassword) {
-		return professorRepository.findByProfessorId(professorId)
+	public Optional<Professor> authenticate(String employeeId, String rawPassword) {
+		return professorRepository.findByEmployeeId(employeeId)
 				.filter(professor -> passwordEncoder.matches(rawPassword, professor.getPasswordHash()));
 	}
 
@@ -63,5 +68,13 @@ public class ProfessorService {
 		}
 		String trimmed = value.trim();
 		return trimmed.isEmpty() ? null : trimmed;
+	}
+
+	private static String requireValue(String value, String message) {
+		String trimmed = emptyToNull(value);
+		if (trimmed == null) {
+			throw new IllegalArgumentException(message);
+		}
+		return trimmed;
 	}
 }

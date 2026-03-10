@@ -121,7 +121,7 @@ public class SecurityConfig {
 				.formLogin(form -> form
 						.loginPage("/Professor-login")
 						.loginProcessingUrl("/professor/login")
-						.usernameParameter("professorId")
+						.usernameParameter("employeeId")
 						.passwordParameter("password")
 						.defaultSuccessUrl("/professor/home", true)
 						.failureUrl("/Professor-login?error")
@@ -166,12 +166,17 @@ public class SecurityConfig {
 
 								// Backward-compatible aliases (safe to keep while you update old links).
 								"/loginPage",
+								"/Login",
+								"/Login.html",
 								"/registrationPage",
+								"/Register",
+								"/Register.html",
 								"/register",
 								"/error",
 								"/js/**",
 								"/css/**",
 								"/photos/**",
+								"/assets/**",
 								"/h2-console/**"
 
 						).permitAll()

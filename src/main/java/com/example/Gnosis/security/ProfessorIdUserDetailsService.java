@@ -16,12 +16,12 @@ public class ProfessorIdUserDetailsService implements UserDetailsService {
 	}
 
 	@Override
-	public UserDetails loadUserByUsername(String professorId) throws UsernameNotFoundException {
-		Professor professor = professorRepository.findByProfessorId(professorId)
+	public UserDetails loadUserByUsername(String employeeId) throws UsernameNotFoundException {
+		Professor professor = professorRepository.findByEmployeeId(employeeId)
 				.orElseThrow(() -> new UsernameNotFoundException("Professor not found"));
 
 		return new ProfessorUserDetails(
-				professor.getProfessorId(),
+				professor.getEmployeeId(),
 				professor.getPasswordHash(),
 				professor.getFirstName(),
 				professor.getLastName()

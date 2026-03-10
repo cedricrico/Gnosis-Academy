@@ -3,13 +3,6 @@
 
     // Enhanced form validation
     var forms = document.querySelectorAll('.needs-validation');
-    var passwordInput = document.getElementById('password');
-    var confirmPasswordInput = document.getElementById('confirmPassword');
-    var studentIdInput = document.getElementById('studentId');
-    var strengthBar = document.getElementById('passwordStrength');
-    var strengthText = document.getElementById('passwordStrengthText');
-    var confirmPasswordFeedback = document.getElementById('confirmPasswordFeedback');
-    var studentIdPattern = /^\d{4}-\d{5}$/;
 
     // Password validation functions
     function checkPasswordStrength(password) {
@@ -39,6 +32,9 @@
     }
 
     function updatePasswordStrength() {
+        const passwordInput = document.getElementById('password');
+        const strengthBar = document.getElementById('passwordStrength');
+        const strengthText = document.getElementById('passwordStrengthText');
         if (!passwordInput || !strengthBar || !strengthText) {
             return;
         }
@@ -69,24 +65,30 @@
     }
 
     function checkPasswordMatch() {
-        if (!passwordInput || !confirmPasswordInput || !confirmPasswordFeedback) {
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        if (!passwordInput || !confirmPasswordInput) {
             return true;
         }
 
         const password = passwordInput.value;
         const confirmPassword = confirmPasswordInput.value;
+        const feedbackElement = document.getElementById('confirmPasswordFeedback');
+        if (!feedbackElement) {
+            return true;
+        }
         
         if (confirmPassword.length > 0) {
             if (password !== confirmPassword) {
-                confirmPasswordFeedback.textContent = 'Passwords do not match';
-                confirmPasswordFeedback.style.display = 'block';
-                confirmPasswordInput.classList.add('is-invalid');
-                confirmPasswordInput.classList.remove('is-valid');
+                feedbackElement.textContent = 'Passwords do not match';
+                feedbackElement.style.display = 'block';
+                document.getElementById('confirmPassword').classList.add('is-invalid');
+                document.getElementById('confirmPassword').classList.remove('is-valid');
                 return false;
             } else {
-                confirmPasswordFeedback.style.display = 'none';
-                confirmPasswordInput.classList.remove('is-invalid');
-                confirmPasswordInput.classList.add('is-valid');
+                feedbackElement.style.display = 'none';
+                document.getElementById('confirmPassword').classList.remove('is-invalid');
+                document.getElementById('confirmPassword').classList.add('is-valid');
                 return true;
             }
         }
@@ -95,22 +97,11 @@
 
     // Initialize password functionality
     function initPasswordFeatures() {
-        if (studentIdInput) {
-            studentIdInput.addEventListener('input', function () {
-                var digitsOnly = this.value.replace(/\D/g, '').slice(0, 9);
-                this.value = digitsOnly.length > 4
-                    ? digitsOnly.slice(0, 4) + '-' + digitsOnly.slice(4)
-                    : digitsOnly;
-
-                if (studentIdPattern.test(this.value)) {
-                    this.classList.remove('is-invalid');
-                }
-            });
-        }
-
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        
         if (passwordInput) {
             passwordInput.addEventListener('input', updatePasswordStrength);
-            passwordInput.addEventListener('input', checkPasswordMatch);
             passwordInput.addEventListener('blur', updatePasswordStrength);
         }
         
@@ -122,9 +113,121 @@
         setupPasswordToggle();
         setupConfirmPasswordToggle();
     }
+
+    function formatStudentId(value) {
+        const digits = value.replace(/\D/g, '').slice(0, 9);
+        if (digits.length <= 4) {
+            return digits;
+        }
+        return digits.slice(0, 4) + '-' + digits.slice(4);
+    }
+
+    function validateStudentId(input) {
+        if (!input) {
+            return true;
+        }
+        const pattern = /^\d{4}-\d{5}$/;
+        const value = input.value.trim();
+        const isValid = value === '' || pattern.test(value);
+
+        input.setCustomValidity(isValid ? '' : 'Student ID must be in format: 0000-00000');
+        if (!isValid) {
+            input.classList.add('is-invalid');
+        } else {
+            input.classList.remove('is-invalid');
+        }
+
+        return isValid;
+    }
+
+    function initStudentIdMask() {
+        const studentIdInput = document.getElementById('studentId');
+        if (!studentIdInput) {
+            return;
+        }
+
+        studentIdInput.addEventListener('input', function() {
+            this.value = formatStudentId(this.value);
+            validateStudentId(this);
+        });
+
+        studentIdInput.addEventListener('blur', function() {
+            validateStudentId(this);
+        });
+    }
+
+    function validateName(input) {
+        if (!input) {
+            return true;
+        }
+        const value = input.value.trim();
+        const pattern = /^[A-Za-z]+([ '\-][A-Za-z]+)*$/;
+        const isValid = value === '' || (value.length >= 2 && pattern.test(value));
+
+        input.setCustomValidity(isValid ? '' : 'Name must be at least 2 letters and contain letters only');
+        if (!isValid) {
+            input.classList.add('is-invalid');
+        } else {
+            input.classList.remove('is-invalid');
+        }
+
+        return isValid;
+    }
+
+    function initNameValidation() {
+        const firstNameInput = document.getElementById('firstName');
+        const lastNameInput = document.getElementById('lastName');
+        const middleInitialInput = document.getElementById('middleInitial');
+
+        if (firstNameInput) {
+            firstNameInput.addEventListener('input', function() {
+                validateName(this);
+            });
+            firstNameInput.addEventListener('blur', function() {
+                validateName(this);
+            });
+        }
+
+        if (lastNameInput) {
+            lastNameInput.addEventListener('input', function() {
+                validateName(this);
+            });
+            lastNameInput.addEventListener('blur', function() {
+                validateName(this);
+            });
+        }
+
+        if (middleInitialInput) {
+            middleInitialInput.addEventListener('input', function() {
+                validateMiddleInitial(this);
+            });
+            middleInitialInput.addEventListener('blur', function() {
+                validateMiddleInitial(this);
+            });
+        }
+    }
+
+    function validateMiddleInitial(input) {
+        if (!input) {
+            return true;
+        }
+        const value = input.value.trim();
+        const pattern = /^[A-Za-z]?$/;
+        const isValid = pattern.test(value);
+
+        input.setCustomValidity(isValid ? '' : 'Middle initial must be a letter');
+        if (!isValid) {
+            input.classList.add('is-invalid');
+        } else {
+            input.classList.remove('is-invalid');
+        }
+
+        return isValid;
+    }
     
     function setupPasswordToggle() {
         const toggleBtn = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
         const eyeIcon = document.getElementById('confirmEyeIcon');
         
         if (toggleBtn && passwordInput && eyeIcon) {
@@ -134,13 +237,14 @@
                 passwordInput.setAttribute('type', type);
                 
                 // Toggle the image source
-                eyeIcon.src = type === 'password' ? '/photos/visible.png' : '/photos/hide.png';
+                eyeIcon.src = type === 'password' ? '/assets/img/visible.png' : '/assets/img/hide.png';
             });
         }
     }
     
     function setupConfirmPasswordToggle() {
         const toggleBtn = document.getElementById('toggleConfirmPassword');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
         const eyeIcon = document.getElementById('confirmEyeIcon2');
         
         if (toggleBtn && confirmPasswordInput && eyeIcon) {
@@ -150,7 +254,7 @@
                 confirmPasswordInput.setAttribute('type', type);
                 
                 // Toggle the image source
-                eyeIcon.src = type === 'password' ? '/photos/visible.png' : '/photos/hide.png';
+                eyeIcon.src = type === 'password' ? '/assets/img/visible.png' : '/assets/img/hide.png';
             });
         }
     }
@@ -159,25 +263,39 @@
         .forEach(function (form) {
             form.addEventListener('submit', function (event) {
                 // Check password match before submission
-                const password = passwordInput ? passwordInput.value : '';
-                const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : '';
-                
-                if (password !== confirmPassword && confirmPassword.length > 0) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    
-                    if (confirmPasswordFeedback) {
-                        confirmPasswordFeedback.textContent = 'Passwords do not match';
-                        confirmPasswordFeedback.style.display = 'block';
-                    }
-                    if (confirmPasswordInput) {
+                const passwordInput = document.getElementById('password');
+                const confirmPasswordInput = document.getElementById('confirmPassword');
+
+                if (passwordInput && confirmPasswordInput) {
+                    const password = passwordInput.value;
+                    const confirmPassword = confirmPasswordInput.value;
+
+                    if (password !== confirmPassword && confirmPassword.length > 0) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        
+                        const feedbackElement = document.getElementById('confirmPasswordFeedback');
+                        if (feedbackElement) {
+                            feedbackElement.textContent = 'Passwords do not match';
+                            feedbackElement.style.display = 'block';
+                        }
                         confirmPasswordInput.classList.add('is-invalid');
+                        return;
                     }
-                    return;
                 }
 
-                if (studentIdInput && !studentIdPattern.test(studentIdInput.value)) {
-                    studentIdInput.classList.add('is-invalid');
+                const studentIdInput = document.getElementById('studentId');
+                if (studentIdInput && !validateStudentId(studentIdInput)) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+
+                const firstNameInput = document.getElementById('firstName');
+                const lastNameInput = document.getElementById('lastName');
+                const middleInitialInput = document.getElementById('middleInitial');
+                if ((firstNameInput && !validateName(firstNameInput))
+                    || (lastNameInput && !validateName(lastNameInput))
+                    || (middleInitialInput && !validateMiddleInitial(middleInitialInput))) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
@@ -194,5 +312,7 @@
     // Initialize when DOM is loaded
     document.addEventListener('DOMContentLoaded', function() {
         initPasswordFeatures();
+        initStudentIdMask();
+        initNameValidation();
     });
 })();

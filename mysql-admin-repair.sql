@@ -6,6 +6,7 @@ USE gnosis_academy;
 
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS admins;
+DROP TABLE IF EXISTS professors;
 DROP TABLE IF EXISTS school_classes;
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -36,6 +37,18 @@ CREATE TABLE school_classes (
     subjects_json LONGTEXT NOT NULL,
     created_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     updated_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)
+) ENGINE=InnoDB;
+
+CREATE TABLE professors (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    employee_id VARCHAR(32) NOT NULL UNIQUE,
+    first_name VARCHAR(128) NOT NULL,
+    middle_initial VARCHAR(1),
+    last_name VARCHAR(128) NOT NULL,
+    email VARCHAR(128) NOT NULL UNIQUE,
+    department VARCHAR(64) NOT NULL,
+    password_hash VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)
 ) ENGINE=InnoDB;
 
 SELECT id, username FROM admins;
