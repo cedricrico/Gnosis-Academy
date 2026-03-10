@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Employee Registration - Gnosis Academy</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap">
+    <link rel="stylesheet" href="assets/css/Landingstyle.css">
+    <link rel="stylesheet" href="assets/css/admin-login.css">
+    <link rel="stylesheet" href="assets/css/Registerstyles.css">
+    <link rel="stylesheet" href="assets/css/cssRegisterstyles.css">
+    <link rel="stylesheet" href="assets/css/instructor-landingStyle.css">
+    <link rel="stylesheet" href="assets/css/Login.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md sticky-top bg-white py-3">
+        <div class="container"><a class="navbar-brand d-flex align-items-center" href="#"><span class="d-flex justify-content-center align-items-center me-3"><img src="assets/img/Logo.jpg" alt="Logo" width="40" height="40"></span><span class="fs-4"><strong>Gnosis</strong></span><span class="fs-4 text-primary"><strong>Academy</strong></span></a><button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navcol-1">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"></li>
+                    <li class="nav-item"></li>
+                    <li class="nav-item"></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container d-flex min-vh-100 justify-content-center align-items-center">
+        <div class="card shadow p-4" style="width:100%;max-width:500px;">
+            <h2 class="text-center mb-4">Employee Registration</h2>
+            <form id="employee-register-form" class="needs-validation" novalidate="">
+                <div class="row mb-3">
+                    <div class="col-md-5"><label class="fw-semibold mb-1 form-label" for="firstName">First Name</label><input class="form-control" type="text" id="firstName" pattern="^[A-Za-z]{2,}$" required="" title="First name must be at least 2 characters and contain letters only">
+                        <div class="invalid-feedback"><span>Please enter your first name (at least 2 letters, no numbers or special characters).</span></div>
+                    </div>
+                    <div class="col-md-2"><label class="fw-semibold mb-1 form-label" for="middleInitial">MI</label><input class="form-control" type="text" id="middleInitial" maxlength="1" pattern="[A-Za-z]?" title="Middle initial must be a letter">
+                        <div class="invalid-feedback"><span>Enter a valid letter (optional).</span></div>
+                    </div>
+                    <div class="col-md-5"><label class="fw-semibold mb-1 form-label" for="lastName">Last Name</label><input class="form-control" type="text" id="lastName" pattern="^[A-Za-z]{2,}$" required="" title="Last name must be at least 2 characters">
+                        <div class="invalid-feedback"><span>Please enter your last name.</span></div>
+                    </div>
+                </div>
+                <div class="mb-3"><label class="form-label fw-semibold" for="employeeId">Employee ID</label><input class="form-control" type="text" id="employeeId" pattern="\d{4}-\d{5}" required="" title="Employee ID must be in the format 0000-00000">
+                    <div class="invalid-feedback"><span>Employee ID must be in the format 0000-00000</span></div>
+                </div>
+                <div class="mb-3"><label class="form-label fw-semibold" for="email">Email Address</label><input class="form-control" type="email" id="email" required="" title="Please enter a valid email address with @ symbol and domain extension" pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">
+                    <div class="invalid-feedback"><span>Please enter a valid email address (must contain @ symbol and domain extension like .com).</span></div>
+                </div>
+                <div class="mb-3"><label class="form-label fw-semibold" for="department">Department</label><select class="form-select" id="department" required="">
+                        <option value="">Choose...</option>
+                        <option value="admin">Administration</option>
+                        <option value="hr">Human Resources</option>
+                        <option value="it">IT Department</option>
+                        <option value="faculty">Faculty</option>
+                        <option value="finance">Finance</option>
+                        <option value="marketing">Marketing</option>
+                    </select>
+                    <div class="invalid-feedback"><span>Please select your department.</span></div>
+                </div>
+                <div class="mb-3"><label class="form-label fw-semibold" for="employeePassword">Password</label>
+                    <div class="input-group"><input class="form-control" type="password" id="employeePassword" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required="" title="Password must be at least 8 characters long, contain at least one number, one lowercase and one uppercase letter"><button class="btn btn-outline-secondary" id="employeeTogglePassword" type="button"><img id="employeeEyeIcon" alt="Toggle Password Visibility" height="20" src="assets/img/visible.png" width="20"></button></div>
+                    <div class="d-block invalid-feedback"><span>Password must be at least 8 characters long and contain at least one number, one lowercase and one uppercase letter.</span></div>
+                </div>
+                <div class="mb-3"><label class="form-label fw-semibold" for="confirmEmployeePassword">Confirm Password</label>
+                    <div class="input-group"><input class="form-control" type="password" id="confirmEmployeePassword" required=""><button class="btn btn-outline-secondary" id="employeeToggleConfirmPassword" type="button"><img id="employeeEyeIcon2" alt="Toggle Confirm Password Visibility" height="20" src="assets/img/visible.png" width="20"></button></div>
+                    <div class="d-block invalid-feedback" id="confirmEmployeePasswordFeedback"><span>Please confirm your password.</span></div>
+                </div>
+                <div class="mb-3 form-check"><input type="checkbox" class="form-check-input" id="employeeTerms" required=""><label class="form-check-label" for="employeeTerms">I agree to the terms and conditions</label>
+                    <div class="invalid-feedback"><span>You must agree to the terms and conditions.</span></div>
+                </div><button class="btn btn-primary w-100" type="submit">Register</button>
+            </form>
+            <div class="text-center mt-4"><small class="text-muted">Already registered? </small><a class="fw-semibold text-decoration-none" href="loginemployee.html">Login Here</a></div>
+        </div>
+    </div>
+    <footer class="bg-light py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col text-center">
+                    <p class="text-muted mb-0">© 2026 Gnosis Academy. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/Landingscript.js"></script>
+    <script src="assets/js/Loginscript.js"></script>
+    <script src="assets/js/admin-loginscript.js"></script>
+    <script src="assets/js/loginemployeescript.js"></script>
+    <script src="assets/js/registeremployeescript.js"></script>
+    <script src="assets/js/Registerscript.js"></script>
+</body>
+
+</html>
