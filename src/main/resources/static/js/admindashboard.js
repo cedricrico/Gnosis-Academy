@@ -904,8 +904,8 @@ document.addEventListener('DOMContentLoaded', function() {
             row.innerHTML = `
                 <td>${student.id}</td>
                 <td>${student.fullName}</td>
-                <td>${student.course}</td>
-                <td>${student.section}</td>
+                <td>${student.course || '-'}</td>
+                <td>${student.section || '-'}</td>
                 <td><span class="badge ${student.status === 'Active' ? 'bg-success' : 'bg-danger'}">${student.status}</span></td>
                 <td>
                     <button class="btn btn-outline-primary btn-sm view-student" data-id="${student.id}">
@@ -961,17 +961,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Course</label>
-                                        <select class="form-select edit-course" required>
-                                            <option value="">Select Course</option>
-                                            <option value="Computer Science" ${student.course === 'Computer Science' ? 'selected' : ''}>Computer Science</option>
-                                            <option value="Business Administration" ${student.course === 'Business Administration' ? 'selected' : ''}>Business Administration</option>
-                                            <option value="Engineering" ${student.course === 'Engineering' ? 'selected' : ''}>Engineering</option>
-                                            <option value="Arts and Sciences" ${student.course === 'Arts and Sciences' ? 'selected' : ''}>Arts and Sciences</option>
-                                        </select>
+                                        <input class="form-control edit-course" type="text" value="${student.course || ''}">
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Section</label>
-                                        <input class="form-control edit-section" type="text" value="${student.section}" required>
+                                        <input class="form-control edit-section" type="text" value="${student.section || ''}">
                                     </div>
                                 </div>
                                 <div class="row mb-3">
@@ -1100,10 +1094,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to save student changes
     async function saveStudentChanges(form) {
         const studentId = form.getAttribute("data-id");
+        const fullName = form.querySelector(".edit-full-name").value.trim();
+        const course = form.querySelector(".edit-course").value.trim();
+        const section = form.querySelector(".edit-section").value.trim();
+        if (!fullName) {
+            showToast("error", "Full name is required.");
+            return;
+        }
+
         const payload = {
-            fullName: form.querySelector(".edit-full-name").value,
-            course: form.querySelector(".edit-course").value,
-            section: form.querySelector(".edit-section").value,
+            fullName,
+            course,
+            section,
             status: form.querySelector(".edit-status").value
         };
 
@@ -1134,8 +1136,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     students.push({
                         id: student.studentId || '',
                         fullName: student.fullName || '',
-                        course: student.course || '-',
-                        section: student.section || '-',
+                        course: student.course || '',
+                        section: student.section || '',
                         status: student.status || 'Active'
                     });
                 });

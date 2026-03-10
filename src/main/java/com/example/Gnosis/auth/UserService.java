@@ -35,8 +35,21 @@ public class UserService {
 				request.getSex(),
 				passwordHash
 		);
+		// Self-registered students should start unassigned.
+		user.setCourse("");
+		user.setSectionName("");
+		user.setStatus("Active");
 
-		return userRepository.save(user);
+		User saved = userRepository.save(user);
+
+		// Guard against legacy DB defaults/triggers that may auto-assign sections on insert.
+		if (saved.getSectionName() != null && !saved.getSectionName().isBlank()) {
+			saved.setSectionName("");
+			saved.setCourse("");
+			saved = userRepository.save(saved);
+		}
+
+		return saved;
 	}
 
 	private static String emptyToNull(String value) {
