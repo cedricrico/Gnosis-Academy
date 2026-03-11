@@ -1,0 +1,153 @@
+/* Custom Styles for Instructor Dashboard */
+
+.sidebar {
+  min-height: calc(100vh - 60px);
+}
+
+.nav-link.active {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 0.375rem;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.table th {
+  background-color: #f8f9fa;
+}
+
+.badge {
+  font-size: 0.75em;
+}
+
+.btn-group .btn {
+  border-radius: 0 !important;
+}
+
+.btn-group .btn:first-child {
+  border-top-left-radius: 0.375rem !important;
+  border-bottom-left-radius: 0.375rem !important;
+}
+
+.btn-group .btn:last-child {
+  border-top-right-radius: 0.375rem !important;
+  border-bottom-right-radius: 0.375rem !important;
+}
+
+.modal-header {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.navbar-brand {
+  font-weight: 500;
+}
+
+.sidebar-heading {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.list-group-item-action:hover {
+  background-color: #e9ecef;
+}
+
+.card-footer {
+  background-color: #f8f9fa;
+}
+
+.pagination .page-link {
+  color: #0d6efd;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+@media (max-width: 767.98px) {
+  .sidebar {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+}
+
+/* Announcement filtering animations */
+
+.announcement-card {
+  transition: all 0.3s ease;
+}
+
+.announcement-card {
+  transition: all 0.3s ease;
+}
+
+.announcement-card[style*="display: none"] {
+  display: none !important;
+}
+
+/* Ensure containers don't leave empty space */
+
+.row.g-4 .col-12[style*="display: none"] {
+  display: none !important;
+}
+
+/* Spin animation for refresh button */
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spin-animation {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+/* Fix for dropdown options in create assignment modal */
+
+#assignmentSubject option:not(:first-child) {
+  color: inherit;
+}
+
+/* Add spacing for action buttons icons */
+
+.btn-group-sm icon {
+  margin: 0;
+  padding: 0;
+}
+
+.btn-group-sm i {
+  font-size: 0.875rem;
+}
+
+/* Ensure action buttons are properly spaced */
+
+.btn-group .btn {
+  padding: 0.25rem 0.5rem;
+}
+
+/* Make sure buttons maintain proper styling when dynamically added */
+
+.btn-group .btn-outline-primary:hover, .btn-group .btn-outline-warning:hover, .btn-group .btn-outline-danger:hover {
+  border-color: currentColor;
+}
+
+/* Ensure event delegation works correctly */
+
+table.table tbody tr td .btn-group {
+  margin: 0;
+}
+
