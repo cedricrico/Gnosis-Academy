@@ -1,0 +1,2340 @@
+﻿<!DOCTYPE html>
+<html data-bs-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Sections - Instructor Dashboard</title>
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+    <style>
+/* styles.css\n   Combined stylesheet for instructor + student dashboards.\n   Source: Instructorstyle.css + Studentstyle.css\n*/\n\n/* ==== Instructor ==== */\n/* Custom Styles for Instructor Dashboard */
+
+.sidebar {
+  min-height: calc(100vh - 60px);
+}
+
+.nav-link.active {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 0.375rem;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.table th {
+  background-color: #f8f9fa;
+}
+
+.badge {
+  font-size: 0.75em;
+}
+
+.btn-group .btn {
+  border-radius: 0 !important;
+}
+
+.btn-group .btn:first-child {
+  border-top-left-radius: 0.375rem !important;
+  border-bottom-left-radius: 0.375rem !important;
+}
+
+.btn-group .btn:last-child {
+  border-top-right-radius: 0.375rem !important;
+  border-bottom-right-radius: 0.375rem !important;
+}
+
+.modal-header {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.navbar-brand {
+  font-weight: 500;
+}
+
+.sidebar-heading {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.list-group-item-action:hover {
+  background-color: #e9ecef;
+}
+
+.card-footer {
+  background-color: #f8f9fa;
+}
+
+.pagination .page-link {
+  color: #0d6efd;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+@media (max-width: 767.98px) {
+  .sidebar {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+}
+
+/* Announcement filtering animations */
+
+.announcement-card {
+  transition: all 0.3s ease;
+}
+
+.announcement-card {
+  transition: all 0.3s ease;
+}
+
+.announcement-card[style*="display: none"] {
+  display: none !important;
+}
+
+/* Ensure containers don't leave empty space */
+
+.row.g-4 .col-12[style*="display: none"] {
+  display: none !important;
+}
+
+/* Spin animation for refresh button */
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spin-animation {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+/* Fix for dropdown options in create assignment modal */
+
+#assignmentSubject option:not(:first-child) {
+  color: inherit;
+}
+
+/* Add spacing for action buttons icons */
+
+.btn-group-sm icon {
+  margin: 0;
+  padding: 0;
+}
+
+.btn-group-sm i {
+  font-size: 0.875rem;
+}
+
+/* Ensure action buttons are properly spaced */
+
+.btn-group .btn {
+  padding: 0.25rem 0.5rem;
+}
+
+/* Make sure buttons maintain proper styling when dynamically added */
+
+.btn-group .btn-outline-primary:hover, .btn-group .btn-outline-warning:hover, .btn-group .btn-outline-danger:hover {
+  border-color: currentColor;
+}
+
+/* Ensure event delegation works correctly */
+
+table.table tbody tr td .btn-group {
+  margin: 0;
+}
+
+\n\n/* ==== Student ==== */\n/* Custom styles for Student Dashboard */
+
+/* Top navbar styling */
+
+.navbar {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0;
+}
+
+.navbar-brand {
+  font-size: 1.4rem;
+  padding: 0.5rem 0;
+}
+
+.navbar-nav .nav-link {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  margin: 0 2px;
+  transition: all 0.2s ease;
+}
+
+.navbar-nav .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.navbar-nav .nav-link.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: 500;
+}
+
+/* Profile dropdown styling */
+
+.navbar-nav .dropdown-toggle {
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.navbar-nav .dropdown-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.navbar-nav .dropdown-menu {
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  min-width: 220px;
+}
+
+.navbar-nav .dropdown-item {
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  margin: 2px 8px;
+  width: auto;
+}
+
+.navbar-nav .dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.navbar-nav .dropdown-divider {
+  margin: 0.5rem 0;
+}
+
+/* Sidebar styling */
+
+.sidebar {
+  min-height: calc(100vh - 70px);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+  padding: 1rem 0;
+}
+
+/* Mobile sidebar toggle button */
+
+#sidebarToggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0d6efd;
+  border: 1px solid #0d6efd;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+#sidebarToggle:hover {
+  background-color: #0b5ed7;
+  border-color: #0b5ed7;
+}
+
+#sidebarToggle:active {
+  transform: scale(0.95);
+}
+
+/* Style the navbar toggler icon */
+
+#sidebarToggle .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+  width: 1.5em;
+  height: 1.5em;
+}
+
+/* Add focus styling for accessibility */
+
+#sidebarToggle:focus {
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  outline: 0;
+}
+
+/* Mobile sidebar toggle */
+
+.sidebar {
+  transition: transform 0.3s ease-in-out;
+}
+
+@media (max-width: 767.98px) {
+  .sidebar {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    bottom: 0;
+    z-index: 1040;
+    transform: translateX(-100%);
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+    width: 250px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .sidebar.show {
+    transform: translateX(0);
+  }
+}
+
+/* Hide sidebar by default on mobile */
+
+@media (max-width: 767.98px) {
+  .sidebar:not(.show) {
+    display: block;
+  }
+}
+
+.sidebar .nav-link {
+  padding: 0.75rem 1rem;
+  color: #495057;
+  border-radius: 8px;
+  margin: 0.25rem 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.sidebar .nav-link:hover {
+  background-color: #e9ecef;
+  color: #0d6efd;
+}
+
+.sidebar .nav-link.active {
+  background-color: #0d6efd;
+  color: white;
+  box-shadow: 0 2px 5px rgba(13, 110, 253, 0.3);
+}
+
+.sidebar .nav-link.text-danger:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+/* Main content area */
+
+main {
+  padding-top: 1.5rem;
+}
+
+/* Card enhancements */
+
+.card {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Table styling */
+
+.table-hover tbody tr:hover {
+  background-color: rgba(13, 110, 253, 0.04);
+}
+
+/* Status badge styling */
+
+.badge {
+  font-size: 0.85em;
+  padding: 0.4em 0.75em;
+  border-radius: 20px;
+}
+
+/* Responsive adjustments */
+
+@media (max-width: 767.98px) {
+  .navbar-collapse {
+    padding: 1rem 0;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .navbar-nav .nav-link {
+    margin: 0.25rem 0;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .navbar-nav .dropdown-toggle {
+    margin-top: 0.5rem;
+  }
+}
+
+/* Body padding to account for fixed navbar */
+
+body {
+  padding-top: 70px;
+  background-color: #f8f9fa;
+}
+
+/* Container adjustments */
+
+.container-fluid {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+/* Mobile view improvements */
+
+@media (max-width: 576px) {
+  .container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  body {
+    padding-top: 65px;
+  }
+}
+
+\n
+
+</style>\n</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg bg-primary navbar-dark">
+        <div class="container-fluid"><a class="navbar-brand" href="/professor/dashboard"><svg class="bi bi-mortarboard-fill me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.917l7.5 3a.5.5 0 0 0 .372 0L14 7.14V13a1 1 0 0 0-1 1v2h3v-2a1 1 0 0 0-1-1V6.739l.686-.275a.5.5 0 0 0 .025-.917l-7.5-3.5Z"></path>
+                    <path d="M4.176 9.032a.5.5 0 0 0-.656.327l-.5 1.7a.5.5 0 0 0 .294.605l4.5 1.8a.5.5 0 0 0 .372 0l4.5-1.8a.5.5 0 0 0 .294-.605l-.5-1.7a.5.5 0 0 0-.656-.327L8 10.466z"></path>
+                </svg>Instructor Dashboard </a><button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" type="button"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="/professor/dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/professor/sections">Sections</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/professor/profile">Profile</a></li>
+                </ul>
+                <div class="d-flex align-items-center"><span class="text-white me-3 navbar-text">Welcome, Instructor!</span><a class="btn btn-outline-light btn-sm" role="button" href="/professor/profile"><svg class="bi bi-person-circle" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"></path>
+                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"></path>
+                        </svg> Profile </a></div>
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 bg-light d-md-block sidebar collapse show">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item"><a class="nav-link" href="/professor/sections"><svg class="bi bi-collection me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M2.5 3.5a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1zm2-2a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1zM0 13a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 16 13V6a1.5 1.5 0 0 0-1.5-1.5h-13A1.5 1.5 0 0 0 0 6zm1.5.5A.5.5 0 0 1 1 13V6a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5z"></path>
+                                </svg> Sections </a></li>
+                        <li class="nav-item"><a class="nav-link" href="/professor/profile"><svg class="bi bi-person me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"></path>
+                                </svg> Profile </a></li>
+                    </ul>
+                    <h6 class="text-muted d-flex justify-content-between align-items-center mt-4 mb-1 px-3 sidebar-heading"><span>Quick Actions</span></h6>
+                    <ul class="nav flex-column">
+                        <li class="nav-item"><a class="nav-link" href="/professor/announcements"><svg class="bi bi-megaphone me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M13 2.5a1.5 1.5 0 0 1 3 0v11a1.5 1.5 0 0 1-3 0v-.214c-2.162-1.241-4.49-1.843-6.912-2.083l.405 2.712A1 1 0 0 1 5.51 15.1h-.548a1 1 0 0 1-.916-.599l-1.85-3.49a68.14 68.14 0 0 0-.202-.003A2.014 2.014 0 0 1 0 9V7a2.02 2.02 0 0 1 1.992-2.013 74.663 74.663 0 0 0 2.483-.075c3.043-.154 6.148-.849 8.525-2.199zm1 0v11a.5.5 0 0 0 1 0v-11a.5.5 0 0 0-1 0m-1 1.35c-2.344 1.205-5.209 1.842-8 2.033v4.233c.18.01.359.022.537.036 2.568.189 5.093.744 7.463 1.993V3.85zm-9 6.215v-4.13a95.09 95.09 0 0 1-1.992.052A1.02 1.02 0 0 0 1 7v2c0 .55.448 1.002 1.006 1.009A60.49 60.49 0 0 1 4 10.065m-.657.975 1.609 3.037.01.024h.548l-.002-.014-.443-2.966a68.019 68.019 0 0 0-1.722-.082z"></path>
+                                </svg> Announcements </a></li>
+                        <li class="nav-item"><a class="nav-link" href="/professor/assignments"><svg class="bi bi-journal-bookmark me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M6 8V1h1v6.117L8.743 6.07a.5.5 0 0 1 .514 0L11 7.117V1h1v7a.5.5 0 0 1-.757.429L9 7.083 6.757 8.43A.5.5 0 0 1 6 8"></path>
+                                    <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2"></path>
+                                    <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z"></path>
+                                </svg> Assignments </a></li>
+                        <li class="nav-item"><a class="nav-link" href="/professor/lessons"><svg class="bi bi-file-earmark-text me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"></path>
+                                    <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"></path>
+                                </svg> Lessons </a></li>
+                        <li class="nav-item"><a class="nav-link" href="/professor/quiz"><svg class="bi bi-question-circle me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                    <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94"></path>
+                                </svg> Quizzes </a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap flex-md-nowrap pt-3 mb-3 pb-2 border-bottom">
+                    <h1 class="h2">Sections</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0 card-title">My Sections</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Section Name</th>
+                                        <th scope="col">Department</th>
+                                        <th scope="col">No. of Students</th>
+                                        <th scope="col">Subjects</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td scope="row">1</td>
+                                        <td>Section A</td>
+                                        <td>Mathematics Department</td>
+                                        <td>32</td>
+                                        <td>3</td>
+                                        <td><a class="btn btn-primary btn-sm" role="button" href="/professor/subjects?section=A"><svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
+                                                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
+                                                </svg> View Subjects </a></td>
+                                    </tr>
+                                    <tr>
+                                        <td scope="row">2</td>
+                                        <td>Section B</td>
+                                        <td>Science Department</td>
+                                        <td>28</td>
+                                        <td>4</td>
+                                        <td><a class="btn btn-primary btn-sm" role="button" href="/professor/subjects?section=B"><svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
+                                                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
+                                                </svg> View Subjects </a></td>
+                                    </tr>
+                                    <tr>
+                                        <td scope="row">3</td>
+                                        <td>Section C</td>
+                                        <td>Engineering Department</td>
+                                        <td>35</td>
+                                        <td>2</td>
+                                        <td><a class="btn btn-primary btn-sm" role="button" href="/professor/subjects?section=C"><svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
+                                                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
+                                                </svg> View Subjects </a></td>
+                                    </tr>
+                                    <tr>
+                                        <td scope="row">4</td>
+                                        <td>Section D</td>
+                                        <td>Computer Science</td>
+                                        <td>30</td>
+                                        <td>3</td>
+                                        <td><a class="btn btn-primary btn-sm" role="button" href="/professor/subjects?section=D"><svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
+                                                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
+                                                </svg> View Subjects </a></td>
+                                    </tr>
+                                    <tr>
+                                        <td scope="row">5</td>
+                                        <td>Section E</td>
+                                        <td>Business Department</td>
+                                        <td>27</td>
+                                        <td>2</td>
+                                        <td><a class="btn btn-primary btn-sm" role="button" href="/professor/subjects?section=E"><svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
+                                                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
+                                                </svg> View Subjects </a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <script>
+// Inlined from /assets/js/instructor/announcements-1.js\n// announcements-1.js - Announcement filtering functionality
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Announcements filtering script loaded');
+    
+    // Get filter elements
+    const subjectFilter = document.getElementById('announcementSubjectFilter');
+    const statusFilter = document.getElementById('announcementStatusFilter');
+    const searchInput = document.getElementById('announcementSearch');
+    
+    console.log('Found elements:', { subjectFilter, statusFilter, searchInput });
+    
+    // Add event listeners for real-time filtering
+    if (subjectFilter) {
+        subjectFilter.addEventListener('change', function() {
+            console.log('Subject filter changed:', this.value);
+            filterAnnouncements();
+        });
+    }
+    
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function() {
+            console.log('Status filter changed:', this.value);
+            filterAnnouncements();
+        });
+    }
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            console.log('Search input:', this.value);
+            filterAnnouncements();
+        });
+    }
+    
+    // Make filterAnnouncements function globally available for refresh functionality
+    window.filterAnnouncements = function() {
+        const announcementCards = document.querySelectorAll('.announcement-card');
+        const selectedSubject = subjectFilter ? subjectFilter.value : '';
+        const selectedStatus = statusFilter ? statusFilter.value : '';
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+        
+        announcementCards.forEach(card => {
+            const cardSubject = card.getAttribute('data-subject');
+            const cardStatus = card.getAttribute('data-status');
+            const cardTitle = card.querySelector('.card-header h5').textContent.toLowerCase();
+            const cardContent = card.querySelector('.card-body p').textContent.toLowerCase();
+            const cardSubjectText = card.querySelector('.card-body small').textContent.toLowerCase();
+            
+            // Check subject filter
+            const subjectMatch = !selectedSubject || selectedSubject === '' || cardSubject === selectedSubject;
+            
+            // Check status filter
+            const statusMatch = !selectedStatus || selectedStatus === '' || cardStatus === selectedStatus;
+            
+            // Check search filter
+            const searchMatch = !searchTerm || 
+                cardTitle.includes(searchTerm) || 
+                cardContent.includes(searchTerm) || 
+                cardSubjectText.includes(searchTerm);
+            
+            // Hide or show the entire column card based on all filters
+            if (subjectMatch && statusMatch && searchMatch) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    };
+    
+    // Initial filter to ensure consistency
+    window.filterAnnouncements();
+});
+</script>
+    <script>
+// Inlined from /assets/js/instructor/assignments-1.js\n// Legacy placeholder kept for backward compatibility with exported HTML.
+// The real logic lives in assignments.js.
+(function(){
+  if (window && window.console) {
+    console.debug('Loaded legacy assignments-1.js');
+  }
+})();
+
+</script>
+    <script>
+// Inlined from /assets/js/instructor/lessons.js\ndocument.addEventListener('DOMContentLoaded', function() {
+    // Filter lessons based on selected criteria
+    function filterLessons() {
+        const subjectFilter = document.getElementById('lessonSubjectFilter').value;
+        const weekFilter = document.getElementById('lessonWeekFilter').value;
+        const searchText = document.getElementById('lessonSearch').value.toLowerCase();
+        
+        const lessonCards = document.querySelectorAll('.lesson-card');
+        
+        lessonCards.forEach(card => {
+            const subjectWeekText = card.querySelector('.lesson-subject-week').textContent;
+            const titleText = card.querySelector('.lesson-title').textContent.toLowerCase();
+            const descriptionText = card.querySelector('.lesson-description').textContent.toLowerCase();
+            
+            const [subject, week] = subjectWeekText.split(' - ');
+            
+            let showCard = true;
+            
+            // Apply subject filter - extract just the subject code from the filter value
+            if (subjectFilter) {
+                // Extract subject code from filter value (e.g., "MATH101 - Calculus I" -> "MATH101")
+                const filterSubjectCode = subjectFilter.split(' - ')[0];
+                if (subject !== filterSubjectCode) {
+                    showCard = false;
+                }
+            }
+            
+            // Apply week filter
+            if (weekFilter && week !== weekFilter) {
+                showCard = false;
+            }
+            
+            // Apply search filter
+            if (searchText && 
+                !titleText.includes(searchText) && 
+                !descriptionText.includes(searchText) &&
+                !subject.toLowerCase().includes(searchText) &&
+                !week.toLowerCase().includes(searchText)) {
+                showCard = false;
+            }
+            
+            // Show or hide card
+            if (showCard) {
+                card.style.display = 'block';
+                card.closest('.col').style.display = 'block';
+            } else {
+                card.style.display = 'none';
+                card.closest('.col').style.display = 'none';
+            }
+        });
+    }
+
+    // Add event listeners for filter controls
+    document.getElementById('lessonSubjectFilter').addEventListener('change', filterLessons);
+    document.getElementById('lessonWeekFilter').addEventListener('change', filterLessons);
+    document.getElementById('lessonSearch').addEventListener('input', filterLessons);
+
+    // Lesson type to button text mapping
+    const lessonTypeMap = {
+        'PDF': 'Download',
+        'Presentation': 'Download',
+        'Video': 'View',
+        'Text': 'Download'
+    };
+
+    // Get badge color based on lesson type
+    function getBadgeColor(type) {
+        const colors = {
+            'PDF': 'bg-primary',
+            'Video': 'bg-success',
+            'Presentation': 'bg-info',
+            'Text': 'bg-secondary'
+        };
+        return colors[type] || 'bg-secondary';
+    }
+
+    // Upload Lesson functionality
+    document.querySelector('#uploadLessonModal .btn-primary').addEventListener('click', function() {
+        const title = document.getElementById('lessonTitle').value.trim();
+        const subject = document.getElementById('lessonSubject').value;
+        const week = document.getElementById('lessonWeek').value;
+        const description = document.getElementById('lessonDescription').value.trim();
+        const lessonType = document.getElementById('lessonType').value;
+        
+        // Simple validation - check for empty/null/undefined or empty string
+        if (!title || title === '') {
+            alert('Please enter a lesson title.');
+            return;
+        }
+        if (!subject || subject === '') {
+            alert('Please select a subject.');
+            return;
+        }
+        if (!week || week === '') {
+            alert('Please select a week.');
+            return;
+        }
+        if (!description || description === '') {
+            alert('Please enter a description.');
+            return;
+        }
+        if (!lessonType || lessonType === '') {
+            alert('Please select a content type.');
+            return;
+        }
+        
+        // Generate unique lesson ID
+        const lessonId = Date.now(); // Simple unique ID using timestamp
+        
+        // Create new lesson card
+        const newCol = document.createElement('div');
+        newCol.className = 'col';
+        
+        const newLessonCard = document.createElement('div');
+        newLessonCard.className = 'card h-100 lesson-card';
+        newLessonCard.setAttribute('data-lesson-id', lessonId);
+        
+        // Card body
+        const cardBody = document.createElement('div');
+        cardBody.className = 'card-body';
+        
+        const titleElement = document.createElement('h5');
+        titleElement.className = 'card-title lesson-title';
+        titleElement.textContent = title;
+        
+        const descriptionElement = document.createElement('p');
+        descriptionElement.className = 'card-text lesson-description';
+        descriptionElement.textContent = description;
+        
+        const subjectWeekDiv = document.createElement('div');
+        subjectWeekDiv.className = 'd-flex justify-content-between align-items-center';
+        
+        const subjectWeekElement = document.createElement('small');
+        subjectWeekElement.className = 'text-muted lesson-subject-week';
+        subjectWeekElement.textContent = `${subject} - ${week}`;
+        
+        const badgeElement = document.createElement('span');
+        badgeElement.className = `badge ${getBadgeColor(lessonType)} lesson-type`;
+        badgeElement.setAttribute('data-original-type', lessonType);
+        badgeElement.textContent = lessonType;
+        
+        subjectWeekDiv.appendChild(subjectWeekElement);
+        subjectWeekDiv.appendChild(badgeElement);
+        
+        cardBody.appendChild(titleElement);
+        cardBody.appendChild(descriptionElement);
+        cardBody.appendChild(subjectWeekDiv);
+        
+        // Card footer with buttons
+        const cardFooter = document.createElement('div');
+        cardFooter.className = 'card-footer';
+        
+        const buttonGroup = document.createElement('div');
+        buttonGroup.className = 'btn-group w-100';
+        buttonGroup.setAttribute('role', 'group');
+        
+        // View/Download button
+        const viewDownloadBtn = document.createElement('button');
+        viewDownloadBtn.className = 'btn btn-outline-primary btn-sm view-download-btn';
+        viewDownloadBtn.type = 'button';
+        viewDownloadBtn.setAttribute('data-file-url', '#');
+        viewDownloadBtn.innerHTML = '<icon></icon> ' + lessonTypeMap[lessonType];
+        
+        // Edit button
+        const editBtn = document.createElement('button');
+        editBtn.className = 'btn btn-outline-warning btn-sm edit-btn';
+        editBtn.type = 'button';
+        editBtn.innerHTML = '<icon></icon> Edit';
+        
+        // Delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn btn-outline-danger btn-sm delete-btn';
+        deleteBtn.type = 'button';
+        deleteBtn.innerHTML = '<icon></icon> Delete';
+        
+        buttonGroup.appendChild(viewDownloadBtn);
+        buttonGroup.appendChild(editBtn);
+        buttonGroup.appendChild(deleteBtn);
+        
+        cardFooter.appendChild(buttonGroup);
+        
+        // Assemble card
+        newLessonCard.appendChild(cardBody);
+        newLessonCard.appendChild(cardFooter);
+        newCol.appendChild(newLessonCard);
+        
+        // Add to container
+        document.getElementById('lessonsContainer').appendChild(newCol);
+        
+        // Add event listeners to new buttons
+        addEventListenersToCard(newLessonCard);
+        
+        // Reset form and close modal
+        document.getElementById('lessonTitle').value = '';
+        document.getElementById('lessonSubject').value = '';
+        document.getElementById('lessonWeek').value = '';
+        document.getElementById('lessonDescription').value = '';
+        document.getElementById('lessonType').value = '';
+        
+        const modalElement = document.getElementById('uploadLessonModal');
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        modalInstance.hide();
+        
+        alert('Lesson uploaded successfully!');
+    });
+
+    // Helper function to add event listeners to a lesson card
+    function addEventListenersToCard(card) {
+        // View/Download button
+        const viewDownloadBtn = card.querySelector('.view-download-btn');
+        viewDownloadBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const lessonCard = this.closest('.lesson-card');
+            const lessonType = lessonCard.querySelector('.lesson-type').getAttribute('data-original-type');
+            const fileUrl = this.getAttribute('data-file-url');
+            
+            if (lessonType === 'Video') {
+                // Open video in modal
+                const videoPlayer = document.getElementById('videoPlayer');
+                videoPlayer.src = fileUrl;
+                const videoModal = new bootstrap.Modal(document.getElementById('videoViewerModal'));
+                document.getElementById('videoViewerModalLabel').textContent = lessonCard.querySelector('.lesson-title').textContent;
+                videoModal.show();
+            } else {
+                // Download file
+                window.open(fileUrl, '_blank');
+            }
+        });
+        
+        // Edit button
+        const editBtn = card.querySelector('.edit-btn');
+        editBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const lessonCard = this.closest('.lesson-card');
+            const lessonId = lessonCard.getAttribute('data-lesson-id');
+            const title = lessonCard.querySelector('.lesson-title').textContent;
+            const description = lessonCard.querySelector('.lesson-description').textContent;
+            const subjectWeek = lessonCard.querySelector('.lesson-subject-week').textContent;
+            const [subject, week] = subjectWeek.split(' - ');
+            const lessonType = lessonCard.querySelector('.lesson-type').getAttribute('data-original-type');
+            const fileUrl = lessonCard.querySelector('.view-download-btn').getAttribute('data-file-url');
+            
+            // Populate edit form
+            document.getElementById('editLessonId').value = lessonId;
+            document.getElementById('editLessonTitle').value = title;
+            document.getElementById('editLessonDescription').value = description;
+            document.getElementById('editLessonSubject').value = subject;
+            document.getElementById('editLessonWeek').value = week;
+            document.getElementById('editLessonType').value = lessonType;
+            document.getElementById('editLessonFileUrl').value = fileUrl;
+            
+            // Show modal
+            const editModal = new bootstrap.Modal(document.getElementById('editLessonModal'));
+            editModal.show();
+        });
+        
+        // Delete button
+        const deleteBtn = card.querySelector('.delete-btn');
+        deleteBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const lessonCard = this.closest('.lesson-card');
+            const lessonTitle = lessonCard.querySelector('.lesson-title').textContent;
+            
+            if (confirm(`Are you sure you want to delete "${lessonTitle}"?`)) {
+                lessonCard.closest('.col').remove();
+            }
+        });
+    }
+
+    // Download/View button functionality
+    document.querySelectorAll('.view-download-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const lessonCard = this.closest('.lesson-card');
+            const lessonType = lessonCard.querySelector('.lesson-type').getAttribute('data-original-type');
+            const fileUrl = this.getAttribute('data-file-url');
+            
+            if (lessonType === 'Video') {
+                // Open video in modal
+                const videoPlayer = document.getElementById('videoPlayer');
+                videoPlayer.src = fileUrl;
+                const videoModal = new bootstrap.Modal(document.getElementById('videoViewerModal'));
+                document.getElementById('videoViewerModalLabel').textContent = lessonCard.querySelector('.lesson-title').textContent;
+                videoModal.show();
+            } else {
+                // Download file
+                window.open(fileUrl, '_blank');
+            }
+        });
+    });
+
+    // Edit button functionality
+    document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const lessonCard = this.closest('.lesson-card');
+            const lessonId = lessonCard.getAttribute('data-lesson-id');
+            const title = lessonCard.querySelector('.lesson-title').textContent;
+            const description = lessonCard.querySelector('.lesson-description').textContent;
+            const subjectWeek = lessonCard.querySelector('.lesson-subject-week').textContent;
+            const [subject, week] = subjectWeek.split(' - ');
+            const lessonType = lessonCard.querySelector('.lesson-type').getAttribute('data-original-type');
+            const fileUrl = lessonCard.querySelector('.view-download-btn').getAttribute('data-file-url');
+            
+            // Populate edit form
+            document.getElementById('editLessonId').value = lessonId;
+            document.getElementById('editLessonTitle').value = title;
+            document.getElementById('editLessonDescription').value = description;
+            document.getElementById('editLessonSubject').value = subject;
+            document.getElementById('editLessonWeek').value = week;
+            document.getElementById('editLessonType').value = lessonType;
+            document.getElementById('editLessonFileUrl').value = fileUrl;
+            
+            // Show modal
+            const editModal = new bootstrap.Modal(document.getElementById('editLessonModal'));
+            editModal.show();
+        });
+    });
+
+    // Save edited lesson
+    document.getElementById('saveLessonChanges').addEventListener('click', function() {
+        const lessonId = document.getElementById('editLessonId').value;
+        const lessonCard = document.querySelector(`.lesson-card[data-lesson-id="${lessonId}"]`);
+        
+        if (lessonCard) {
+            // Update card content
+            lessonCard.querySelector('.lesson-title').textContent = document.getElementById('editLessonTitle').value;
+            lessonCard.querySelector('.lesson-description').textContent = document.getElementById('editLessonDescription').value;
+            
+            const subject = document.getElementById('editLessonSubject').value;
+            const week = document.getElementById('editLessonWeek').value;
+            lessonCard.querySelector('.lesson-subject-week').textContent = `${subject} - ${week}`;
+            
+            const newType = document.getElementById('editLessonType').value;
+            const typeBadge = lessonCard.querySelector('.lesson-type');
+            typeBadge.textContent = newType;
+            typeBadge.setAttribute('data-original-type', newType);
+            
+            // Update badge color
+            const currentClassList = typeBadge.classList;
+            currentClassList.remove('bg-primary', 'bg-success', 'bg-info', 'bg-secondary');
+            currentClassList.add(getBadgeColor(newType));
+            
+            // Update file URL
+            const newFileUrl = document.getElementById('editLessonFileUrl').value;
+            lessonCard.querySelector('.view-download-btn').setAttribute('data-file-url', newFileUrl);
+            
+            // Update button text if type changed
+            const button = lessonCard.querySelector('.view-download-btn');
+            const iconElement = button.querySelector('icon');
+            
+            if (iconElement) {
+                // Find the next text node and update it
+                let nextNode = iconElement.nextSibling;
+                while (nextNode && nextNode.nodeType !== Node.TEXT_NODE) {
+                    nextNode = nextNode.nextSibling;
+                }
+                
+                if (nextNode) {
+                    nextNode.textContent = ' ' + lessonTypeMap[newType];
+                } else {
+                    // If no text node found, create one
+                    const textNode = document.createTextNode(' ' + lessonTypeMap[newType]);
+                    iconElement.parentNode.appendChild(textNode);
+                }
+            } else {
+                // If no icon element, just set button text directly
+                button.textContent = lessonTypeMap[newType];
+            }
+            
+            // Close modal using the Bootstrap modal instance
+            const modalElement = document.getElementById('editLessonModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+            modalInstance.hide();
+        }
+    });
+
+    // Delete button functionality
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const lessonCard = this.closest('.lesson-card');
+            const lessonTitle = lessonCard.querySelector('.lesson-title').textContent;
+            
+            if (confirm(`Are you sure you want to delete "${lessonTitle}"?`)) {
+                lessonCard.remove();
+            }
+        });
+    });
+
+    // Update button text based on lesson type on page load
+    document.querySelectorAll('.lesson-card').forEach(card => {
+        const type = card.querySelector('.lesson-type').getAttribute('data-original-type');
+        const button = card.querySelector('.view-download-btn');
+        const iconElement = button.querySelector('icon');
+        
+        if (iconElement) {
+            // Find the next text node and update it
+            let nextNode = iconElement.nextSibling;
+            while (nextNode && nextNode.nodeType !== Node.TEXT_NODE) {
+                nextNode = nextNode.nextSibling;
+            }
+            
+            if (nextNode) {
+                nextNode.textContent = ' ' + lessonTypeMap[type];
+            } else {
+                // If no text node found, create one
+                const textNode = document.createTextNode(' ' + lessonTypeMap[type]);
+                iconElement.parentNode.appendChild(textNode);
+            }
+        } else {
+            // If no icon element, just set button text directly
+            button.textContent = lessonTypeMap[type];
+        }
+    });
+});
+</script>
+    <script>
+// Inlined from /assets/js/instructor/quiz-1.js\n// Legacy placeholder kept for backward compatibility with exported HTML.
+// The real logic lives in quiz.js.
+(function(){
+  if (window && window.console) {
+    console.debug('Loaded legacy quiz-1.js');
+  }
+})();
+
+</script>
+    <script>
+// Inlined from /assets/js/instructor/quiz-actions-1.js\n// Legacy placeholder kept for backward compatibility with exported HTML.
+// The real logic lives in quiz-actions.js.
+(function(){
+  if (window && window.console) {
+    console.debug('Loaded legacy quiz-actions-1.js');
+  }
+})();
+
+</script>
+    <script>
+// Inlined from /assets/js/instructor/announcements.js\n// announcements.js - Handles Announcements functionality (View, Edit, Archive, Export, Refresh)
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Modal instances
+    let viewModal = null;
+    let editModal = null;
+    let postModal = null;
+    
+    // Initialize modals when the page loads
+    const viewModalElement = document.getElementById('viewAnnouncementModal');
+    const editModalElement = document.getElementById('editAnnouncementModal');
+    const postModalElement = document.getElementById('postAnnouncementModal');
+    
+    if (viewModalElement) {
+        viewModal = new bootstrap.Modal(viewModalElement);
+    }
+    
+    if (editModalElement) {
+        editModal = new bootstrap.Modal(editModalElement);
+    }
+    
+    if (postModalElement) {
+        postModal = new bootstrap.Modal(postModalElement);
+    }
+    
+    // Set default date to today in the new announcement form
+    const dateInput = document.getElementById('announcementDate');
+    if (dateInput) {
+        dateInput.valueAsDate = new Date();
+    }
+    
+    // Add event listeners to all announcement cards
+    setupAnnouncementListeners();
+    
+    // Get buttons by their IDs
+    const exportButton = document.getElementById('exportAnnouncementsBtn');
+    const refreshButton = document.getElementById('refreshAnnouncementsBtn');
+    
+    // Export button event listener
+    if (exportButton) {
+        exportButton.addEventListener('click', exportAnnouncementsToCSV);
+    }
+    
+    // Refresh button event listener
+    if (refreshButton) {
+        refreshButton.addEventListener('click', refreshAnnouncements);
+    }
+    
+    // Handle edit form submission
+    const saveButton = document.getElementById('saveAnnouncementBtn');
+    if (saveButton) {
+        saveButton.addEventListener('click', function() {
+            const form = document.getElementById('editAnnouncementForm');
+            const cardIndex = form.dataset.editingCardId;
+            
+            if (cardIndex !== undefined) {
+                const announcementsContainer = document.querySelector('.row.g-4');
+                const cardElement = announcementsContainer.children[cardIndex].querySelector('.card');
+                
+                // Update card content
+                const titleInput = document.getElementById('editAnnouncementTitle');
+                const contentInput = document.getElementById('editAnnouncementContent');
+                const dateInput = document.getElementById('editAnnouncementDate');
+                const targetInput = document.getElementById('editAnnouncementTarget');
+                
+                // Format date for display
+                const formattedDate = formatDateForDisplay(dateInput.value);
+                
+                cardElement.querySelector('.card-header h5').textContent = titleInput.value;
+                cardElement.querySelector('.card-body p').textContent = contentInput.value;
+                cardElement.querySelector('.card-body small').textContent = `Posted on ${formattedDate} | For: ${targetInput.value}`;
+                
+                // Close modal
+                if (editModal) {
+                    editModal.hide();
+                }
+                
+                alert('Announcement updated successfully!');
+            }
+        });
+    }
+    
+    
+    
+    // Function to set up event listeners for announcement cards
+    function setupAnnouncementListeners() {
+        const announcementCards = document.querySelectorAll('.announcement-card');
+        
+        announcementCards.forEach(card => {
+            const cardElement = card.querySelector('.card');
+            const buttons = cardElement.querySelectorAll('.btn-group button');
+            
+            // Remove existing event listeners first to avoid duplicates
+            buttons.forEach(button => {
+                const newButton = button.cloneNode(true);
+                button.parentNode.replaceChild(newButton, button);
+            });
+            
+            const updatedButtons = cardElement.querySelectorAll('.btn-group button');
+            
+            // View button
+            if (updatedButtons[0]) {
+                updatedButtons[0].addEventListener('click', function() {
+                    handleViewAnnouncement(cardElement);
+                });
+            }
+            
+            // Edit button
+            if (updatedButtons[1]) {
+                updatedButtons[1].addEventListener('click', function() {
+                    handleEditAnnouncement(cardElement);
+                });
+            }
+            
+            // Archive button
+            if (updatedButtons[2]) {
+                updatedButtons[2].addEventListener('click', function() {
+                    handleArchiveAnnouncement(cardElement);
+                });
+            }
+        });
+    }
+    
+    // Handle View button click
+    function handleViewAnnouncement(card) {
+        const title = card.querySelector('.card-header h5').textContent;
+        const content = card.querySelector('.card-body p').textContent;
+        const metadata = card.querySelector('.card-body small').textContent;
+        
+        // Set modal content
+        document.getElementById('viewAnnouncementTitle').textContent = title;
+        document.getElementById('viewAnnouncementContent').textContent = content;
+        document.getElementById('viewAnnouncementMetadata').textContent = metadata;
+        
+        // Show modal
+        if (viewModal) {
+            viewModal.show();
+        }
+    }
+    
+    // Handle Edit button click
+    function handleEditAnnouncement(card) {
+        const title = card.querySelector('.card-header h5').textContent;
+        const content = card.querySelector('.card-body p').textContent;
+        const metadata = card.querySelector('.card-body small').textContent;
+        
+        // Extract date, subject, and status from metadata
+        const metadataParts = metadata.split(' | ');
+        const dateText = metadataParts[0].replace('Posted on ', '');
+        const subjectText = metadataParts[1].replace('For: ', '');
+        const statusText = card.querySelector('.badge').textContent;
+        
+        // Set form values
+        document.getElementById('editAnnouncementTitle').value = title;
+        document.getElementById('editAnnouncementContent').value = content;
+        document.getElementById('editAnnouncementDate').value = formatDateForInput(dateText);
+        document.getElementById('editAnnouncementTarget').value = subjectText;
+        
+        // Store reference to the card being edited
+        document.getElementById('editAnnouncementForm').dataset.editingCardId = Array.from(card.parentNode.parentNode.children).indexOf(card.parentNode);
+        
+        // Show modal
+        if (editModal) {
+            editModal.show();
+        }
+    }
+    
+    // Handle Archive button click
+    function handleArchiveAnnouncement(card) {
+        if (confirm('Are you sure you want to archive this announcement? This action cannot be undone.')) {
+            // Add archived class and update badge
+            card.classList.add('border-warning');
+            const badge = card.querySelector('.badge');
+            if (badge) {
+                badge.textContent = 'Archived';
+                badge.className = 'badge text-dark bg-warning';
+            }
+            
+            // Move to archived list or remove from active list
+            const announcementsContainer = card.closest('.row.g-4');
+            const archivedContainer = document.getElementById('archivedAnnouncements');
+            
+            if (archivedContainer) {
+                // Move to archived section
+                archivedContainer.appendChild(card.parentNode);
+            } else {
+                // Create archived section if it doesn't exist
+                const archivedSection = document.createElement('div');
+                archivedSection.id = 'archivedAnnouncements';
+                archivedSection.innerHTML = '<h3 class="mt-5">Archived Announcements</h3><div class="row g-4"></div>';
+                announcementsContainer.after(archivedSection);
+                archivedSection.querySelector('.row.g-4').appendChild(card.parentNode);
+            }
+            
+            alert('Announcement archived successfully!');
+        }
+    }
+    
+    
+    
+    // Export announcements to CSV
+    function exportAnnouncementsToCSV() {
+        const announcements = document.querySelectorAll('.announcement-card');
+        let csvContent = 'Title,Subject,Date,Status\\n';
+        
+        announcements.forEach(announcement => {
+            if (announcement.style.display !== 'none') {
+                const title = announcement.querySelector('.card-header h5').textContent;
+                const subject = announcement.getAttribute('data-subject');
+                const dateText = announcement.querySelector('.card-body small').textContent.split(' | ')[0].replace('Posted on ', '');
+                const status = announcement.querySelector('.badge').textContent;
+                
+                // Escape commas and quotes in CSV
+                const escapeCSV = (str) => `"${str.replace(/"/g, '""')}"`;
+                
+                csvContent += `${escapeCSV(title)},${escapeCSV(subject)},${escapeCSV(dateText)},${escapeCSV(status)}\\n`;
+            }
+        });
+        
+        // Create and download CSV file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'announcements_export.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    
+    // Refresh announcements list
+    function refreshAnnouncements() {
+        const refreshButton = document.getElementById('refreshAnnouncementsBtn');
+        if (!refreshButton) return;
+        
+        const originalHTML = refreshButton.innerHTML;
+        
+        // Add loading animation
+        refreshButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Refreshing...';
+        refreshButton.disabled = true;
+        
+        // Simulate refresh action (in a real app, this would fetch from server)
+        setTimeout(() => {
+            // Re-setup event listeners to ensure all buttons work
+            setupAnnouncementListeners();
+            
+            // Re-apply any active filters
+            if (typeof window.filterAnnouncements === 'function') {
+                window.filterAnnouncements();
+            }
+            
+            // Restore button state
+            refreshButton.innerHTML = originalHTML;
+            refreshButton.disabled = false;
+            
+            alert('Announcements refreshed successfully!');
+        }, 1000);
+    }
+    
+    // Utility function to format date for input field (YYYY-MM-DD)
+    function formatDateForInput(dateString) {
+        if (!dateString) return new Date().toISOString().split('T')[0];
+        
+        try {
+            const date = new Date(dateString);
+            return date.toISOString().split('T')[0];
+        } catch (e) {
+            return new Date().toISOString().split('T')[0];
+        }
+    }
+    
+    // Utility function to format date for display (Month Day, Year)
+    function formatDateForDisplay(dateString) {
+        if (!dateString) return new Date().toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+        
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        } catch (e) {
+            return new Date().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+    }
+    
+    // Handle new announcement form submission
+    const postAnnouncementBtn = document.getElementById('postAnnouncementBtn');
+    if (postAnnouncementBtn) {
+        postAnnouncementBtn.addEventListener('click', function() {
+            const title = document.getElementById('announcementTitle').value;
+            const subject = document.getElementById('announcementSubject').value;
+            const content = document.getElementById('announcementContent').value;
+            const date = document.getElementById('announcementDate').value;
+            const status = document.getElementById('announcementStatus').value;
+            
+            // Validate form
+            if (!title || !subject || !content || !date || !status) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            // Format date for display
+            const formattedDate = formatDateForDisplay(date);
+            
+            // Create new announcement card
+            const newAnnouncement = document.createElement('div');
+            newAnnouncement.className = 'col-12 announcement-card';
+            
+            newAnnouncement.setAttribute('data-subject', subject);
+            newAnnouncement.setAttribute('data-status', status);
+            
+            // Determine header and badge color based on status
+            let headerClass = status === 'Published' ? 'bg-primary' : 'bg-warning';
+            let badgeClass = status === 'Published' ? 'text-dark bg-success' : 'text-dark bg-warning';
+            
+            newAnnouncement.innerHTML = `
+                <div class="card">
+                    <div class="card-header text-white ${headerClass}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">${title}</h5>
+                            <span class="badge ${badgeClass}">${status}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">${content}</p>
+                        <small class="text-muted">Posted on ${formattedDate} | For: ${subject}</small>
+                    </div>
+                    <div class="card-footer">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-primary">
+                                View
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-warning">
+                                Edit
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger">
+                                Archive
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add to the beginning of the announcements list
+            const announcementsContainer = document.querySelector('.row.g-4');
+            if (announcementsContainer) {
+                announcementsContainer.insertBefore(newAnnouncement, announcementsContainer.firstChild);
+                
+                // Set up event listeners for the new card
+                setupAnnouncementListeners();
+                
+                // Reset form and close modal
+                document.getElementById('announcementForm').reset();
+                if (document.getElementById('announcementDate')) {
+                    document.getElementById('announcementDate').valueAsDate = new Date();
+                }
+                
+                // Close modal if it exists
+                if (postModal) {
+                    postModal.hide();
+                }
+                
+                // Show success message
+                alert('Announcement posted successfully!');
+            }
+        });
+    }
+});
+</script>
+    <script>
+// Inlined from /assets/js/instructor/assignments.js\n// assignments.js - Assignment table functionality
+
+// Assignment data storage (in-memory for demonstration)
+let assignmentsData = [];
+
+// View Assignment Modal functionality
+function viewAssignment(row) {
+    const cells = row.querySelectorAll('td');
+    const assignmentData = {
+        title: cells[1].textContent,
+        subject: cells[2].textContent,
+        dueDate: cells[3].textContent,
+        status: cells[4].querySelector('.badge').textContent,
+        submissions: cells[5].textContent
+    };
+    
+    document.getElementById('viewAssignmentTitle').textContent = assignmentData.title;
+    document.getElementById('viewSubject').textContent = assignmentData.subject;
+    document.getElementById('viewDueDate').textContent = assignmentData.dueDate;
+    document.getElementById('viewStatus').textContent = assignmentData.status;
+    document.getElementById('viewSubmissions').textContent = assignmentData.submissions;
+    
+    // Set badge color based on status
+    const statusBadge = document.getElementById('viewStatus');
+    statusBadge.className = 'badge ' + getStatusClass(assignmentData.status);
+    
+    const viewModal = new bootstrap.Modal(document.getElementById('viewAssignmentModal'));
+    viewModal.show();
+}
+
+// Edit Assignment Modal functionality
+function editAssignment(row) {
+    const cells = row.querySelectorAll('td');
+    const assignmentData = {
+        id: parseInt(cells[0].textContent),
+        title: cells[1].textContent,
+        subject: cells[2].textContent,
+        dueDate: cells[3].textContent,
+        status: cells[4].querySelector('.badge').textContent,
+        submissions: cells[5].textContent
+    };
+    
+    document.getElementById('editAssignmentTitle').value = assignmentData.title;
+    document.getElementById('editSubject').value = assignmentData.subject;
+    
+    // Convert date from "Oct 15, 2023" to "2023-10-15"
+    const dateParts = assignmentData.dueDate.split(' ');
+    const monthMap = {
+        'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
+        'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+    };
+    const formattedDate = `${dateParts[2]}-${monthMap[dateParts[0]]}-${dateParts[1].replace(',', '').padStart(2, '0')}`;
+    document.getElementById('editDueDate').value = formattedDate;
+    
+    document.getElementById('editStatus').value = assignmentData.status.toLowerCase();
+    
+    // Store row reference for updating
+    document.getElementById('editAssignmentModal').dataset.rowIndex = row.rowIndex;
+    
+    const editModal = new bootstrap.Modal(document.getElementById('editAssignmentModal'));
+    editModal.show();
+}
+
+// Delete Assignment functionality
+function deleteAssignment(row) {
+    const cells = row.querySelectorAll('td');
+    const assignmentTitle = cells[1].textContent;
+    
+    document.getElementById('deleteAssignmentTitle').textContent = assignmentTitle;
+    document.getElementById('deleteAssignmentModal').dataset.rowIndex = row.rowIndex;
+    
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteAssignmentModal'));
+    deleteModal.show();
+}
+
+// Save edited assignment
+function saveEditedAssignment() {
+    const rowIndex = document.getElementById('editAssignmentModal').dataset.rowIndex;
+    const row = document.querySelector(`tbody tr:nth-child(${rowIndex})`);
+    
+    const title = document.getElementById('editAssignmentTitle').value;
+    const subject = document.getElementById('editSubject').value;
+    const dueDate = document.getElementById('editDueDate').value;
+    const status = document.getElementById('editStatus').value;
+    
+    // Convert date from "2023-10-15" to "Oct 15, 2023"
+    const date = new Date(dueDate);
+    const formattedDate = date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+    });
+    
+    // Update row data
+    const cells = row.querySelectorAll('td');
+    cells[1].textContent = title;
+    cells[2].textContent = subject;
+    cells[3].textContent = formattedDate;
+    
+    // Update status with appropriate badge
+    const statusCell = cells[4];
+    statusCell.innerHTML = `<span class="badge ${getStatusClass(status)}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
+    
+    // Update assignments data
+    if (assignmentsData[rowIndex - 1]) {
+        assignmentsData[rowIndex - 1] = {
+            title,
+            subject,
+            dueDate: formattedDate,
+            status: status.charAt(0).toUpperCase() + status.slice(1)
+        };
+    }
+    
+    // Close modal
+    const editModal = bootstrap.Modal.getInstance(document.getElementById('editAssignmentModal'));
+    editModal.hide();
+}
+
+// Confirm delete assignment
+function confirmDeleteAssignment() {
+    const rowIndex = document.getElementById('deleteAssignmentModal').dataset.rowIndex;
+    const row = document.querySelector(`tbody tr:nth-child(${rowIndex})`);
+    
+    row.remove();
+    
+    // Remove from assignments data
+    assignmentsData.splice(rowIndex - 1, 1);
+    
+    // Update row numbers
+    updateRowNumbers();
+    
+    // Close modal
+    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteAssignmentModal'));
+    deleteModal.hide();
+}
+
+// Update row numbers after deletion
+function updateRowNumbers() {
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach((row, index) => {
+        row.querySelector('td:first-child').textContent = index + 1;
+    });
+}
+
+// Helper function to get badge class based on status
+function getStatusClass(status) {
+    status = status.toLowerCase();
+    switch(status) {
+        case 'active': return 'bg-success';
+        case 'draft': return 'bg-warning';
+        case 'past due': return 'bg-secondary';
+        default: return 'bg-secondary';
+    }
+}
+
+// Assignment filtering functionality
+function filterAssignments() {
+    const subjectFilter = document.getElementById('subjectFilter').value;
+    const statusFilter = document.getElementById('statusFilter').value;
+    const searchText = document.getElementById('searchInput').value.toLowerCase();
+    
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const assignmentTitle = cells[1].textContent.toLowerCase();
+        const subject = cells[2].textContent;
+        const statusBadge = cells[4].querySelector('.badge');
+        const status = statusBadge ? statusBadge.textContent : '';
+        
+        // Check subject filter
+        const subjectMatch = subjectFilter === '' || subjectFilter === 'All Subjects' || 
+                           subject.includes(subjectFilter.split(' - ')[0]);
+        
+        // Check status filter
+        const statusMatch = statusFilter === '' || statusFilter === 'All Statuses' || 
+                           status.toLowerCase() === statusFilter.toLowerCase();
+        
+        // Check search text
+        const searchMatch = searchText === '' || 
+                           assignmentTitle.includes(searchText) || 
+                           subject.toLowerCase().includes(searchText);
+        
+        // Show/hide row based on all conditions
+        if (subjectMatch && statusMatch && searchMatch) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// NEW ASSIGNMENT FUNCTIONALITY
+function createAssignment() {
+    // Get form values
+    const title = document.getElementById('assignmentTitle').value;
+    const subject = document.getElementById('assignmentSubject').value;
+    const description = document.getElementById('assignmentDescription').value;
+    const dueDate = document.getElementById('dueDate').value;
+    const status = 'Draft'; // Default status for new assignments
+    
+    // Validate required fields
+    if (!title || !subject || !dueDate) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    // Format due date
+    const date = new Date(dueDate);
+    const formattedDate = date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+    });
+    
+    // Get table body
+    const tbody = document.querySelector('tbody');
+    
+    // Create new row
+    const newRow = document.createElement('tr');
+    const rowNumber = tbody.querySelectorAll('tr').length + 1;
+    
+    // Extract subject code from value (e.g., "MATH101 - Calculus I" becomes "MATH101")
+    const subjectCode = subject.split(' - ')[0];
+    
+    // Create row content
+    newRow.innerHTML = `
+        <td scope="row">${rowNumber}</td>
+        <td>${title}</td>
+        <td>${subjectCode}</td>
+        <td>${formattedDate}</td>
+        <td><span class="badge ${getStatusClass(status)}">${status}</span></td>
+        <td>-/-</td>
+        <td>
+            <div class="btn-group btn-group-sm" role="group">
+                <button class="btn btn-outline-primary" role="button">
+                    <icon></icon>
+                </button>
+                <button class="btn btn-outline-warning" role="button">
+                    <icon></icon>
+                </button>
+                <button class="btn btn-outline-danger" role="button">
+                    <icon></icon>
+                </button>
+            </div>
+        </td>
+    `;
+    
+    // Add to table
+    tbody.appendChild(newRow);
+    
+    // Add event listeners to new row buttons
+    const buttons = newRow.querySelectorAll('.btn-group .btn');
+    buttons[0].addEventListener('click', () => viewAssignment(newRow));
+    buttons[1].addEventListener('click', () => editAssignment(newRow));
+    buttons[2].addEventListener('click', () => deleteAssignment(newRow));
+    
+    // Store assignment data
+    assignmentsData.push({
+        title,
+        subject: subjectCode,
+        dueDate: formattedDate,
+        status,
+        submissions: '-/-'
+    });
+    
+    // Close modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('createAssignmentModal'));
+    modal.hide();
+    
+    // Reset form
+    document.getElementById('assignmentTitle').value = '';
+    document.getElementById('assignmentSubject').value = '';
+    document.getElementById('assignmentDescription').value = '';
+    document.getElementById('dueDate').value = '';
+    
+    // Show success message
+    alert('Assignment created successfully!');
+}
+
+// EXPORT FUNCTIONALITY
+function exportAssignments() {
+    // Get all assignment rows
+    const rows = document.querySelectorAll('tbody tr');
+    
+    // Create CSV header
+    let csvContent = 'Title,Subject,Due Date,Status\\n';
+    
+    // Add each assignment to CSV
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        
+        // Only include rows that are visible (not filtered out)
+        if (row.style.display !== 'none') {
+            const title = cells[1].textContent.replace(/,/g, ''); // Remove commas to avoid CSV issues
+            const subject = cells[2].textContent;
+            const dueDate = cells[3].textContent;
+            const status = cells[4].textContent;
+            
+            csvContent += `"${title}","${subject}","${dueDate}","${status}"\\n`;
+        }
+    });
+    
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'assignments.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// REFRESH FUNCTIONALITY
+function refreshAssignments() {
+    const refreshButton = document.querySelector('.btn-outline-success.btn-sm');
+    
+    // Add loading animation
+    const originalHTML = refreshButton.innerHTML;
+    refreshButton.innerHTML = '<icon class="spin-animation"></icon> Refreshing...';
+    refreshButton.disabled = true;
+    
+    // Simulate refresh delay (in real app, this would fetch from server)
+    setTimeout(() => {
+        // Re-apply filters (this simulates refreshing the view)
+        filterAssignments();
+        
+        // Restore button
+        refreshButton.innerHTML = originalHTML;
+        refreshButton.disabled = false;
+        
+        // Show notification
+        showNotification('Assignments list refreshed successfully!', 'success');
+    }, 1000);
+}
+
+// Show notification
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 3000);
+}
+
+// Initialize event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to all action buttons
+    document.querySelectorAll('tbody tr').forEach(row => {
+        const buttons = row.querySelectorAll('.btn-group .btn');
+        
+        buttons[0].addEventListener('click', () => viewAssignment(row));
+        buttons[1].addEventListener('click', () => editAssignment(row));
+        buttons[2].addEventListener('click', () => deleteAssignment(row));
+    });
+    
+    // Add event listeners for filters
+    document.getElementById('subjectFilter').addEventListener('change', filterAssignments);
+    document.getElementById('statusFilter').addEventListener('change', filterAssignments);
+    document.getElementById('searchInput').addEventListener('input', filterAssignments);
+    
+    // Add event listener for Create Assignment button in modal (only if exists)
+    const createAssignmentBtn = document.querySelector('#createAssignmentModal .btn-primary');
+    if (createAssignmentBtn) {
+        createAssignmentBtn.addEventListener('click', createAssignment);
+    }
+    
+    // Add event listeners for Edit Assignment save button (only if exists)
+    const saveAssignmentBtn = document.querySelector('#editAssignmentModal .btn-primary');
+    if (saveAssignmentBtn) {
+        saveAssignmentBtn.addEventListener('click', saveEditedAssignment);
+    }
+    
+    // Add event listener for Delete Assignment confirm button (only if exists)
+    const confirmDeleteBtn = document.querySelector('#deleteAssignmentModal .btn-danger');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', confirmDeleteAssignment);
+    }
+    
+    // Add event listeners for Export and Refresh buttons (only if they exist on this page)
+    const btnToolbar = document.querySelector('.btn-toolbar');
+    if (btnToolbar) {
+        const buttonGroups = btnToolbar.querySelectorAll('.btn-group');
+        if (buttonGroups.length >= 2) {
+            const exportButton = buttonGroups[1].querySelector('button');
+            if (exportButton) {
+                exportButton.addEventListener('click', exportAssignments);
+            }
+        }
+        if (buttonGroups.length >= 3) {
+            const refreshButton = buttonGroups[2].querySelector('button');
+            if (refreshButton) {
+                refreshButton.addEventListener('click', refreshAssignments);
+            }
+        }
+    }
+    
+    // Initialize assignments data from existing table
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        assignmentsData.push({
+            title: cells[1].textContent,
+            subject: cells[2].textContent,
+            dueDate: cells[3].textContent,
+            status: cells[4].querySelector('.badge').textContent,
+            submissions: cells[5].textContent
+        });
+    });
+});
+</script>
+    <script>
+// Inlined from /assets/js/instructor/quiz-actions.js\n// Quiz Actions JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    // Quiz Filtering and Search functionality
+    const quizSubjectFilter = document.getElementById('quizSubjectFilter');
+    const quizStatusFilter = document.getElementById('quizStatusFilter');
+    const quizSearch = document.getElementById('quizSearch');
+    const quizTableBody = document.querySelector('table.table tbody');
+    
+    // Add event listeners for filtering
+    if (quizSubjectFilter) {
+        quizSubjectFilter.addEventListener('change', filterQuizzes);
+    }
+    if (quizStatusFilter) {
+        quizStatusFilter.addEventListener('change', filterQuizzes);
+    }
+    if (quizSearch) {
+        quizSearch.addEventListener('input', filterQuizzes);
+    }
+    
+    // Event delegation for table actions - attach to tbody for dynamic content
+    quizTableBody.addEventListener('click', function(e) {
+        const target = e.target;
+        
+        // Find the closest button element
+        const button = target.closest('button.btn');
+        
+        // If clicked element is not a button or doesn't have the right classes, return
+        if (!button || !(button.classList.contains('btn-outline-primary') || 
+                         button.classList.contains('btn-outline-warning') || 
+                         button.classList.contains('btn-outline-danger'))) {
+            return;
+        }
+        
+        const row = button.closest('tr');
+        const cells = row.querySelectorAll('td');
+        
+        // Extract quiz data from the row
+        const quizData = {
+            id: cells[0].textContent,
+            title: cells[1].textContent,
+            subject: cells[2].textContent,
+            questions: cells[3].textContent,
+            duration: cells[4].textContent,
+            status: cells[5].querySelector('.badge').textContent
+        };
+        
+        // Handle View button (eye icon)
+        if (button.classList.contains('btn-outline-primary')) {
+            e.preventDefault();
+            showViewModal(quizData);
+        }
+        // Handle Edit button (pencil icon)
+        else if (button.classList.contains('btn-outline-warning')) {
+            e.preventDefault();
+            showEditModal(quizData, row);
+        }
+        // Handle Delete button (trash icon)
+        else if (button.classList.contains('btn-outline-danger')) {
+            e.preventDefault();
+            deleteQuiz(row);
+        }
+    });
+    
+    // Filter quizzes based on selected filters and search
+    function filterQuizzes() {
+        const subjectFilter = quizSubjectFilter ? quizSubjectFilter.value : '';
+        const statusFilter = quizStatusFilter ? quizStatusFilter.value : '';
+        const searchTerm = quizSearch ? quizSearch.value.toLowerCase() : '';
+        
+        const rows = quizTableBody.querySelectorAll('tr');
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            const subject = cells[2].textContent;
+            const status = cells[5].querySelector('.badge').textContent;
+            const title = cells[1].textContent.toLowerCase();
+            
+            // Check subject filter
+            const subjectMatch = subjectFilter === '' || subject.includes(subjectFilter);
+            
+            // Check status filter  
+            const statusMatch = statusFilter === '' || status.toLowerCase() === statusFilter.toLowerCase();
+            
+            // Check search term
+            const searchMatch = searchTerm === '' || 
+                               title.includes(searchTerm) || 
+                               subject.toLowerCase().includes(searchTerm);
+            
+            // Show/hide row based on all filters
+            if (subjectMatch && statusMatch && searchMatch) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Update row numbers after filtering
+        updateRowNumbers();
+    }
+    
+    // View Modal Functionality
+    function showViewModal(quizData) {
+        // Create or update view modal
+        let modal = document.getElementById('viewQuizModal');
+        
+        if (!modal) {
+            modal = createViewModal();
+            document.body.appendChild(modal);
+        }
+        
+        // Populate modal with quiz data
+        document.getElementById('viewQuizTitle').textContent = quizData.title;
+        document.getElementById('viewQuizSubject').textContent = quizData.subject;
+        document.getElementById('viewQuizQuestions').textContent = quizData.questions;
+        document.getElementById('viewQuizDuration').textContent = quizData.duration;
+        document.getElementById('viewQuizStatus').textContent = quizData.status;
+        
+        // Set status badge color
+        const statusBadge = document.getElementById('viewQuizStatus');
+        statusBadge.className = 'badge ' + getStatusColor(quizData.status);
+        
+        // Show modal
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+    }
+    
+    // Edit Modal Functionality
+    function showEditModal(quizData, row) {
+        // Create or update edit modal
+        let modal = document.getElementById('editQuizModal');
+        
+        if (!modal) {
+            modal = createEditModal();
+            document.body.appendChild(modal);
+        }
+        
+        // Populate form fields
+        document.getElementById('editQuizTitle').value = quizData.title;
+        document.getElementById('editQuizSubject').value = quizData.subject;
+        document.getElementById('editQuizQuestions').value = quizData.questions.replace(/\D/g, ''); // Extract numbers only
+        document.getElementById('editQuizDuration').value = quizData.duration.replace(/\D/g, ''); // Extract numbers only
+        
+        // Set status select
+        const statusSelect = document.getElementById('editQuizStatus');
+        statusSelect.value = quizData.status.toLowerCase();
+        
+        // Set up save handler
+        const saveButton = document.getElementById('saveQuizChanges');
+        saveButton.onclick = function() {
+            saveQuizChanges(quizData.id, row);
+        };
+        
+        // Show modal
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+    }
+    
+    // Save Quiz Changes
+    function saveQuizChanges(quizId, row) {
+        const title = document.getElementById('editQuizTitle').value;
+        const subject = document.getElementById('editQuizSubject').value;
+        const questions = document.getElementById('editQuizQuestions').value;
+        const duration = document.getElementById('editQuizDuration').value + ' mins';
+        const status = document.getElementById('editQuizStatus').value;
+        
+        // Update table row
+        const cells = row.querySelectorAll('td');
+        cells[1].textContent = title;
+        cells[2].textContent = subject;
+        cells[3].textContent = questions;
+        cells[4].textContent = duration;
+        
+        // Update status badge
+        const statusBadge = cells[5].querySelector('.badge');
+        statusBadge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        statusBadge.className = 'badge ' + getStatusColor(status);
+        
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('editQuizModal'));
+        modal.hide();
+    }
+    
+    // Delete Quiz Functionality
+    function deleteQuiz(row) {
+        const quizTitle = row.querySelector('td:nth-child(2)').textContent;
+        
+        if (confirm(`Are you sure you want to delete the quiz "${quizTitle}"? This action cannot be undone.`)) {
+            row.remove();
+            // Optionally update row numbers
+            updateRowNumbers();
+        }
+    }
+    
+    // Update row numbers after deletion or filtering
+    function updateRowNumbers() {
+        const visibleRows = quizTableBody.querySelectorAll('tr:not([style*=\"display: none\"])');
+        visibleRows.forEach((row, index) => {
+            row.querySelector('td:first-child').textContent = index + 1;
+        });
+    }
+    
+    // Helper function to get status badge color
+    function getStatusColor(status) {
+        switch(status.toLowerCase()) {
+            case 'published': return 'bg-success';
+            case 'draft': return 'bg-warning';
+            case 'archived': return 'bg-secondary';
+            default: return 'bg-secondary';
+        }
+    }
+    
+    // Create View Modal HTML
+    function createViewModal() {
+        const modalDiv = document.createElement('div');
+        modalDiv.innerHTML = `
+            <div class="modal fade" id="viewQuizModal" tabindex="-1" aria-labelledby="viewQuizModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="viewQuizModalLabel">Quiz Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Title:</div>
+                                <div class="col-sm-8" id="viewQuizTitle"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Subject:</div>
+                                <div class="col-sm-8" id="viewQuizSubject"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Questions:</div>
+                                <div class="col-sm-8" id="viewQuizQuestions"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Duration:</div>
+                                <div class="col-sm-8" id="viewQuizDuration"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Status:</div>
+                                <div class="col-sm-8">
+                                    <span id="viewQuizStatus" class="badge"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        return modalDiv.firstElementChild;
+    }
+    
+    // Create Edit Modal HTML
+    function createEditModal() {
+        const modalDiv = document.createElement('div');
+        modalDiv.innerHTML = `
+            <div class="modal fade" id="editQuizModal" tabindex="-1" aria-labelledby="editQuizModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editQuizModalLabel">Edit Quiz</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label class="form-label" for="editQuizTitle">Quiz Title</label>
+                                    <input class="form-control" type="text" id="editQuizTitle" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="editQuizSubject">Subject</label>
+                                    <select class="form-select" id="editQuizSubject">
+                                        <option value="MATH101">MATH101 - Calculus I</option>
+                                        <option value="PHYS101">PHYS101 - General Physics I</option>
+                                        <option value="CHEM101">CHEM101 - General Chemistry I</option>
+                                    </select>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="editQuizQuestions">Number of Questions</label>
+                                            <input class="form-control" type="number" id="editQuizQuestions" min="1" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="editQuizDuration">Duration (minutes)</label>
+                                            <input class="form-control" type="number" id="editQuizDuration" min="1" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="editQuizStatus">Status</label>
+                                    <select class="form-select" id="editQuizStatus">
+                                        <option value="published">Published</option>
+                                        <option value="draft">Draft</option>
+                                        <option value="archived">Archived</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="saveQuizChanges">Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        return modalDiv.firstElementChild;
+    }
+});
+</script>
+    <script>
+// Inlined from /assets/js/instructor/quiz.js\n// Quiz Management JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    // Create Quiz Modal functionality
+    const createQuizButton = document.querySelector('#createQuizModal .btn-primary');
+    
+    if (createQuizButton) {
+        createQuizButton.addEventListener('click', createQuiz);
+    }
+    
+    // Create Quiz Function
+    function createQuiz() {
+        // Get form values
+        const title = document.getElementById('quizTitle').value.trim();
+        const subject = document.getElementById('quizSubject').value;
+        const duration = document.getElementById('quizDuration').value.trim();
+        const attempts = document.getElementById('quizAttempts').value.trim();
+        const description = document.getElementById('quizDescription').value.trim();
+        
+        // Get question types
+        const mcqChecked = document.getElementById('mcqCheck').checked;
+        const tfChecked = document.getElementById('tfCheck').checked;
+        const essayChecked = document.getElementById('essayCheck').checked;
+        
+        // Validation
+        if (!title || !subject || !duration) {
+            alert('Please fill in all required fields: Title, Subject, and Duration');
+            return;
+        }
+        
+        if (!mcqChecked && !tfChecked && !essayChecked) {
+            alert('Please select at least one question type');
+            return;
+        }
+        
+        // Create new quiz row
+        addQuizToTable(title, subject, duration, attempts, description);
+        
+        // Reset form and close modal
+        document.querySelector('#createQuizModal form').reset();
+        const modal = bootstrap.Modal.getInstance(document.getElementById('createQuizModal'));
+        modal.hide();
+    }
+    
+    // Add quiz to table
+    function addQuizToTable(title, subject, duration, attempts, description) {
+        const tableBody = document.querySelector('table.table tbody');
+        const rows = tableBody.querySelectorAll('tr');
+        const nextNumber = rows.length + 1;
+        
+        // Create new row
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td scope="row">${nextNumber}</td>
+            <td>${title}</td>
+            <td>${subject}</td>
+            <td>0</td>
+            <td>${duration} mins</td>
+            <td><span class="badge bg-warning">Draft</span></td>
+            <td>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button class="btn btn-outline-primary" type="button">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-outline-warning" type="button">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" type="button">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        
+        tableBody.appendChild(newRow);
+        
+        // Update row numbers
+        updateRowNumbers();
+    }
+    
+    // Update row numbers after adding new quiz
+    function updateRowNumbers() {
+        const rows = document.querySelectorAll('table.table tbody tr');
+        rows.forEach((row, index) => {
+            row.querySelector('td:first-child').textContent = index + 1;
+        });
+    }
+    
+    // Initialize icons for existing rows
+    function initializeActionButtons() {
+        const rows = document.querySelectorAll('table.table tbody tr');
+        rows.forEach(row => {
+            const actionButtons = row.querySelectorAll('.btn-group .btn');
+            if (actionButtons.length === 3) {
+                // Check if the buttons already have proper content
+                if (!actionButtons[0].querySelector('i')) {
+                    actionButtons[0].innerHTML = '<i class="bi bi-eye"></i>';
+                    actionButtons[1].innerHTML = '<i class="bi bi-pencil"></i>';
+                    actionButtons[2].innerHTML = '<i class="bi bi-trash"></i>';
+                }
+                
+                // Convert from <a> tags to <button> for better semantics
+                if (actionButtons[0].tagName === 'A') {
+                    const buttonGroup = row.querySelector('.btn-group');
+                    buttonGroup.innerHTML = `
+                        <button class="btn btn-outline-primary" type="button">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-warning" type="button">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-danger" type="button">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    `;
+                }
+            }
+        });
+    }
+    
+    // Run initialization
+    setTimeout(initializeActionButtons, 100);
+});
+</script>
+</body>
+
+</html>
+
+
+
+
+

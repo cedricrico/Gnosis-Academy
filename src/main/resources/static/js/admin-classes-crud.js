@@ -10,6 +10,23 @@ document.addEventListener('DOMContentLoaded', function () {
     const successToast = document.getElementById('successToast');
     const errorToast = document.getElementById('errorToast');
 
+    // Optional UI pieces on Admin-dashboard.html (Class Management section).
+    const sectionAccordion = document.getElementById('sectionAccordion');
+    const masterlistTableBody = document.getElementById('masterlistTableBody');
+    const masterlistSearchInput = document.getElementById('masterlistSearchInput');
+    const masterlistClassLabel = document.getElementById('masterlistClassLabel');
+    const masterlistTabLink = document.querySelector('.nav-tabs a[href="#masterlistTab"]');
+    const studentManagementTabLink = document.querySelector('.nav-tabs a[href="#studentManagementTab"]');
+
+    const addStudentBtn = document.getElementById('addStudentBtn');
+    const studentIdInput = document.getElementById('studentIdInput');
+    const studentNameInput = document.getElementById('studentNameInput');
+    const currentStudentsList = document.getElementById('currentStudentsList');
+    const droppedStudentsList = document.getElementById('droppedStudentsList');
+
+    const classFilterSection = document.getElementById('classFilterSection');
+    const classFilterSubject = document.getElementById('classFilterSubject');
+
     if (!createClassForm || !subjectsContainer || !recentClassesTableBody || !courseSelect || !sectionNameInput) {
         return;
     }
@@ -21,6 +38,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let editingClassId = null;
     let classesCache = [];
+    let masterlistCache = [];
+    let activeMasterlistClassId = null;
+
+    let classFilterState = {
+        section: '',
+        subject: ''
+    };
     let uniqueIdSeed = Date.now();
     let instructorOptions = readInstructorOptionsFromDom();
 
@@ -40,6 +64,15 @@ document.addEventListener('DOMContentLoaded', function () {
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
+    }
+
+    function equalsIgnoreCase(left, right) {
+        const l = normalizeText(left);
+        const r = normalizeText(right);
+        if (!l || !r) {
+            return false;
+        }
+        return l.toLowerCase() === r.toLowerCase();
     }
 
     function showLoading() {
@@ -354,12 +387,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderClassRows() {
-        if (!Array.isArray(classesCache) || classesCache.length === 0) {
+        const filtered = getFilteredClasses();
+        if (!Array.isArray(filtered) || filtered.length === 0) {
             recentClassesTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No classes created yet.</td></tr>';
             return;
         }
 
-        const rowsHtml = classesCache.map(schoolClass => {
+        const rowsHtml = filtered.map(schoolClass => {
             const subjects = Array.isArray(schoolClass.subjects) ? schoolClass.subjects : [];
 
             const subjectsHtml = subjects
@@ -405,6 +439,269 @@ document.addEventListener('DOMContentLoaded', function () {
         recentClassesTableBody.innerHTML = rowsHtml;
     }
 
+    function renderSectionAccordion() {
+        if (!sectionAccordion) {
+            return;
+        }
+
+        const filtered = getFilteredClasses();
+        if (!Array.isArray(filtered) || filtered.length === 0) {
+            sectionAccordion.innerHTML = `
+                <div class="text-muted small p-3">
+                    No matching classes found.
+                </div>
+            `;
+            return;
+        }
+
+        sectionAccordion.innerHTML = filtered.map((schoolClass, index) => {
+            const classId = escapeHtml(schoolClass.id);
+            const collapseId = `sectionClass-${classId}`;
+            const headingId = `headingClass-${classId}`;
+            const show = index === 0 ? ' show' : '';
+            const expanded = index === 0 ? 'true' : 'false';
+            const collapsed = index === 0 ? '' : ' collapsed';
+
+            const subjects = Array.isArray(schoolClass.subjects) ? schoolClass.subjects : [];
+            const subjectSummary = subjects.length > 0
+                ? subjects.map(subject => escapeHtml(subject.code || subject.name || '-')).join(', ')
+                : '-';
+
+            return `
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="${headingId}">
+                        <button class="accordion-button${collapsed}" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="${expanded}" aria-controls="${collapseId}">
+                            ${escapeHtml(schoolClass.courseName)} - ${escapeHtml(schoolClass.sectionName)}
+                        </button>
+                    </h2>
+                    <div id="${collapseId}" class="accordion-collapse collapse${show}" data-bs-parent="#sectionAccordion" aria-labelledby="${headingId}">
+                        <div class="accordion-body">
+                            <p class="mb-1"><strong>Subjects:</strong> <span class="text-muted">${subjectSummary}</span></p>
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-outline-primary" data-admin-action="open-masterlist" data-class-id="${classId}">Open Masterlist</button>
+                                <button type="button" class="btn btn-outline-success" data-admin-action="manage-students" data-class-id="${classId}">Manage Students</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function showMasterlistTab() {
+        if (masterlistTabLink && window.bootstrap && bootstrap.Tab) {
+            bootstrap.Tab.getOrCreateInstance(masterlistTabLink).show();
+            return;
+        }
+
+        const masterlistTab = document.getElementById('masterlistTab');
+        if (masterlistTab) {
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('show', 'active'));
+            masterlistTab.classList.add('show', 'active');
+        }
+    }
+
+    function showStudentManagementTab() {
+        if (studentManagementTabLink && window.bootstrap && bootstrap.Tab) {
+            bootstrap.Tab.getOrCreateInstance(studentManagementTabLink).show();
+            return;
+        }
+
+        const tab = document.getElementById('studentManagementTab');
+        if (tab) {
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('show', 'active'));
+            tab.classList.add('show', 'active');
+        }
+    }
+
+    function renderEnrollmentLists() {
+        if (!currentStudentsList || !droppedStudentsList) {
+            return;
+        }
+
+        if (!activeMasterlistClassId) {
+            currentStudentsList.innerHTML = '<div class="text-muted small">Select a class to manage students.</div>';
+            droppedStudentsList.innerHTML = '<div class="text-muted small">Select a class to view dropped students.</div>';
+            return;
+        }
+
+        const enrolled = [];
+        const dropped = [];
+
+        (Array.isArray(masterlistCache) ? masterlistCache : []).forEach(student => {
+            const status = normalizeText(student.status).toLowerCase();
+            if (status.includes('drop')) {
+                dropped.push(student);
+            } else {
+                enrolled.push(student);
+            }
+        });
+
+        if (enrolled.length === 0) {
+            currentStudentsList.innerHTML = '<div class="text-muted small">No enrolled students.</div>';
+        } else {
+            currentStudentsList.innerHTML = enrolled.map(student => `
+                <div class="d-flex justify-content-between align-items-center list-group-item" data-student-id="${escapeHtml(student.studentId)}">
+                    <span>${escapeHtml(student.fullName)} (${escapeHtml(student.studentId)})</span>
+                    <button class="btn btn-outline-danger btn-sm remove-student" type="button">Drop</button>
+                </div>
+            `).join('');
+        }
+
+        if (dropped.length === 0) {
+            droppedStudentsList.innerHTML = '<div class="text-muted small">No dropped students.</div>';
+        } else {
+            droppedStudentsList.innerHTML = dropped.map(student => `
+                <div class="d-flex justify-content-between align-items-center list-group-item" data-student-id="${escapeHtml(student.studentId)}">
+                    <span>${escapeHtml(student.fullName)} (${escapeHtml(student.studentId)})</span>
+                    <button class="btn btn-outline-success btn-sm reenroll-student" type="button">Re-enroll</button>
+                </div>
+            `).join('');
+        }
+    }
+
+    function getFilteredClasses() {
+        const classes = Array.isArray(classesCache) ? classesCache : [];
+        const sectionFilter = normalizeText(classFilterState.section);
+        const subjectFilter = normalizeText(classFilterState.subject);
+
+        if (!sectionFilter && !subjectFilter) {
+            return classes;
+        }
+
+        return classes.filter(schoolClass => {
+            if (sectionFilter && !equalsIgnoreCase(schoolClass.sectionName, sectionFilter)) {
+                return false;
+            }
+
+            if (subjectFilter) {
+                const subjects = Array.isArray(schoolClass.subjects) ? schoolClass.subjects : [];
+                const matches = subjects.some(subject => {
+                    return equalsIgnoreCase(subject.code, subjectFilter) || equalsIgnoreCase(subject.name, subjectFilter);
+                });
+                if (!matches) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    }
+
+    function buildSortedUnique(values) {
+        return Array.from(new Set(values.map(value => normalizeText(value)).filter(Boolean)))
+            .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+    }
+
+    function populateClassFilters() {
+        if (!classFilterSection && !classFilterSubject) {
+            return;
+        }
+
+        const sections = [];
+        const subjects = [];
+
+        (Array.isArray(classesCache) ? classesCache : []).forEach(schoolClass => {
+            sections.push(schoolClass.sectionName);
+            const list = Array.isArray(schoolClass.subjects) ? schoolClass.subjects : [];
+            list.forEach(subject => {
+                // Use code when available, fall back to name.
+                subjects.push(subject.code || subject.name);
+            });
+        });
+
+        const sectionOptions = buildSortedUnique(sections);
+        const subjectOptions = buildSortedUnique(subjects);
+
+        if (classFilterSection) {
+            const previous = normalizeText(classFilterSection.value);
+            classFilterSection.innerHTML = ['<option value="">All Sections</option>']
+                .concat(sectionOptions.map(section => `<option value="${escapeHtml(section)}">${escapeHtml(section)}</option>`))
+                .join('');
+            classFilterSection.value = previous && sectionOptions.some(opt => equalsIgnoreCase(opt, previous)) ? previous : '';
+            classFilterState.section = classFilterSection.value;
+        }
+
+        if (classFilterSubject) {
+            const previous = normalizeText(classFilterSubject.value);
+            classFilterSubject.innerHTML = ['<option value="">All Subjects</option>']
+                .concat(subjectOptions.map(subject => `<option value="${escapeHtml(subject)}">${escapeHtml(subject)}</option>`))
+                .join('');
+            classFilterSubject.value = previous && subjectOptions.some(opt => equalsIgnoreCase(opt, previous)) ? previous : '';
+            classFilterState.subject = classFilterSubject.value;
+        }
+    }
+
+    function rerenderClassManagementViews() {
+        renderClassRows();
+        renderSectionAccordion();
+    }
+
+    function renderMasterlistRows(filterText) {
+        if (!masterlistTableBody) {
+            return;
+        }
+
+        const query = normalizeText(filterText).toLowerCase();
+        const rows = (Array.isArray(masterlistCache) ? masterlistCache : []).filter(student => {
+            if (!query) {
+                return true;
+            }
+            const id = normalizeText(student.studentId).toLowerCase();
+            const name = normalizeText(student.fullName).toLowerCase();
+            return id.includes(query) || name.includes(query);
+        });
+
+        if (rows.length === 0) {
+            masterlistTableBody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-muted small">No students found.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        masterlistTableBody.innerHTML = rows.map(student => {
+            const status = normalizeText(student.status) || 'Enrolled';
+            const badgeClass = status.toLowerCase().includes('drop') ? 'bg-warning' : 'bg-success';
+            return `
+                <tr>
+                    <td>${escapeHtml(student.studentId)}</td>
+                    <td>${escapeHtml(student.fullName)}</td>
+                    <td><span class="badge ${badgeClass}">${escapeHtml(status)}</span></td>
+                    <td><span class="text-muted small">-</span></td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    async function loadMasterlistForClass(classId) {
+        if (!classId) {
+            return;
+        }
+
+        showLoading();
+        try {
+            const data = await fetchJson(`/api/admin/classes/${classId}/masterlist`);
+            masterlistCache = Array.isArray(data) ? data : [];
+            activeMasterlistClassId = classId;
+
+            const classItem = classesCache.find(item => Number(item.id) === Number(classId));
+            if (masterlistClassLabel) {
+                masterlistClassLabel.textContent = classItem
+                    ? `(${classItem.courseName} - ${classItem.sectionName})`
+                    : '(Selected class)';
+            }
+
+            renderMasterlistRows(masterlistSearchInput ? masterlistSearchInput.value : '');
+            renderEnrollmentLists();
+        } catch (error) {
+            showToast('error', error.message || 'Unable to load masterlist.');
+        } finally {
+            hideLoading();
+        }
+    }
+
     function setFormForEditing(schoolClass) {
         editingClassId = schoolClass.id;
         setSubmitMode('edit');
@@ -444,7 +741,21 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!Array.isArray(classesCache)) {
             classesCache = [];
         }
-        renderClassRows();
+        populateClassFilters();
+        rerenderClassManagementViews();
+
+        if (activeMasterlistClassId) {
+            const stillExists = classesCache.some(item => Number(item.id) === Number(activeMasterlistClassId));
+            if (!stillExists) {
+                activeMasterlistClassId = null;
+                masterlistCache = [];
+                if (masterlistClassLabel) {
+                    masterlistClassLabel.textContent = '(No class selected)';
+                }
+                renderMasterlistRows(masterlistSearchInput ? masterlistSearchInput.value : '');
+                renderEnrollmentLists();
+            }
+        }
     }
 
     async function refreshInstructorOptions() {
@@ -538,6 +849,138 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+
+    if (sectionAccordion) {
+        sectionAccordion.addEventListener('click', function (event) {
+            const masterlistBtn = event.target.closest('[data-admin-action="open-masterlist"]');
+            const manageStudentsBtn = event.target.closest('[data-admin-action="manage-students"]');
+            const button = masterlistBtn || manageStudentsBtn;
+            if (!button) {
+                return;
+            }
+
+            const classId = Number(button.getAttribute('data-class-id'));
+            if (!classId) {
+                return;
+            }
+
+            if (manageStudentsBtn) {
+                showStudentManagementTab();
+            } else {
+                showMasterlistTab();
+            }
+
+            loadMasterlistForClass(classId);
+        });
+    }
+
+    if (masterlistSearchInput) {
+        masterlistSearchInput.addEventListener('input', function () {
+            renderMasterlistRows(masterlistSearchInput.value);
+        });
+    }
+
+    if (classFilterSection) {
+        classFilterSection.addEventListener('change', function () {
+            classFilterState.section = classFilterSection.value;
+            rerenderClassManagementViews();
+        });
+    }
+
+    if (classFilterSubject) {
+        classFilterSubject.addEventListener('change', function () {
+            classFilterState.subject = classFilterSubject.value;
+            rerenderClassManagementViews();
+        });
+    }
+
+    if (addStudentBtn) {
+        addStudentBtn.addEventListener('click', async function () {
+            const studentId = normalizeText(studentIdInput ? studentIdInput.value : '');
+            if (!activeMasterlistClassId) {
+                showToast('error', 'Select a class first (Section Table -> Manage Students).');
+                return;
+            }
+            if (!studentId) {
+                showToast('error', 'Please enter Student ID.');
+                return;
+            }
+
+            showLoading();
+            try {
+                await fetchJson(`/api/admin/classes/${activeMasterlistClassId}/students/assign`, {
+                    method: 'POST',
+                    body: JSON.stringify({ studentId })
+                });
+                showToast('success', `Student ${studentId} added to class.`);
+                if (studentIdInput) {
+                    studentIdInput.value = '';
+                }
+                if (studentNameInput) {
+                    studentNameInput.value = '';
+                }
+                await loadMasterlistForClass(activeMasterlistClassId);
+            } catch (error) {
+                showToast('error', error.message || 'Unable to add student.');
+            } finally {
+                hideLoading();
+            }
+        });
+    }
+
+    if (currentStudentsList) {
+        currentStudentsList.addEventListener('click', async function (event) {
+            const btn = event.target.closest('.remove-student');
+            if (!btn) {
+                return;
+            }
+            const item = btn.closest('[data-student-id]');
+            const studentId = item ? item.getAttribute('data-student-id') : '';
+            if (!activeMasterlistClassId || !studentId) {
+                return;
+            }
+
+            showLoading();
+            try {
+                await fetchJson(`/api/admin/classes/${activeMasterlistClassId}/students/${encodeURIComponent(studentId)}/drop`, {
+                    method: 'POST'
+                });
+                showToast('success', `Student ${studentId} dropped.`);
+                await loadMasterlistForClass(activeMasterlistClassId);
+            } catch (error) {
+                showToast('error', error.message || 'Unable to drop student.');
+            } finally {
+                hideLoading();
+            }
+        });
+    }
+
+    if (droppedStudentsList) {
+        droppedStudentsList.addEventListener('click', async function (event) {
+            const btn = event.target.closest('.reenroll-student');
+            if (!btn) {
+                return;
+            }
+            const item = btn.closest('[data-student-id]');
+            const studentId = item ? item.getAttribute('data-student-id') : '';
+            if (!activeMasterlistClassId || !studentId) {
+                return;
+            }
+
+            showLoading();
+            try {
+                await fetchJson(`/api/admin/classes/${activeMasterlistClassId}/students/${encodeURIComponent(studentId)}/reenroll`, {
+                    method: 'POST'
+                });
+                showToast('success', `Student ${studentId} re-enrolled.`);
+                await loadMasterlistForClass(activeMasterlistClassId);
+            } catch (error) {
+                showToast('error', error.message || 'Unable to re-enroll student.');
+            } finally {
+                hideLoading();
+            }
+        });
+    }
 
     subjectsContainer.addEventListener('click', function (event) {
         const removeButton = event.target.closest('.remove-subject');

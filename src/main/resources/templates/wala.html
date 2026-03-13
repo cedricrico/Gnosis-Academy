@@ -12,6 +12,7 @@
     <p><strong>Created at (epoch ms):</strong> <span th:text="${createdAt}">0</span></p>
     <p><strong>Last accessed (epoch ms):</strong> <span th:text="${lastAccessedAt}">0</span></p>
     <p><strong>Timeout (seconds):</strong> <span th:text="${maxInactiveInterval}">0</span></p>
+    <p><strong>Status:</strong> <span th:text="${studentStatus}">n/a</span></p>
 
     <h2>Available Classes</h2>
     <div th:if="${#lists.isEmpty(classes)}">

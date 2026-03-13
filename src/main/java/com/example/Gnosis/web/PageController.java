@@ -26,16 +26,8 @@ public class PageController {
 
 	@GetMapping("/student/home")
 	public String walaPage(Authentication authentication, HttpSession session, Model model) {
-		String studentId = authentication != null ? authentication.getName() : "anonymous";
-		model.addAttribute("studentId", studentId);
-		model.addAttribute("sessionId", session.getId());
-		model.addAttribute("createdAt", session.getCreationTime());
-		model.addAttribute("lastAccessedAt", session.getLastAccessedTime());
-		model.addAttribute("maxInactiveInterval", session.getMaxInactiveInterval());
-		User user = userRepository.findByStudentId(studentId).orElse(null);
-		String course = user != null ? user.getCourse() : null;
-		String section = user != null ? user.getSectionName() : null;
-		model.addAttribute("classes", schoolClassService.findForStudent(course, section));
-		return "wala";
+		// Backward compatible route: older configs may still redirect here after login.
+		// The new student UI lives at /student/dashboard.
+		return "redirect:/student/dashboard";
 	}
 }

@@ -1,5 +1,7 @@
 package com.example.Gnosis.admin.api;
 
+import com.example.Gnosis.admin.dto.AdminClassStudentAssignRequest;
+import com.example.Gnosis.admin.dto.AdminMasterlistStudentDto;
 import com.example.Gnosis.admin.service.AdminClassService;
 import com.example.Gnosis.schoolclass.SchoolClassDto;
 import org.springframework.http.HttpStatus;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -34,6 +37,38 @@ public class AdminClassController {
 		return adminClassService.getClassById(classId)
 				.map(ResponseEntity::ok)
 				.orElseGet(() -> ResponseEntity.notFound().build());
+	}
+
+	@GetMapping("/{classId}/masterlist")
+	public List<AdminMasterlistStudentDto> getMasterlist(@PathVariable Long classId) {
+		return adminClassService.listMasterlist(classId);
+	}
+
+	@PostMapping("/{classId}/students/assign")
+	public ResponseEntity<Void> assignStudent(
+			@PathVariable Long classId,
+			@Valid @RequestBody AdminClassStudentAssignRequest payload
+	) {
+		adminClassService.assignStudentToClass(classId, payload);
+		return ResponseEntity.noContent().build();
+	}
+
+	@PostMapping("/{classId}/students/{studentId}/drop")
+	public ResponseEntity<Void> dropStudent(
+			@PathVariable Long classId,
+			@PathVariable String studentId
+	) {
+		adminClassService.dropStudent(classId, studentId);
+		return ResponseEntity.noContent().build();
+	}
+
+	@PostMapping("/{classId}/students/{studentId}/reenroll")
+	public ResponseEntity<Void> reenrollStudent(
+			@PathVariable Long classId,
+			@PathVariable String studentId
+	) {
+		adminClassService.reenrollStudent(classId, studentId);
+		return ResponseEntity.noContent().build();
 	}
 
 	@PostMapping

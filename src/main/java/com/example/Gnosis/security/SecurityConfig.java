@@ -123,7 +123,8 @@ public class SecurityConfig {
 						.loginProcessingUrl("/professor/login")
 						.usernameParameter("employeeId")
 						.passwordParameter("password")
-						.defaultSuccessUrl("/professor/home", true)
+						// Land on the new instructor UI after login.
+						.defaultSuccessUrl("/professor/dashboard", true)
 						.failureUrl("/Professor-login?error")
 						.permitAll()
 				)
@@ -180,6 +181,7 @@ public class SecurityConfig {
 								"/h2-console/**"
 
 						).permitAll()
+						.requestMatchers("/student/**").hasRole("STUDENT")
 						.anyRequest().authenticated()
 				)
 				.formLogin(form -> form
@@ -187,7 +189,8 @@ public class SecurityConfig {
 						.loginProcessingUrl("/login")
 						.usernameParameter("studentId")
 						.passwordParameter("password")
-						.defaultSuccessUrl("/student/home", true)
+						// Land on the new student UI after login.
+						.defaultSuccessUrl("/student/dashboard", true)
 						.failureUrl("/Student-login?error")
 						.permitAll()
 				)

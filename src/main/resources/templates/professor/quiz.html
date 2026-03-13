@@ -1,0 +1,1101 @@
+﻿<!DOCTYPE html>
+<html data-bs-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Quizzes - Instructor Dashboard</title>
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+    <style>
+/* styles.css\n   Combined stylesheet for instructor + student dashboards.\n   Source: Instructorstyle.css + Studentstyle.css\n*/\n\n/* ==== Instructor ==== */\n/* Custom Styles for Instructor Dashboard */
+
+.sidebar {
+  min-height: calc(100vh - 60px);
+}
+
+.nav-link.active {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 0.375rem;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.table th {
+  background-color: #f8f9fa;
+}
+
+.badge {
+  font-size: 0.75em;
+}
+
+.btn-group .btn {
+  border-radius: 0 !important;
+}
+
+.btn-group .btn:first-child {
+  border-top-left-radius: 0.375rem !important;
+  border-bottom-left-radius: 0.375rem !important;
+}
+
+.btn-group .btn:last-child {
+  border-top-right-radius: 0.375rem !important;
+  border-bottom-right-radius: 0.375rem !important;
+}
+
+.modal-header {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.navbar-brand {
+  font-weight: 500;
+}
+
+.sidebar-heading {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.list-group-item-action:hover {
+  background-color: #e9ecef;
+}
+
+.card-footer {
+  background-color: #f8f9fa;
+}
+
+.pagination .page-link {
+  color: #0d6efd;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+@media (max-width: 767.98px) {
+  .sidebar {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+}
+
+/* Announcement filtering animations */
+
+.announcement-card {
+  transition: all 0.3s ease;
+}
+
+.announcement-card {
+  transition: all 0.3s ease;
+}
+
+.announcement-card[style*="display: none"] {
+  display: none !important;
+}
+
+/* Ensure containers don't leave empty space */
+
+.row.g-4 .col-12[style*="display: none"] {
+  display: none !important;
+}
+
+/* Spin animation for refresh button */
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spin-animation {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+/* Fix for dropdown options in create assignment modal */
+
+#assignmentSubject option:not(:first-child) {
+  color: inherit;
+}
+
+/* Add spacing for action buttons icons */
+
+.btn-group-sm icon {
+  margin: 0;
+  padding: 0;
+}
+
+.btn-group-sm i {
+  font-size: 0.875rem;
+}
+
+/* Ensure action buttons are properly spaced */
+
+.btn-group .btn {
+  padding: 0.25rem 0.5rem;
+}
+
+/* Make sure buttons maintain proper styling when dynamically added */
+
+.btn-group .btn-outline-primary:hover, .btn-group .btn-outline-warning:hover, .btn-group .btn-outline-danger:hover {
+  border-color: currentColor;
+}
+
+/* Ensure event delegation works correctly */
+
+table.table tbody tr td .btn-group {
+  margin: 0;
+}
+
+\n\n/* ==== Student ==== */\n/* Custom styles for Student Dashboard */
+
+/* Top navbar styling */
+
+.navbar {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0;
+}
+
+.navbar-brand {
+  font-size: 1.4rem;
+  padding: 0.5rem 0;
+}
+
+.navbar-nav .nav-link {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  margin: 0 2px;
+  transition: all 0.2s ease;
+}
+
+.navbar-nav .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.navbar-nav .nav-link.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: 500;
+}
+
+/* Profile dropdown styling */
+
+.navbar-nav .dropdown-toggle {
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.navbar-nav .dropdown-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.navbar-nav .dropdown-menu {
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  min-width: 220px;
+}
+
+.navbar-nav .dropdown-item {
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  margin: 2px 8px;
+  width: auto;
+}
+
+.navbar-nav .dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.navbar-nav .dropdown-divider {
+  margin: 0.5rem 0;
+}
+
+/* Sidebar styling */
+
+.sidebar {
+  min-height: calc(100vh - 70px);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+  padding: 1rem 0;
+}
+
+/* Mobile sidebar toggle button */
+
+#sidebarToggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0d6efd;
+  border: 1px solid #0d6efd;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+#sidebarToggle:hover {
+  background-color: #0b5ed7;
+  border-color: #0b5ed7;
+}
+
+#sidebarToggle:active {
+  transform: scale(0.95);
+}
+
+/* Style the navbar toggler icon */
+
+#sidebarToggle .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+  width: 1.5em;
+  height: 1.5em;
+}
+
+/* Add focus styling for accessibility */
+
+#sidebarToggle:focus {
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  outline: 0;
+}
+
+/* Mobile sidebar toggle */
+
+.sidebar {
+  transition: transform 0.3s ease-in-out;
+}
+
+@media (max-width: 767.98px) {
+  .sidebar {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    bottom: 0;
+    z-index: 1040;
+    transform: translateX(-100%);
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+    width: 250px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .sidebar.show {
+    transform: translateX(0);
+  }
+}
+
+/* Hide sidebar by default on mobile */
+
+@media (max-width: 767.98px) {
+  .sidebar:not(.show) {
+    display: block;
+  }
+}
+
+.sidebar .nav-link {
+  padding: 0.75rem 1rem;
+  color: #495057;
+  border-radius: 8px;
+  margin: 0.25rem 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.sidebar .nav-link:hover {
+  background-color: #e9ecef;
+  color: #0d6efd;
+}
+
+.sidebar .nav-link.active {
+  background-color: #0d6efd;
+  color: white;
+  box-shadow: 0 2px 5px rgba(13, 110, 253, 0.3);
+}
+
+.sidebar .nav-link.text-danger:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+/* Main content area */
+
+main {
+  padding-top: 1.5rem;
+}
+
+/* Card enhancements */
+
+.card {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Table styling */
+
+.table-hover tbody tr:hover {
+  background-color: rgba(13, 110, 253, 0.04);
+}
+
+/* Status badge styling */
+
+.badge {
+  font-size: 0.85em;
+  padding: 0.4em 0.75em;
+  border-radius: 20px;
+}
+
+/* Responsive adjustments */
+
+@media (max-width: 767.98px) {
+  .navbar-collapse {
+    padding: 1rem 0;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .navbar-nav .nav-link {
+    margin: 0.25rem 0;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .navbar-nav .dropdown-toggle {
+    margin-top: 0.5rem;
+  }
+}
+
+/* Body padding to account for fixed navbar */
+
+body {
+  padding-top: 70px;
+  background-color: #f8f9fa;
+}
+
+/* Container adjustments */
+
+.container-fluid {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+/* Mobile view improvements */
+
+@media (max-width: 576px) {
+  .container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  body {
+    padding-top: 65px;
+  }
+}
+
+\n
+
+</style>\n</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg bg-primary navbar-dark">
+        <div class="container-fluid"><a class="navbar-brand" href="/professor/dashboard"><svg class="bi bi-mortarboard-fill me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.917l7.5 3a.5.5 0 0 0 .372 0L14 7.14V13a1 1 0 0 0-1 1v2h3v-2a1 1 0 0 0-1-1V6.739l.686-.275a.5.5 0 0 0 .025-.917l-7.5-3.5Z"></path>
+                    <path d="M4.176 9.032a.5.5 0 0 0-.656.327l-.5 1.7a.5.5 0 0 0 .294.605l4.5 1.8a.5.5 0 0 0 .372 0l4.5-1.8a.5.5 0 0 0 .294-.605l-.5-1.7a.5.5 0 0 0-.656-.327L8 10.466z"></path>
+                </svg>Instructor Dashboard </a><button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" type="button"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="/professor/dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/professor/sections">Sections</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/professor/profile">Profile</a></li>
+                </ul>
+                <div class="d-flex align-items-center"><span class="text-white me-3 navbar-text">Welcome, Instructor!</span><a class="btn btn-outline-light btn-sm" role="button" href="/professor/profile"><svg class="bi bi-person-circle" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"></path>
+                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"></path>
+                        </svg> Profile </a></div>
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 bg-light d-md-block sidebar collapse show">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item"><a class="nav-link" href="/professor/sections"><svg class="bi bi-collection me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M2.5 3.5a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1zm2-2a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1zM0 13a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 16 13V6a1.5 1.5 0 0 0-1.5-1.5h-13A1.5 1.5 0 0 0 0 6zm1.5.5A.5.5 0 0 1 1 13V6a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5z"></path>
+                                </svg> Sections </a></li>
+                        <li class="nav-item"><a class="nav-link" href="/professor/profile"><svg class="bi bi-person me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"></path>
+                                </svg> Profile </a></li>
+                    </ul>
+                    <h6 class="text-muted d-flex justify-content-between align-items-center mt-4 mb-1 px-3 sidebar-heading"><span>Quick Actions</span></h6>
+                    <ul class="nav flex-column">
+                        <li class="nav-item"><a class="nav-link" href="/professor/announcements"><svg class="bi bi-megaphone me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M13 2.5a1.5 1.5 0 0 1 3 0v11a1.5 1.5 0 0 1-3 0v-.214c-2.162-1.241-4.49-1.843-6.912-2.083l.405 2.712A1 1 0 0 1 5.51 15.1h-.548a1 1 0 0 1-.916-.599l-1.85-3.49a68.14 68.14 0 0 0-.202-.003A2.014 2.014 0 0 1 0 9V7a2.02 2.02 0 0 1 1.992-2.013 74.663 74.663 0 0 0 2.483-.075c3.043-.154 6.148-.849 8.525-2.199zm1 0v11a.5.5 0 0 0 1 0v-11a.5.5 0 0 0-1 0m-1 1.35c-2.344 1.205-5.209 1.842-8 2.033v4.233c.18.01.359.022.537.036 2.568.189 5.093.744 7.463 1.993V3.85zm-9 6.215v-4.13a95.09 95.09 0 0 1-1.992.052A1.02 1.02 0 0 0 1 7v2c0 .55.448 1.002 1.006 1.009A60.49 60.49 0 0 1 4 10.065m-.657.975 1.609 3.037.01.024h.548l-.002-.014-.443-2.966a68.019 68.019 0 0 0-1.722-.082z"></path>
+                                </svg> Announcements </a></li>
+                        <li class="nav-item"><a class="nav-link" href="/professor/assignments"><svg class="bi bi-journal-bookmark me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M6 8V1h1v6.117L8.743 6.07a.5.5 0 0 1 .514 0L11 7.117V1h1v7a.5.5 0 0 1-.757.429L9 7.083 6.757 8.43A.5.5 0 0 1 6 8"></path>
+                                    <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2"></path>
+                                    <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z"></path>
+                                </svg> Assignments </a></li>
+                        <li class="nav-item"><a class="nav-link" href="/professor/lessons"><svg class="bi bi-file-earmark-text me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"></path>
+                                    <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"></path>
+                                </svg> Lessons </a></li>
+                        <li class="nav-item"><a class="nav-link active" href="/professor/quiz"><svg class="bi bi-question-circle me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                    <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94"></path>
+                                </svg> Quizzes </a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap flex-md-nowrap pt-3 mb-3 pb-2 border-bottom">
+                    <h1 class="h2">Quizzes</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2" role="group"><button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#createQuizModal"><svg class="bi bi-plus-circle" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                </svg> New Quiz </button></div>
+                        <div class="btn-group me-2" role="group"><button class="btn btn-outline-secondary btn-sm" type="button"><svg class="bi bi-download" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
+                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"></path>
+                                </svg> Export </button></div>
+                        <div class="btn-group" role="group"><button class="btn btn-outline-success btn-sm" type="button"><svg class="bi bi-arrow-repeat" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"></path>
+                                    <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"></path>
+                                </svg> Refresh </button></div>
+                    </div>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4"><label class="form-label" for="quizSubjectFilter">Filter by Subject</label><select class="form-select" id="quizSubjectFilter">
+                                    <option value="" selected="">All Subjects</option>
+                                    <option value="MATH101">MATH101 - Calculus I</option>
+                                    <option value="PHYS101">PHYS101 - General Physics I</option>
+                                    <option value="CHEM101">CHEM101 - General Chemistry I</option>
+                                </select></div>
+                            <div class="col-md-4"><label class="form-label" for="quizStatusFilter">Filter by Status</label><select class="form-select" id="quizStatusFilter">
+                                    <option value="" selected="">All Statuses</option>
+                                    <option value="Published">Published</option>
+                                    <option value="Draft">Draft</option>
+                                    <option value="Archived">Archived</option>
+                                </select></div>
+                            <div class="col-md-4"><label class="form-label" for="quizSearch">Search</label><input type="text" class="form-control" id="quizSearch" placeholder="Search quizzes..."></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0 card-title">Quiz List</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Title</th>
+                                        <th scope="col">Subject</th>
+                                        <th scope="col">Questions</th>
+                                        <th scope="col">Duration</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td scope="row">1</td>
+                                        <td>Functions &amp; Graphs Quiz</td>
+                                        <td>MATH101</td>
+                                        <td>15</td>
+                                        <td>30 mins</td>
+                                        <td><span class="badge bg-success">Published</span></td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group"><a class="btn btn-outline-primary" role="button" href="#"><svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
+                                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
+                                                    </svg></a><a class="btn btn-outline-warning" role="button" href="#"><svg class="bi bi-pencil" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"></path>
+                                                    </svg></a><a class="btn btn-outline-danger" role="button" href="#"><svg class="bi bi-trash" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
+                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
+                                                    </svg></a></div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td scope="row">2</td>
+                                        <td>Kinematics Quiz</td>
+                                        <td>PHYS101</td>
+                                        <td>12</td>
+                                        <td>25 mins</td>
+                                        <td><span class="badge bg-success">Published</span></td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group"><a class="btn btn-outline-primary" role="button" href="#"><svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
+                                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
+                                                    </svg></a><a class="btn btn-outline-warning" role="button" href="#"><svg class="bi bi-pencil" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"></path>
+                                                    </svg></a><a class="btn btn-outline-danger" role="button" href="#"><svg class="bi bi-trash" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
+                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
+                                                    </svg></a></div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td scope="row">3</td>
+                                        <td>Chemical Bonding Quiz</td>
+                                        <td>CHEM101</td>
+                                        <td>20</td>
+                                        <td>40 mins</td>
+                                        <td><span class="badge bg-warning">Draft</span></td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group"><a class="btn btn-outline-primary" role="button" href="#"><svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
+                                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
+                                                    </svg></a><a class="btn btn-outline-warning" role="button" href="#"><svg class="bi bi-pencil" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"></path>
+                                                    </svg></a><a class="btn btn-outline-danger" role="button" href="#"><svg class="bi bi-trash" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
+                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
+                                                    </svg></a></div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td scope="row">4</td>
+                                        <td>Integration Techniques</td>
+                                        <td>MATH101</td>
+                                        <td>18</td>
+                                        <td>35 mins</td>
+                                        <td><span class="badge bg-secondary">Archived</span></td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group"><a class="btn btn-outline-primary" role="button" href="#"><svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
+                                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
+                                                    </svg></a><a class="btn btn-outline-warning" role="button" href="#"><svg class="bi bi-pencil" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"></path>
+                                                    </svg></a><a class="btn btn-outline-danger" role="button" href="#"><svg class="bi bi-trash" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
+                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
+                                                    </svg></a></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" role="dialog" tabindex="-1" id="createQuizModal" aria-labelledby="createQuizModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createQuizModalLabel">Create New Quiz</h5><button class="btn-close" aria-label="Close" data-bs-dismiss="modal" type="button"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3"><label class="form-label" for="quizTitle">Quiz Title</label><input class="form-control" type="text" id="quizTitle" placeholder="Enter quiz title"></div>
+                        <div class="mb-3"><label class="form-label" for="quizSubject">Subject</label><select class="form-select" id="quizSubject">
+                                <option value="" selected="">Select subject...</option>
+                                <option value="MATH101">MATH101 - Calculus I</option>
+                                <option value="PHYS101">PHYS101 - General Physics I</option>
+                                <option value="CHEM101">CHEM101 - General Chemistry I</option>
+                            </select></div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3"><label class="form-label" for="quizDuration">Duration (minutes)</label><input class="form-control" type="number" id="quizDuration" placeholder="e.g., 30"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3"><label class="form-label" for="quizAttempts">Allowed Attempts</label><input class="form-control" type="number" id="quizAttempts" placeholder="e.g., 2" value="1"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3"><label class="form-label" for="quizDescription">Description</label><textarea class="form-control" id="quizDescription" placeholder="Enter quiz description" rows="2"></textarea></div>
+                        <div class="mb-3"><label class="form-label">Question Types</label>
+                            <div>
+                                <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" checked="" id="mcqCheck"><label class="form-check-label" for="mcqCheck">Multiple Choice</label></div>
+                                <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" checked="" id="tfCheck"><label class="form-check-label" for="tfCheck">True/False</label></div>
+                                <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="essayCheck"><label class="form-check-label" for="essayCheck">Essay</label></div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary" type="button">Create Quiz</button></div>
+            </div>
+        </div>
+    </div>
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <script>
+// Inlined from /assets/js/instructor/quiz-actions.js\n// Quiz Actions JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    // Quiz Filtering and Search functionality
+    const quizSubjectFilter = document.getElementById('quizSubjectFilter');
+    const quizStatusFilter = document.getElementById('quizStatusFilter');
+    const quizSearch = document.getElementById('quizSearch');
+    const quizTableBody = document.querySelector('table.table tbody');
+    
+    // Add event listeners for filtering
+    if (quizSubjectFilter) {
+        quizSubjectFilter.addEventListener('change', filterQuizzes);
+    }
+    if (quizStatusFilter) {
+        quizStatusFilter.addEventListener('change', filterQuizzes);
+    }
+    if (quizSearch) {
+        quizSearch.addEventListener('input', filterQuizzes);
+    }
+    
+    // Event delegation for table actions - attach to tbody for dynamic content
+    quizTableBody.addEventListener('click', function(e) {
+        const target = e.target;
+        
+        // Find the closest button element
+        const button = target.closest('button.btn');
+        
+        // If clicked element is not a button or doesn't have the right classes, return
+        if (!button || !(button.classList.contains('btn-outline-primary') || 
+                         button.classList.contains('btn-outline-warning') || 
+                         button.classList.contains('btn-outline-danger'))) {
+            return;
+        }
+        
+        const row = button.closest('tr');
+        const cells = row.querySelectorAll('td');
+        
+        // Extract quiz data from the row
+        const quizData = {
+            id: cells[0].textContent,
+            title: cells[1].textContent,
+            subject: cells[2].textContent,
+            questions: cells[3].textContent,
+            duration: cells[4].textContent,
+            status: cells[5].querySelector('.badge').textContent
+        };
+        
+        // Handle View button (eye icon)
+        if (button.classList.contains('btn-outline-primary')) {
+            e.preventDefault();
+            showViewModal(quizData);
+        }
+        // Handle Edit button (pencil icon)
+        else if (button.classList.contains('btn-outline-warning')) {
+            e.preventDefault();
+            showEditModal(quizData, row);
+        }
+        // Handle Delete button (trash icon)
+        else if (button.classList.contains('btn-outline-danger')) {
+            e.preventDefault();
+            deleteQuiz(row);
+        }
+    });
+    
+    // Filter quizzes based on selected filters and search
+    function filterQuizzes() {
+        const subjectFilter = quizSubjectFilter ? quizSubjectFilter.value : '';
+        const statusFilter = quizStatusFilter ? quizStatusFilter.value : '';
+        const searchTerm = quizSearch ? quizSearch.value.toLowerCase() : '';
+        
+        const rows = quizTableBody.querySelectorAll('tr');
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            const subject = cells[2].textContent;
+            const status = cells[5].querySelector('.badge').textContent;
+            const title = cells[1].textContent.toLowerCase();
+            
+            // Check subject filter
+            const subjectMatch = subjectFilter === '' || subject.includes(subjectFilter);
+            
+            // Check status filter  
+            const statusMatch = statusFilter === '' || status.toLowerCase() === statusFilter.toLowerCase();
+            
+            // Check search term
+            const searchMatch = searchTerm === '' || 
+                               title.includes(searchTerm) || 
+                               subject.toLowerCase().includes(searchTerm);
+            
+            // Show/hide row based on all filters
+            if (subjectMatch && statusMatch && searchMatch) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Update row numbers after filtering
+        updateRowNumbers();
+    }
+    
+    // View Modal Functionality
+    function showViewModal(quizData) {
+        // Create or update view modal
+        let modal = document.getElementById('viewQuizModal');
+        
+        if (!modal) {
+            modal = createViewModal();
+            document.body.appendChild(modal);
+        }
+        
+        // Populate modal with quiz data
+        document.getElementById('viewQuizTitle').textContent = quizData.title;
+        document.getElementById('viewQuizSubject').textContent = quizData.subject;
+        document.getElementById('viewQuizQuestions').textContent = quizData.questions;
+        document.getElementById('viewQuizDuration').textContent = quizData.duration;
+        document.getElementById('viewQuizStatus').textContent = quizData.status;
+        
+        // Set status badge color
+        const statusBadge = document.getElementById('viewQuizStatus');
+        statusBadge.className = 'badge ' + getStatusColor(quizData.status);
+        
+        // Show modal
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+    }
+    
+    // Edit Modal Functionality
+    function showEditModal(quizData, row) {
+        // Create or update edit modal
+        let modal = document.getElementById('editQuizModal');
+        
+        if (!modal) {
+            modal = createEditModal();
+            document.body.appendChild(modal);
+        }
+        
+        // Populate form fields
+        document.getElementById('editQuizTitle').value = quizData.title;
+        document.getElementById('editQuizSubject').value = quizData.subject;
+        document.getElementById('editQuizQuestions').value = quizData.questions.replace(/\D/g, ''); // Extract numbers only
+        document.getElementById('editQuizDuration').value = quizData.duration.replace(/\D/g, ''); // Extract numbers only
+        
+        // Set status select
+        const statusSelect = document.getElementById('editQuizStatus');
+        statusSelect.value = quizData.status.toLowerCase();
+        
+        // Set up save handler
+        const saveButton = document.getElementById('saveQuizChanges');
+        saveButton.onclick = function() {
+            saveQuizChanges(quizData.id, row);
+        };
+        
+        // Show modal
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+    }
+    
+    // Save Quiz Changes
+    function saveQuizChanges(quizId, row) {
+        const title = document.getElementById('editQuizTitle').value;
+        const subject = document.getElementById('editQuizSubject').value;
+        const questions = document.getElementById('editQuizQuestions').value;
+        const duration = document.getElementById('editQuizDuration').value + ' mins';
+        const status = document.getElementById('editQuizStatus').value;
+        
+        // Update table row
+        const cells = row.querySelectorAll('td');
+        cells[1].textContent = title;
+        cells[2].textContent = subject;
+        cells[3].textContent = questions;
+        cells[4].textContent = duration;
+        
+        // Update status badge
+        const statusBadge = cells[5].querySelector('.badge');
+        statusBadge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        statusBadge.className = 'badge ' + getStatusColor(status);
+        
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('editQuizModal'));
+        modal.hide();
+    }
+    
+    // Delete Quiz Functionality
+    function deleteQuiz(row) {
+        const quizTitle = row.querySelector('td:nth-child(2)').textContent;
+        
+        if (confirm(`Are you sure you want to delete the quiz "${quizTitle}"? This action cannot be undone.`)) {
+            row.remove();
+            // Optionally update row numbers
+            updateRowNumbers();
+        }
+    }
+    
+    // Update row numbers after deletion or filtering
+    function updateRowNumbers() {
+        const visibleRows = quizTableBody.querySelectorAll('tr:not([style*=\"display: none\"])');
+        visibleRows.forEach((row, index) => {
+            row.querySelector('td:first-child').textContent = index + 1;
+        });
+    }
+    
+    // Helper function to get status badge color
+    function getStatusColor(status) {
+        switch(status.toLowerCase()) {
+            case 'published': return 'bg-success';
+            case 'draft': return 'bg-warning';
+            case 'archived': return 'bg-secondary';
+            default: return 'bg-secondary';
+        }
+    }
+    
+    // Create View Modal HTML
+    function createViewModal() {
+        const modalDiv = document.createElement('div');
+        modalDiv.innerHTML = `
+            <div class="modal fade" id="viewQuizModal" tabindex="-1" aria-labelledby="viewQuizModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="viewQuizModalLabel">Quiz Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Title:</div>
+                                <div class="col-sm-8" id="viewQuizTitle"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Subject:</div>
+                                <div class="col-sm-8" id="viewQuizSubject"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Questions:</div>
+                                <div class="col-sm-8" id="viewQuizQuestions"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Duration:</div>
+                                <div class="col-sm-8" id="viewQuizDuration"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Status:</div>
+                                <div class="col-sm-8">
+                                    <span id="viewQuizStatus" class="badge"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        return modalDiv.firstElementChild;
+    }
+    
+    // Create Edit Modal HTML
+    function createEditModal() {
+        const modalDiv = document.createElement('div');
+        modalDiv.innerHTML = `
+            <div class="modal fade" id="editQuizModal" tabindex="-1" aria-labelledby="editQuizModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editQuizModalLabel">Edit Quiz</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label class="form-label" for="editQuizTitle">Quiz Title</label>
+                                    <input class="form-control" type="text" id="editQuizTitle" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="editQuizSubject">Subject</label>
+                                    <select class="form-select" id="editQuizSubject">
+                                        <option value="MATH101">MATH101 - Calculus I</option>
+                                        <option value="PHYS101">PHYS101 - General Physics I</option>
+                                        <option value="CHEM101">CHEM101 - General Chemistry I</option>
+                                    </select>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="editQuizQuestions">Number of Questions</label>
+                                            <input class="form-control" type="number" id="editQuizQuestions" min="1" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="editQuizDuration">Duration (minutes)</label>
+                                            <input class="form-control" type="number" id="editQuizDuration" min="1" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="editQuizStatus">Status</label>
+                                    <select class="form-select" id="editQuizStatus">
+                                        <option value="published">Published</option>
+                                        <option value="draft">Draft</option>
+                                        <option value="archived">Archived</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="saveQuizChanges">Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        return modalDiv.firstElementChild;
+    }
+});
+</script>
+    <script>
+// Inlined from /assets/js/instructor/quiz.js\n// Quiz Management JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    // Create Quiz Modal functionality
+    const createQuizButton = document.querySelector('#createQuizModal .btn-primary');
+    
+    if (createQuizButton) {
+        createQuizButton.addEventListener('click', createQuiz);
+    }
+    
+    // Create Quiz Function
+    function createQuiz() {
+        // Get form values
+        const title = document.getElementById('quizTitle').value.trim();
+        const subject = document.getElementById('quizSubject').value;
+        const duration = document.getElementById('quizDuration').value.trim();
+        const attempts = document.getElementById('quizAttempts').value.trim();
+        const description = document.getElementById('quizDescription').value.trim();
+        
+        // Get question types
+        const mcqChecked = document.getElementById('mcqCheck').checked;
+        const tfChecked = document.getElementById('tfCheck').checked;
+        const essayChecked = document.getElementById('essayCheck').checked;
+        
+        // Validation
+        if (!title || !subject || !duration) {
+            alert('Please fill in all required fields: Title, Subject, and Duration');
+            return;
+        }
+        
+        if (!mcqChecked && !tfChecked && !essayChecked) {
+            alert('Please select at least one question type');
+            return;
+        }
+        
+        // Create new quiz row
+        addQuizToTable(title, subject, duration, attempts, description);
+        
+        // Reset form and close modal
+        document.querySelector('#createQuizModal form').reset();
+        const modal = bootstrap.Modal.getInstance(document.getElementById('createQuizModal'));
+        modal.hide();
+    }
+    
+    // Add quiz to table
+    function addQuizToTable(title, subject, duration, attempts, description) {
+        const tableBody = document.querySelector('table.table tbody');
+        const rows = tableBody.querySelectorAll('tr');
+        const nextNumber = rows.length + 1;
+        
+        // Create new row
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td scope="row">${nextNumber}</td>
+            <td>${title}</td>
+            <td>${subject}</td>
+            <td>0</td>
+            <td>${duration} mins</td>
+            <td><span class="badge bg-warning">Draft</span></td>
+            <td>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button class="btn btn-outline-primary" type="button">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-outline-warning" type="button">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" type="button">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        
+        tableBody.appendChild(newRow);
+        
+        // Update row numbers
+        updateRowNumbers();
+    }
+    
+    // Update row numbers after adding new quiz
+    function updateRowNumbers() {
+        const rows = document.querySelectorAll('table.table tbody tr');
+        rows.forEach((row, index) => {
+            row.querySelector('td:first-child').textContent = index + 1;
+        });
+    }
+    
+    // Initialize icons for existing rows
+    function initializeActionButtons() {
+        const rows = document.querySelectorAll('table.table tbody tr');
+        rows.forEach(row => {
+            const actionButtons = row.querySelectorAll('.btn-group .btn');
+            if (actionButtons.length === 3) {
+                // Check if the buttons already have proper content
+                if (!actionButtons[0].querySelector('i')) {
+                    actionButtons[0].innerHTML = '<i class="bi bi-eye"></i>';
+                    actionButtons[1].innerHTML = '<i class="bi bi-pencil"></i>';
+                    actionButtons[2].innerHTML = '<i class="bi bi-trash"></i>';
+                }
+                
+                // Convert from <a> tags to <button> for better semantics
+                if (actionButtons[0].tagName === 'A') {
+                    const buttonGroup = row.querySelector('.btn-group');
+                    buttonGroup.innerHTML = `
+                        <button class="btn btn-outline-primary" type="button">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-warning" type="button">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-danger" type="button">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    `;
+                }
+            }
+        });
+    }
+    
+    // Run initialization
+    setTimeout(initializeActionButtons, 100);
+});
+</script>
+</body>
+
+</html>
+
+
+
+

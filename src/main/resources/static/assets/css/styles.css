@@ -1,0 +1,408 @@
+﻿/* styles.css\n   Combined stylesheet for instructor + student dashboards.\n   Source: Instructorstyle.css + Studentstyle.css\n*/\n\n/* ==== Instructor ==== */\n/* Custom Styles for Instructor Dashboard */
+
+.sidebar {
+  min-height: calc(100vh - 60px);
+}
+
+.nav-link.active {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 0.375rem;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.table th {
+  background-color: #f8f9fa;
+}
+
+.badge {
+  font-size: 0.75em;
+}
+
+.btn-group .btn {
+  border-radius: 0 !important;
+}
+
+.btn-group .btn:first-child {
+  border-top-left-radius: 0.375rem !important;
+  border-bottom-left-radius: 0.375rem !important;
+}
+
+.btn-group .btn:last-child {
+  border-top-right-radius: 0.375rem !important;
+  border-bottom-right-radius: 0.375rem !important;
+}
+
+.modal-header {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.navbar-brand {
+  font-weight: 500;
+}
+
+.sidebar-heading {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.list-group-item-action:hover {
+  background-color: #e9ecef;
+}
+
+.card-footer {
+  background-color: #f8f9fa;
+}
+
+.pagination .page-link {
+  color: #0d6efd;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+@media (max-width: 767.98px) {
+  .sidebar {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+}
+
+/* Announcement filtering animations */
+
+.announcement-card {
+  transition: all 0.3s ease;
+}
+
+.announcement-card {
+  transition: all 0.3s ease;
+}
+
+.announcement-card[style*="display: none"] {
+  display: none !important;
+}
+
+/* Ensure containers don't leave empty space */
+
+.row.g-4 .col-12[style*="display: none"] {
+  display: none !important;
+}
+
+/* Spin animation for refresh button */
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spin-animation {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+/* Fix for dropdown options in create assignment modal */
+
+#assignmentSubject option:not(:first-child) {
+  color: inherit;
+}
+
+/* Add spacing for action buttons icons */
+
+.btn-group-sm icon {
+  margin: 0;
+  padding: 0;
+}
+
+.btn-group-sm i {
+  font-size: 0.875rem;
+}
+
+/* Ensure action buttons are properly spaced */
+
+.btn-group .btn {
+  padding: 0.25rem 0.5rem;
+}
+
+/* Make sure buttons maintain proper styling when dynamically added */
+
+.btn-group .btn-outline-primary:hover, .btn-group .btn-outline-warning:hover, .btn-group .btn-outline-danger:hover {
+  border-color: currentColor;
+}
+
+/* Ensure event delegation works correctly */
+
+table.table tbody tr td .btn-group {
+  margin: 0;
+}
+
+\n\n/* ==== Student ==== */\n/* Custom styles for Student Dashboard */
+
+/* Top navbar styling */
+
+.navbar {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0;
+}
+
+.navbar-brand {
+  font-size: 1.4rem;
+  padding: 0.5rem 0;
+}
+
+.navbar-nav .nav-link {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  margin: 0 2px;
+  transition: all 0.2s ease;
+}
+
+.navbar-nav .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.navbar-nav .nav-link.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: 500;
+}
+
+/* Profile dropdown styling */
+
+.navbar-nav .dropdown-toggle {
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.navbar-nav .dropdown-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.navbar-nav .dropdown-menu {
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  min-width: 220px;
+}
+
+.navbar-nav .dropdown-item {
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  margin: 2px 8px;
+  width: auto;
+}
+
+.navbar-nav .dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.navbar-nav .dropdown-divider {
+  margin: 0.5rem 0;
+}
+
+/* Sidebar styling */
+
+.sidebar {
+  min-height: calc(100vh - 70px);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+  padding: 1rem 0;
+}
+
+/* Mobile sidebar toggle button */
+
+#sidebarToggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0d6efd;
+  border: 1px solid #0d6efd;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+#sidebarToggle:hover {
+  background-color: #0b5ed7;
+  border-color: #0b5ed7;
+}
+
+#sidebarToggle:active {
+  transform: scale(0.95);
+}
+
+/* Style the navbar toggler icon */
+
+#sidebarToggle .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+  width: 1.5em;
+  height: 1.5em;
+}
+
+/* Add focus styling for accessibility */
+
+#sidebarToggle:focus {
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  outline: 0;
+}
+
+/* Mobile sidebar toggle */
+
+.sidebar {
+  transition: transform 0.3s ease-in-out;
+}
+
+@media (max-width: 767.98px) {
+  .sidebar {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    bottom: 0;
+    z-index: 1040;
+    transform: translateX(-100%);
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+    width: 250px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .sidebar.show {
+    transform: translateX(0);
+  }
+}
+
+/* Hide sidebar by default on mobile */
+
+@media (max-width: 767.98px) {
+  .sidebar:not(.show) {
+    display: block;
+  }
+}
+
+.sidebar .nav-link {
+  padding: 0.75rem 1rem;
+  color: #495057;
+  border-radius: 8px;
+  margin: 0.25rem 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.sidebar .nav-link:hover {
+  background-color: #e9ecef;
+  color: #0d6efd;
+}
+
+.sidebar .nav-link.active {
+  background-color: #0d6efd;
+  color: white;
+  box-shadow: 0 2px 5px rgba(13, 110, 253, 0.3);
+}
+
+.sidebar .nav-link.text-danger:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+/* Main content area */
+
+main {
+  padding-top: 1.5rem;
+}
+
+/* Card enhancements */
+
+.card {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Table styling */
+
+.table-hover tbody tr:hover {
+  background-color: rgba(13, 110, 253, 0.04);
+}
+
+/* Status badge styling */
+
+.badge {
+  font-size: 0.85em;
+  padding: 0.4em 0.75em;
+  border-radius: 20px;
+}
+
+/* Responsive adjustments */
+
+@media (max-width: 767.98px) {
+  .navbar-collapse {
+    padding: 1rem 0;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .navbar-nav .nav-link {
+    margin: 0.25rem 0;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .navbar-nav .dropdown-toggle {
+    margin-top: 0.5rem;
+  }
+}
+
+/* Body padding to account for fixed navbar */
+
+body {
+  padding-top: 70px;
+  background-color: #f8f9fa;
+}
+
+/* Container adjustments */
+
+.container-fluid {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+/* Mobile view improvements */
+
+@media (max-width: 576px) {
+  .container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  body {
+    padding-top: 65px;
+  }
+}
+
+\n
