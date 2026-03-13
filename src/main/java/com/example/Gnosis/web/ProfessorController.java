@@ -102,13 +102,4 @@ public class ProfessorController {
 		return "professor-home";
 	}
 
-
-
-	@GetMapping("/Professor-landing, /professor-landing")
-	public String Professor_landing_page(){
-		return "instructor-landing";
-
-		
-	}
-
 }
