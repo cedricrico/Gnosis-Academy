@@ -7,7 +7,13 @@
     <title>Student dashboard</title>
     <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
     <style>
-/* styles.css\n   Combined stylesheet for instructor + student dashboards.\n   Source: Instructorstyle.css + Studentstyle.css\n*/\n\n/* ==== Instructor ==== */\n/* Custom Styles for Instructor Dashboard */
+/* styles.css
+   Combined stylesheet for instructor + student dashboards.
+   Source: Instructorstyle.css + Studentstyle.css
+*/
+
+/* ==== Instructor ==== */
+/* Custom Styles for Instructor Dashboard */
 
 .sidebar {
   min-height: calc(100vh - 60px);
@@ -160,7 +166,8 @@ table.table tbody tr td .btn-group {
   margin: 0;
 }
 
-\n\n/* ==== Student ==== */\n/* Custom styles for Student Dashboard */
+/* ==== Student ==== */
+/* Custom styles for Student Dashboard */
 
 /* Top navbar styling */
 
@@ -368,12 +375,6 @@ main {
 /* Responsive adjustments */
 
 @media (max-width: 767.98px) {
-  .navbar-collapse {
-    padding: 1rem 0;
-  }
-}
-
-@media (max-width: 767.98px) {
   .navbar-nav .nav-link {
     margin: 0.25rem 0;
   }
@@ -414,14 +415,15 @@ body {
   }
 }
 
-\n
-
-</style>\n</head>
+</style>
+    <link rel="stylesheet" href="/assets/css/student-admin-parity.css">
+</head>
 
 <body>
     <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
     <script>
-// Inlined from /assets/js/student/student-assignments.js\n// Assignment data - in a real application, this would come from a database
+// Inlined from /assets/js/student/student-assignments.js
+// Assignment data - in a real application, this would come from a database
 const assignments = {
     1: {
         title: "Database ER Diagram",
@@ -556,6 +558,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </body>
 
 </html>
+
 
 
 
