@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html data-bs-theme="light" lang="en">
 
 <head>
@@ -7,7 +7,7 @@
     <title>Announcements - Instructor Dashboard</title>
     <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
     <style>
-/* styles.css\n   Combined stylesheet for instructor + student dashboards.\n   Source: Instructorstyle.css + Studentstyle.css\n*/\n\n/* ==== Instructor ==== */\n/* Custom Styles for Instructor Dashboard */
+/* styles.css   Combined stylesheet for instructor + student dashboards.   Source: Instructorstyle.css + Studentstyle.css*//* ==== Instructor ==== *//* Custom Styles for Instructor Dashboard */
 
 .sidebar {
   min-height: calc(100vh - 60px);
@@ -160,7 +160,7 @@ table.table tbody tr td .btn-group {
   margin: 0;
 }
 
-\n\n/* ==== Student ==== */\n/* Custom styles for Student Dashboard */
+/* ==== Student ==== *//* Custom styles for Student Dashboard */
 
 /* Top navbar styling */
 
@@ -236,21 +236,18 @@ table.table tbody tr td .btn-group {
 /* Mobile sidebar toggle button */
 
 #sidebarToggle {
-  width: 40px;
-  height: 40px;
-  border-radius: 6px;
-  display: flex;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: #0d6efd;
-  border: 1px solid #0d6efd;
   transition: all 0.2s ease;
   padding: 0;
 }
 
 #sidebarToggle:hover {
-  background-color: #0b5ed7;
-  border-color: #0b5ed7;
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 #sidebarToggle:active {
@@ -268,11 +265,9 @@ table.table tbody tr td .btn-group {
 /* Add focus styling for accessibility */
 
 #sidebarToggle:focus {
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
   outline: 0;
-}
-
-/* Mobile sidebar toggle */
+}/* Mobile sidebar toggle */
 
 .sidebar {
   transition: transform 0.3s ease-in-out;
@@ -303,7 +298,7 @@ table.table tbody tr td .btn-group {
 
 @media (max-width: 767.98px) {
   .sidebar:not(.show) {
-    display: block;
+    display: none;
   }
 }
 
@@ -414,40 +409,153 @@ body {
   }
 }
 
-\n
 
-</style>\n</head>
+
+/* Landing palette overrides */
+:root {
+  --landing-primary: #4361ee;
+  --landing-primary-dark: #3a56d4;
+  --landing-secondary: #3f37c9;
+  --landing-accent: #4cc9f0;
+  --landing-light: #f8f9fa;
+  --landing-dark: #212529;
+  --landing-text: #333333;
+  --landing-text-muted: #6c757d;
+  --landing-card-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  --landing-card-hover-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  --bs-primary: var(--landing-primary);
+  --bs-primary-rgb: 67, 97, 238;
+  --bs-link-color: var(--landing-primary);
+  --bs-link-hover-color: var(--landing-primary-dark);
+}
+
+body {
+  color: var(--landing-text);
+  background-color: var(--landing-light);
+}
+
+.navbar {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.btn-primary {
+  background: var(--landing-primary);
+  border-color: var(--landing-primary);
+  box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background: var(--landing-primary-dark);
+  border-color: var(--landing-primary-dark);
+  box-shadow: 0 6px 15px rgba(67, 97, 238, 0.4);
+}
+
+.btn-outline-primary {
+  border-color: var(--landing-primary);
+  color: var(--landing-primary);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+  background: var(--landing-primary);
+  color: #fff;
+  box-shadow: 0 6px 15px rgba(67, 97, 238, 0.3);
+}
+
+.text-primary {
+  color: var(--landing-primary) !important;
+}
+
+.bg-primary {
+  background-color: var(--landing-primary) !important;
+}
+
+.border-primary {
+  border-color: var(--landing-primary) !important;
+}
+
+.sidebar .nav-link.active {
+  background-color: var(--landing-primary);
+  box-shadow: 0 2px 5px rgba(67, 97, 238, 0.3);
+}
+
+.sidebar .nav-link:hover {
+  color: var(--landing-primary);
+  background-color: rgba(67, 97, 238, 0.08);
+}
+
+.pagination .page-link {
+  color: var(--landing-primary);
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--landing-primary);
+  border-color: var(--landing-primary);
+}
+
+.card {
+  box-shadow: var(--landing-card-shadow);
+}
+
+.card:hover {
+  box-shadow: var(--landing-card-hover-shadow);
+}
+</style></head>
 
 <body>
-    <nav class="navbar navbar-expand-lg bg-primary navbar-dark">
-        <div class="container-fluid"><a class="navbar-brand" href="/professor/dashboard"><svg class="bi bi-mortarboard-fill me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.917l7.5 3a.5.5 0 0 0 .372 0L14 7.14V13a1 1 0 0 0-1 1v2h3v-2a1 1 0 0 0-1-1V6.739l.686-.275a.5.5 0 0 0 .025-.917l-7.5-3.5Z"></path>
-                    <path d="M4.176 9.032a.5.5 0 0 0-.656.327l-.5 1.7a.5.5 0 0 0 .294.605l4.5 1.8a.5.5 0 0 0 .372 0l4.5-1.8a.5.5 0 0 0 .294-.605l-.5-1.7a.5.5 0 0 0-.656-.327L8 10.466z"></path>
-                </svg>Instructor Dashboard</a><button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" type="button"><span class="navbar-toggler-icon"></span></button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link" href="/professor/dashboard">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/professor/sections">Sections</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/professor/profile">Profile</a></li>
-                </ul>
-                <div class="d-flex align-items-center"><span class="text-white me-3 navbar-text">Welcome, Instructor!</span><a class="btn btn-outline-light btn-sm" role="button" href="/professor/profile"><svg class="bi bi-person-circle" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+        <nav class="navbar navbar-expand-lg bg-white shadow-sm navbar-light fixed-top">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-primary d-md-none me-2" id="sidebarToggle" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle sidebar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"></path>
+                    </svg>
+                </button>
+                <a class="navbar-brand fw-bold d-flex align-items-center" href="/professor/dashboard"><span class="d-flex justify-content-center align-items-center me-2"><img src="/assets/img/Logo.jpg" alt="Logo" width="32" height="32"></span>Gnosis Academy</a>
+            </div>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" id="navbarProfile"><svg class="bi bi-person-circle me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"></path>
                             <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"></path>
-                        </svg> Profile</a></div>
-            </div>
+                        </svg><span class="d-inline-flex flex-column align-items-start ms-1"><span>Instructor User</span><span class="text-muted small fw-semibold">ID: I2024001</span></span></button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarProfile">
+                        <li><a class="dropdown-item" href="/professor/profile"><svg class="bi bi-person me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"></path>
+                                </svg> Profile </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form action="/logout" method="post" class="m-0 p-0">
+                                <button class="dropdown-item text-danger" type="submit"><svg class="bi bi-box-arrow-right me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"></path>
+                                        <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"></path>
+                                    </svg> Logout </button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
         </div>
     </nav>
-    <div class="container-fluid mt-4">
+    <div class="container-fluid">
         <div class="row">
-            <div class="col-md-3 col-lg-2 bg-light d-md-block sidebar collapse show">
+            <div class="col-md-3 col-lg-2 bg-light d-md-block sidebar collapse" id="sidebarMenu">
                 <div class="position-sticky pt-3">
+                    <h4 class="text-center mb-4">Gnosis Portal</h4>
                     <ul class="nav flex-column">
+                        <li class="nav-item"><a class="nav-link" href="/professor/dashboard"><svg class="bi bi-speedometer2 me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v4.5h4a.5.5 0 0 1 0 1h-4.5a.5.5 0 0 1-.5-.5V4.5A.5.5 0 0 1 8 4"></path>
+                                    <path d="M3.732 4.732a6 6 0 1 1 8.536 8.536.5.5 0 0 1-.707-.707 5 5 0 1 0-7.122-7.122.5.5 0 0 1-.707-.707"></path>
+                                    <path d="M10.5 10a.5.5 0 0 1 .5.5v.5a3 3 0 1 1-6 0v-.5a.5.5 0 0 1 1 0v.5a2 2 0 1 0 4 0v-.5a.5.5 0 0 1 .5-.5"></path>
+                                </svg> Dashboard </a></li>
                         <li class="nav-item"><a class="nav-link" href="/professor/sections"><svg class="bi bi-collection me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M2.5 3.5a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1zm2-2a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1zM0 13a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 16 13V6a1.5 1.5 0 0 0-1.5-1.5h-13A1.5 1.5 0 0 0 0 6zm1.5.5A.5.5 0 0 1 1 13V6a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5z"></path>
                                 </svg> Sections</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/professor/profile"><svg class="bi bi-person me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"></path>
-                                </svg> Profile</a></li>
+                        
                     </ul>
                     <h6 class="text-muted d-flex justify-content-between align-items-center mt-4 mb-1 px-3 sidebar-heading"><span>Quick Actions</span></h6>
                     <ul class="nav flex-column">
@@ -669,9 +777,9 @@ body {
             </div>
         </div>
     </div>
-    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script>
-// Inlined from /assets/js/instructor/announcements-1.js\n// announcements-1.js - Announcement filtering functionality
+// Inlined from /assets/js/instructor/announcements-1.js// announcements-1.js - Announcement filtering functionality
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Announcements filtering script loaded');
@@ -745,7 +853,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
     <script>
-// Inlined from /assets/js/instructor/assignments-1.js\n// Legacy placeholder kept for backward compatibility with exported HTML.
+// Inlined from /assets/js/instructor/assignments-1.js// Legacy placeholder kept for backward compatibility with exported HTML.
 // The real logic lives in assignments.js.
 (function(){
   if (window && window.console) {
@@ -755,7 +863,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </script>
     <script>
-// Inlined from /assets/js/instructor/lessons.js\ndocument.addEventListener('DOMContentLoaded', function() {
+// Inlined from /assets/js/instructor/lessons.jsdocument.addEventListener('DOMContentLoaded', function() {
     // Filter lessons based on selected criteria
     function filterLessons() {
         const subjectFilter = document.getElementById('lessonSubjectFilter').value;
@@ -1173,7 +1281,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
     <script>
-// Inlined from /assets/js/instructor/quiz-1.js\n// Legacy placeholder kept for backward compatibility with exported HTML.
+// Inlined from /assets/js/instructor/quiz-1.js// Legacy placeholder kept for backward compatibility with exported HTML.
 // The real logic lives in quiz.js.
 (function(){
   if (window && window.console) {
@@ -1183,7 +1291,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </script>
     <script>
-// Inlined from /assets/js/instructor/quiz-actions-1.js\n// Legacy placeholder kept for backward compatibility with exported HTML.
+// Inlined from /assets/js/instructor/quiz-actions-1.js// Legacy placeholder kept for backward compatibility with exported HTML.
 // The real logic lives in quiz-actions.js.
 (function(){
   if (window && window.console) {
@@ -1193,7 +1301,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </script>
     <script>
-// Inlined from /assets/js/instructor/announcements.js\n// announcements.js - Handles Announcements functionality (View, Edit, Archive, Export, Refresh)
+// Inlined from /assets/js/instructor/announcements.js// announcements.js - Handles Announcements functionality (View, Edit, Archive, Export, Refresh)
 
 document.addEventListener('DOMContentLoaded', function() {
     // Modal instances
@@ -1396,7 +1504,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Export announcements to CSV
     function exportAnnouncementsToCSV() {
         const announcements = document.querySelectorAll('.announcement-card');
-        let csvContent = 'Title,Subject,Date,Status\\n';
+        let csvContent = 'Title,Subject,Date,Status\';
         
         announcements.forEach(announcement => {
             if (announcement.style.display !== 'none') {
@@ -1408,7 +1516,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Escape commas and quotes in CSV
                 const escapeCSV = (str) => `"${str.replace(/"/g, '""')}"`;
                 
-                csvContent += `${escapeCSV(title)},${escapeCSV(subject)},${escapeCSV(dateText)},${escapeCSV(status)}\\n`;
+                csvContent += `${escapeCSV(title)},${escapeCSV(subject)},${escapeCSV(dateText)},${escapeCSV(status)}\`;
             }
         });
         
@@ -1574,7 +1682,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
     <script>
-// Inlined from /assets/js/instructor/assignments.js\n// assignments.js - Assignment table functionality
+// Inlined from /assets/js/instructor/assignments.js// assignments.js - Assignment table functionality
 
 // Assignment data storage (in-memory for demonstration)
 let assignmentsData = [];
@@ -1860,7 +1968,7 @@ function exportAssignments() {
     const rows = document.querySelectorAll('tbody tr');
     
     // Create CSV header
-    let csvContent = 'Title,Subject,Due Date,Status\\n';
+    let csvContent = 'Title,Subject,Due Date,Status\';
     
     // Add each assignment to CSV
     rows.forEach(row => {
@@ -1873,7 +1981,7 @@ function exportAssignments() {
             const dueDate = cells[3].textContent;
             const status = cells[4].textContent;
             
-            csvContent += `"${title}","${subject}","${dueDate}","${status}"\\n`;
+            csvContent += `"${title}","${subject}","${dueDate}","${status}"\`;
         }
     });
     
@@ -2000,7 +2108,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
     <script>
-// Inlined from /assets/js/instructor/quiz-actions.js\n// Quiz Actions JavaScript
+// Inlined from /assets/js/instructor/quiz-actions.js// Quiz Actions JavaScript
 document.addEventListener('DOMContentLoaded', function() {
     // Quiz Filtering and Search functionality
     const quizSubjectFilter = document.getElementById('quizSubjectFilter');
@@ -2320,7 +2428,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
     <script>
-// Inlined from /assets/js/instructor/quiz.js\n// Quiz Management JavaScript
+// Inlined from /assets/js/instructor/quiz.js// Quiz Management JavaScript
 document.addEventListener('DOMContentLoaded', function() {
     // Create Quiz Modal functionality
     const createQuizButton = document.querySelector('#createQuizModal .btn-primary');
@@ -2446,6 +2554,22 @@ document.addEventListener('DOMContentLoaded', function() {
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
