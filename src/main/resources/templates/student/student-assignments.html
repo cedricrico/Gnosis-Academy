@@ -355,6 +355,38 @@ main {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
+/* Subject tiles */
+
+.subject-tile {
+  border: 1px solid rgba(13, 110, 253, 0.15);
+  border-radius: 12px;
+  padding: 1rem;
+  background-color: #ffffff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+}
+
+.subject-tile:hover {
+  transform: translateY(-2px);
+  border-color: rgba(13, 110, 253, 0.35);
+  box-shadow: 0 6px 16px rgba(13, 110, 253, 0.12);
+}
+
+.subject-tile.active {
+  border-color: #0d6efd;
+  box-shadow: 0 6px 16px rgba(13, 110, 253, 0.2);
+}
+
+.subject-tile .subject-title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.subject-tile .subject-meta {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
 /* Table styling */
 
 .table-hover tbody tr:hover {
@@ -481,9 +513,21 @@ body {
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <div class="card mb-4">
+                        <div class="card mb-4" id="assignmentSubjectChooser">
                             <div class="card-header">
-                                <h2 class="mb-0">Assignments</h2>
+                                <h5 class="mb-0">Choose a Subject</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3" id="assignmentSubjectTiles"></div>
+                            </div>
+                        </div>
+                        <div class="card mb-4 d-none" id="assignmentListCard">
+                            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div>
+                                    <h2 class="mb-0">Assignments</h2>
+                                    <small class="text-muted d-block" id="selectedAssignmentSubjectLabel">Subject</small>
+                                </div>
+                                <button class="btn btn-outline-secondary btn-sm" id="backToAssignmentSubjectsBtn" type="button">Back to Subjects</button>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -498,35 +542,35 @@ body {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
+                                            <tr data-subject="Database Systems">
                                                 <td>Database ER Diagram</td>
                                                 <td>Database Systems</td>
                                                 <td>March 20, 2026</td>
                                                 <td><button class="btn btn-primary btn-sm view-assignment-btn" data-assignment-id="1"> View Assignment </button></td>
                                                 <td><span class="badge bg-success">Uploaded</span></td>
                                             </tr>
-                                            <tr>
+                                            <tr data-subject="Computer Science">
                                                 <td>Programming Project 1</td>
                                                 <td>Computer Science</td>
                                                 <td>March 25, 2026</td>
                                                 <td><button class="btn btn-primary btn-sm view-assignment-btn" data-assignment-id="2"> View Assignment </button></td>
                                                 <td><span class="badge bg-secondary">Not Submitted</span></td>
                                             </tr>
-                                            <tr>
+                                            <tr data-subject="Computer Science">
                                                 <td>Web App Prototype</td>
                                                 <td>Computer Science</td>
                                                 <td>April 1, 2026</td>
                                                 <td><button class="btn btn-primary btn-sm view-assignment-btn" data-assignment-id="3"> View Assignment </button></td>
                                                 <td><span class="badge bg-secondary">Not Submitted</span></td>
                                             </tr>
-                                            <tr>
+                                            <tr data-subject="Mathematics">
                                                 <td>Mathematics Problem Set</td>
                                                 <td>Mathematics</td>
                                                 <td>March 18, 2026</td>
                                                 <td><button class="btn btn-primary btn-sm view-assignment-btn" data-assignment-id="4"> View Assignment </button></td>
                                                 <td><span class="badge bg-success">Uploaded</span></td>
                                             </tr>
-                                            <tr>
+                                            <tr data-subject="English">
                                                 <td>English Essay</td>
                                                 <td>English</td>
                                                 <td>March 15, 2026</td>
@@ -592,6 +636,85 @@ body {
     </script>
     <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script>
+// Assignment subject tiles + filter
+document.addEventListener('DOMContentLoaded', function() {
+    const subjectTilesContainer = document.getElementById('assignmentSubjectTiles');
+    const subjectChooserCard = document.getElementById('assignmentSubjectChooser');
+    const assignmentListCard = document.getElementById('assignmentListCard');
+    const backToSubjectsBtn = document.getElementById('backToAssignmentSubjectsBtn');
+    const selectedSubjectLabel = document.getElementById('selectedAssignmentSubjectLabel');
+    const assignmentRows = Array.from(document.querySelectorAll('table.table tbody tr[data-subject]'));
+
+    if (!subjectTilesContainer || assignmentRows.length === 0) {
+        return;
+    }
+
+    const subjectCounts = assignmentRows.reduce((acc, row) => {
+        const subject = row.dataset.subject;
+        acc[subject] = (acc[subject] || 0) + 1;
+        return acc;
+    }, {});
+
+    const subjects = Object.keys(subjectCounts).sort();
+
+    subjects.forEach(subject => {
+        const col = document.createElement('div');
+        col.className = 'col-12 col-sm-6 col-lg-4';
+
+        const tile = document.createElement('button');
+        tile.type = 'button';
+        tile.className = 'subject-tile text-start w-100';
+        tile.setAttribute('data-subject', subject);
+
+        const title = document.createElement('div');
+        title.className = 'subject-title';
+        title.textContent = subject;
+
+        const meta = document.createElement('div');
+        meta.className = 'subject-meta';
+        meta.textContent = `${subjectCounts[subject]} assignment${subjectCounts[subject] === 1 ? '' : 's'}`;
+
+        tile.appendChild(title);
+        tile.appendChild(meta);
+        col.appendChild(tile);
+        subjectTilesContainer.appendChild(col);
+    });
+
+    function showAssignmentsForSubject(subject) {
+        assignmentRows.forEach(row => {
+            row.style.display = row.dataset.subject === subject ? '' : 'none';
+        });
+        if (selectedSubjectLabel) {
+            selectedSubjectLabel.textContent = subject;
+        }
+        if (subjectChooserCard) {
+            subjectChooserCard.classList.add('d-none');
+        }
+        if (assignmentListCard) {
+            assignmentListCard.classList.remove('d-none');
+        }
+    }
+
+    subjectTilesContainer.addEventListener('click', function(event) {
+        const tile = event.target.closest('.subject-tile');
+        if (!tile) {
+            return;
+        }
+        showAssignmentsForSubject(tile.getAttribute('data-subject'));
+    });
+
+    if (backToSubjectsBtn) {
+        backToSubjectsBtn.addEventListener('click', function() {
+            if (assignmentListCard) {
+                assignmentListCard.classList.add('d-none');
+            }
+            if (subjectChooserCard) {
+                subjectChooserCard.classList.remove('d-none');
+            }
+        });
+    }
+});
+
 // Inlined from /assets/js/student/student-assignments.js
 // Assignment data - in a real application, this would come from a database
 const assignments = {

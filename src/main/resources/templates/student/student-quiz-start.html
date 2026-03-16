@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Start Quiz</title>
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+    <style>
+/* styles.css
+   Combined stylesheet for instructor + student dashboards.
+   Source: Instructorstyle.css + Studentstyle.css
+*/
+
+/* ==== Instructor ==== */
+/* Custom Styles for Instructor Dashboard */
+
+.sidebar {
+  min-height: calc(100vh - 60px);
+}
+
+.nav-link.active {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 0.375rem;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.table th {
+  background-color: #f8f9fa;
+}
+
+.badge {
+  font-size: 0.75em;
+}
+
+.btn-group .btn {
+  border-radius: 0 !important;
+}
+
+.btn-group .btn:first-child {
+  border-top-left-radius: 0.375rem !important;
+  border-bottom-left-radius: 0.375rem !important;
+}
+
+.btn-group .btn:last-child {
+  border-top-right-radius: 0.375rem !important;
+  border-bottom-right-radius: 0.375rem !important;
+}
+
+.modal-header {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.navbar-brand {
+  font-weight: 500;
+}
+
+.sidebar-heading {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.list-group-item-action:hover {
+  background-color: #e9ecef;
+}
+
+.card-footer {
+  background-color: #f8f9fa;
+}
+
+.pagination .page-link {
+  color: #0d6efd;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+@media (max-width: 767.98px) {
+  .sidebar {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+}
+
+/* Announcement filtering animations */
+
+.announcement-card {
+  transition: all 0.3s ease;
+}
+
+.announcement-card {
+  transition: all 0.3s ease;
+}
+
+.announcement-card[style*="display: none"] {
+  display: none !important;
+}
+
+/* Ensure containers don't leave empty space */
+
+.row.g-4 .col-12[style*="display: none"] {
+  display: none !important;
+}
+
+/* Spin animation for refresh button */
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spin-animation {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+/* Fix for dropdown options in create assignment modal */
+
+#assignmentSubject option:not(:first-child) {
+  color: inherit;
+}
+
+/* Add spacing for action buttons icons */
+
+.btn-group-sm icon {
+  margin: 0;
+  padding: 0;
+}
+
+.btn-group-sm i {
+  font-size: 0.875rem;
+}
+
+/* Ensure action buttons are properly spaced */
+
+.btn-group .btn {
+  padding: 0.25rem 0.5rem;
+}
+
+/* Make sure buttons maintain proper styling when dynamically added */
+
+.btn-group .btn-outline-primary:hover, .btn-group .btn-outline-warning:hover, .btn-group .btn-outline-danger:hover {
+  border-color: currentColor;
+}
+
+/* Ensure event delegation works correctly */
+
+table.table tbody tr td .btn-group {
+  margin: 0;
+}
+
+/* ==== Student ==== */
+/* Custom styles for Student Dashboard */
+
+/* Top navbar styling */
+
+.navbar {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0;
+}
+
+.navbar-brand {
+  font-size: 1.4rem;
+  padding: 0.5rem 0;
+}
+
+.navbar-nav .nav-link {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  margin: 0 2px;
+  transition: all 0.2s ease;
+}
+
+.navbar-nav .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.navbar-nav .nav-link.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: 500;
+}
+
+/* Profile dropdown styling */
+
+.navbar-nav .dropdown-toggle {
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.navbar-nav .dropdown-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.navbar-nav .dropdown-menu {
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  min-width: 220px;
+}
+
+.navbar-nav .dropdown-item {
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  margin: 2px 8px;
+  width: auto;
+}
+
+.navbar-nav .dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.navbar-nav .dropdown-divider {
+  margin: 0.5rem 0;
+}
+
+/* Main content area */
+
+main {
+  padding-top: 1.5rem;
+}
+
+/* Card enhancements */
+
+.card {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Status badge styling */
+
+.badge {
+  font-size: 0.85em;
+  padding: 0.4em 0.75em;
+  border-radius: 20px;
+}
+
+/* Responsive adjustments */
+
+@media (max-width: 767.98px) {
+  .navbar-nav .nav-link {
+    margin: 0.25rem 0;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .navbar-nav .dropdown-toggle {
+    margin-top: 0.5rem;
+  }
+}
+
+/* Body padding to account for fixed navbar */
+
+body {
+  padding-top: 70px;
+  background-color: #f8f9fa;
+}
+
+/* Container adjustments */
+
+.container-fluid {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+/* Mobile view improvements */
+
+@media (max-width: 576px) {
+  .container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  body {
+    padding-top: 65px;
+  }
+}
+
+.quiz-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  color: #6c757d;
+  font-size: 0.95rem;
+}
+
+.quiz-timer {
+  font-weight: 600;
+  color: #0d6efd;
+}
+
+.quiz-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.quiz-header-left {
+  flex: 1 1 320px;
+}
+
+.quiz-header-middle {
+  flex: 1 1 100%;
+  text-align: center;
+  order: 2;
+}
+
+.quiz-progress {
+  width: 100%;
+  max-width: 100%;
+  margin: 0.75rem auto 0;
+  text-align: left;
+}
+
+.quiz-header-right {
+  flex: 0 0 auto;
+  margin-left: auto;
+  order: 3;
+}
+
+.quiz-instructions {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.question-card + .question-card {
+  margin-top: 1rem;
+}
+
+.answer-option {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.answer-option:hover {
+  border-color: rgba(13, 110, 253, 0.4);
+  box-shadow: 0 3px 10px rgba(13, 110, 253, 0.08);
+}
+</style>
+    <link rel="stylesheet" href="/assets/css/student-admin-parity.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg bg-white shadow-sm navbar-light">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center">
+                <a class="navbar-brand fw-bold d-flex align-items-center" href="/student/dashboard"><span class="d-flex justify-content-center align-items-center me-2"><img src="/assets/img/Logo.jpg" alt="Logo" width="32" height="32"></span>Gnosis Academy</a>
+            </div>
+            <div class="d-flex align-items-center ms-auto"><div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" id="navbarProfile"><svg class="bi bi-person-circle me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"></path>
+                                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"></path>
+                            </svg><span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${studentFullName}">Student User</span><span class="text-muted small fw-semibold">ID: <span th:text="${studentId}">S2024001</span></span></span></button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarProfile">
+                            <li><a class="dropdown-item" href="/student/profile"><svg class="bi bi-person me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"></path>
+                                    </svg> Profile </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form action="/logout" method="post" class="m-0 p-0">
+                                    <button class="dropdown-item text-danger" type="submit"><svg class="bi bi-box-arrow-right me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"></path>
+                                            <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"></path>
+                                        </svg> Logout </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 px-md-4">
+                <div class="quiz-header pt-3 mb-3 pb-2 border-bottom">
+                    <div class="quiz-header-left">
+                        <h1 class="h2 mb-1" id="quizTitleHeading">Quiz</h1>
+                        <div class="quiz-meta">
+                            <span id="quizSubjectMeta">Subject</span>
+                            <span>Due: <span id="quizDueMeta">Date</span></span>
+                        </div>
+                        <div class="quiz-instructions">
+                            <strong>Instructions:</strong>
+                            <ul class="mb-0 mt-1">
+                                <li>Answer all questions before submitting.</li>
+                                <li>You can review your answers before final submission.</li>
+                                <li>Timer will keep running until you submit.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="quiz-header-middle">
+                        <div class="quiz-timer">Time Remaining: 30:00</div>
+                        <div class="quiz-progress">
+                            <p class="mb-2">Answered 0 of 2 questions</p>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="quiz-header-right">
+                        <a class="btn btn-outline-secondary btn-sm" href="/student/quiz">Back to Quizzes</a>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Questions</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="questionList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-end pb-4">
+                            <button class="btn btn-success w-100" type="button">Submit Quiz</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const params = new URLSearchParams(window.location.search);
+    const title = params.get('title') || 'Quiz';
+    const subject = params.get('subject') || 'Subject';
+    const due = params.get('due') || 'Date';
+
+    const titleHeading = document.getElementById('quizTitleHeading');
+    const subjectMeta = document.getElementById('quizSubjectMeta');
+    const dueMeta = document.getElementById('quizDueMeta');
+    const questionList = document.getElementById('questionList');
+    const progressText = document.querySelector('.quiz-progress p');
+    const progressBar = document.querySelector('.quiz-progress .progress-bar');
+
+    if (titleHeading) {
+        titleHeading.textContent = title;
+    }
+    if (subjectMeta) {
+        subjectMeta.textContent = subject;
+    }
+    if (dueMeta) {
+        dueMeta.textContent = due;
+    }
+
+    const quizQuestions = [
+        {
+            id: "q1",
+            type: "identification",
+            prompt: "Define the term \"algorithm\" in one sentence."
+        },
+        {
+            id: "q2",
+            type: "multiple_choice",
+            prompt: "Which data structure uses FIFO order?",
+            options: ["Stack", "Queue", "Tree", "Graph"]
+        }
+    ];
+
+    function renderQuestions(questions) {
+        if (!questionList) {
+            return;
+        }
+        questionList.innerHTML = "";
+        questions.forEach((question, index) => {
+            const card = document.createElement("div");
+            card.className = "question-card";
+
+            const prompt = document.createElement("p");
+            prompt.className = "mb-2";
+            prompt.innerHTML = `<strong>${index + 1}.</strong> ${question.prompt}`;
+            card.appendChild(prompt);
+
+            if (question.type === "identification") {
+                const input = document.createElement("input");
+                input.type = "text";
+                input.className = "form-control";
+                input.name = question.id;
+                input.placeholder = "Type your answer here";
+                card.appendChild(input);
+            } else if (question.type === "multiple_choice") {
+                question.options.forEach((option, optionIndex) => {
+                    const wrapper = document.createElement("div");
+                    wrapper.className = `answer-option${optionIndex > 0 ? " mt-2" : ""}`;
+
+                    const formCheck = document.createElement("div");
+                    formCheck.className = "form-check";
+
+                    const input = document.createElement("input");
+                    input.className = "form-check-input";
+                    input.type = "radio";
+                    input.name = question.id;
+                    input.id = `${question.id}_option_${optionIndex}`;
+
+                    const label = document.createElement("label");
+                    label.className = "form-check-label";
+                    label.setAttribute("for", input.id);
+                    label.textContent = option;
+
+                    formCheck.appendChild(input);
+                    formCheck.appendChild(label);
+                    wrapper.appendChild(formCheck);
+                    card.appendChild(wrapper);
+                });
+            }
+
+            questionList.appendChild(card);
+        });
+
+        if (progressText) {
+            progressText.textContent = `Answered 0 of ${questions.length} questions`;
+        }
+        if (progressBar) {
+            progressBar.style.width = "0%";
+            progressBar.setAttribute("aria-valuenow", "0");
+        }
+    }
+
+    renderQuestions(quizQuestions);
+});
+    </script>
+</body>
+
+</html>

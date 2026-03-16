@@ -131,6 +131,7 @@ public class SecurityConfig {
 				.logout(logout -> logout
 						.logoutUrl("/professor/logout")
 						.invalidateHttpSession(false)
+						.deleteCookies("PROFESSOR_SESSION")
 						.addLogoutHandler((request, response, authentication) -> {
 							if (request.getSession(false) != null) {
 								request.getSession(false).removeAttribute("PROFESSOR_SECURITY_CONTEXT");

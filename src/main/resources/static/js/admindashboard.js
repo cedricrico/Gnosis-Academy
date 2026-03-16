@@ -1145,6 +1145,23 @@ document.addEventListener('DOMContentLoaded', function() {
         return options.join('');
     }
 
+    const availableCourses = [
+        "Computer Science",
+        "Business Administration",
+        "Engineering",
+        "Arts and Sciences"
+    ];
+
+    function buildCourseOptions(selectedCourse) {
+        const normalized = String(selectedCourse ?? '').trim();
+        const baseOption = `<option value="">Select Course</option>`;
+        const options = availableCourses.map(course => {
+            const selected = course === normalized ? ' selected' : '';
+            return `<option value="${course}"${selected}>${course}</option>`;
+        });
+        return [baseOption, ...options].join('');
+    }
+
     // Function to render students table
     function renderStudentsTable() {
         const tableBody = document.getElementById("studentsTableBody");
@@ -1222,7 +1239,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Course</label>
-                                        <input class="form-control edit-course" type="text" value="${student.course || ''}">
+                                        <select class="form-select edit-course">
+                                            ${buildCourseOptions(student.course)}
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="row mb-3">

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html data-bs-theme="light" lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -355,6 +355,38 @@ main {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
+/* Subject tiles */
+
+.subject-tile {
+  border: 1px solid rgba(13, 110, 253, 0.15);
+  border-radius: 12px;
+  padding: 1rem;
+  background-color: #ffffff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+}
+
+.subject-tile:hover {
+  transform: translateY(-2px);
+  border-color: rgba(13, 110, 253, 0.35);
+  box-shadow: 0 6px 16px rgba(13, 110, 253, 0.12);
+}
+
+.subject-tile.active {
+  border-color: #0d6efd;
+  box-shadow: 0 6px 16px rgba(13, 110, 253, 0.2);
+}
+
+.subject-tile .subject-title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.subject-tile .subject-meta {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
 /* Table styling */
 
 .table-hover tbody tr:hover {
@@ -481,9 +513,21 @@ body {
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <div class="card mb-4">
+                        <div class="card mb-4" id="quizSubjectChooser">
                             <div class="card-header">
-                                <h5 class="mb-0">Available Quizzes</h5>
+                                <h5 class="mb-0">Choose a Subject</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3" id="quizSubjectTiles"></div>
+                            </div>
+                        </div>
+                        <div class="card mb-4 d-none" id="quizListCard">
+                            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div>
+                                    <h5 class="mb-0">Available Quizzes</h5>
+                                    <small class="text-muted d-block" id="selectedSubjectLabel">Subject</small>
+                                </div>
+                                <button class="btn btn-outline-secondary btn-sm" id="backToSubjectsBtn" type="button">Back to Subjects</button>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -498,21 +542,21 @@ body {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
+                                            <tr data-subject="Computer Science">
                                                 <td>Introduction to Programming</td>
                                                 <td>Computer Science</td>
                                                 <td>March 20, 2026</td>
                                                 <td><span class="badge bg-warning">Pending</span></td>
-                                                <td><button class="btn btn-primary btn-sm">Start Quiz</button></td>
+                                                <td><button class="btn btn-primary btn-sm start-quiz-btn" data-bs-toggle="modal" data-bs-target="#startQuizModal">Start Quiz</button></td>
                                             </tr>
-                                            <tr>
+                                            <tr data-subject="Computer Science">
                                                 <td>Database Fundamentals</td>
                                                 <td>Computer Science</td>
                                                 <td>March 25, 2026</td>
                                                 <td><span class="badge bg-warning">Pending</span></td>
-                                                <td><button class="btn btn-primary btn-sm">Start Quiz</button></td>
+                                                <td><button class="btn btn-primary btn-sm start-quiz-btn" data-bs-toggle="modal" data-bs-target="#startQuizModal">Start Quiz</button></td>
                                             </tr>
-                                            <tr>
+                                            <tr data-subject="Computer Science">
                                                 <td>Web Development Basics</td>
                                                 <td>Computer Science</td>
                                                 <td>March 18, 2026</td>
@@ -525,6 +569,39 @@ body {
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" role="dialog" tabindex="-1" id="startQuizModal" aria-labelledby="startQuizModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="startQuizModalLabel">Start Quiz</h5>
+                    <button class="btn-close" data-bs-dismiss="modal" type="button" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <h6 class="mb-1" id="startQuizTitle">Quiz Title</h6>
+                        <div class="text-muted small">
+                            <span id="startQuizSubject">Subject</span>
+                            <span class="mx-2">•</span>
+                            <span>Due: <span id="startQuizDue">Date</span></span>
+                        </div>
+                    </div>
+                    <div class="alert alert-info mb-3" role="alert">
+                        <strong>Before you start:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Make sure you have a stable internet connection.</li>
+                            <li>Once you begin, the timer may start immediately.</li>
+                            <li>Do not refresh the page while taking the quiz.</li>
+                        </ul>
+                    </div>
+                    <p class="mb-0">Click <strong>Start Now</strong> to begin the quiz.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                    <button class="btn btn-primary" id="confirmStartQuizBtn" type="button">Start Now</button>
                 </div>
             </div>
         </div>
@@ -578,6 +655,119 @@ body {
     </script>
     <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script>
+// Quiz subject tiles + filter
+document.addEventListener('DOMContentLoaded', function() {
+    const subjectTilesContainer = document.getElementById('quizSubjectTiles');
+    const subjectChooserCard = document.getElementById('quizSubjectChooser');
+    const quizListCard = document.getElementById('quizListCard');
+    const backToSubjectsBtn = document.getElementById('backToSubjectsBtn');
+    const selectedSubjectLabel = document.getElementById('selectedSubjectLabel');
+    const quizRows = Array.from(document.querySelectorAll('table.table tbody tr[data-subject]'));
+    const startQuizModal = document.getElementById('startQuizModal');
+    const startQuizTitle = document.getElementById('startQuizTitle');
+    const startQuizSubject = document.getElementById('startQuizSubject');
+    const startQuizDue = document.getElementById('startQuizDue');
+    const confirmStartQuizBtn = document.getElementById('confirmStartQuizBtn');
+
+    if (!subjectTilesContainer || quizRows.length === 0) {
+        return;
+    }
+
+    const subjectCounts = quizRows.reduce((acc, row) => {
+        const subject = row.dataset.subject;
+        acc[subject] = (acc[subject] || 0) + 1;
+        return acc;
+    }, {});
+
+    const subjects = Object.keys(subjectCounts).sort();
+
+    subjects.forEach(subject => {
+        const col = document.createElement('div');
+        col.className = 'col-12 col-sm-6 col-lg-4';
+
+        const tile = document.createElement('button');
+        tile.type = 'button';
+        tile.className = 'subject-tile text-start w-100';
+        tile.setAttribute('data-subject', subject);
+
+        const title = document.createElement('div');
+        title.className = 'subject-title';
+        title.textContent = subject;
+
+        const meta = document.createElement('div');
+        meta.className = 'subject-meta';
+        meta.textContent = `${subjectCounts[subject]} quiz${subjectCounts[subject] === 1 ? '' : 'zes'}`;
+
+        tile.appendChild(title);
+        tile.appendChild(meta);
+        col.appendChild(tile);
+        subjectTilesContainer.appendChild(col);
+    });
+
+    function showQuizzesForSubject(subject) {
+        quizRows.forEach(row => {
+            row.style.display = row.dataset.subject === subject ? '' : 'none';
+        });
+        if (selectedSubjectLabel) {
+            selectedSubjectLabel.textContent = subject;
+        }
+        if (subjectChooserCard) {
+            subjectChooserCard.classList.add('d-none');
+        }
+        if (quizListCard) {
+            quizListCard.classList.remove('d-none');
+        }
+    }
+
+    subjectTilesContainer.addEventListener('click', function(event) {
+        const tile = event.target.closest('.subject-tile');
+        if (!tile) {
+            return;
+        }
+        showQuizzesForSubject(tile.getAttribute('data-subject'));
+    });
+
+    if (backToSubjectsBtn) {
+        backToSubjectsBtn.addEventListener('click', function() {
+            if (quizListCard) {
+                quizListCard.classList.add('d-none');
+            }
+            if (subjectChooserCard) {
+                subjectChooserCard.classList.remove('d-none');
+            }
+        });
+    }
+
+    document.querySelectorAll('.start-quiz-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const row = this.closest('tr');
+            if (!row) {
+                return;
+            }
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 3) {
+                startQuizTitle.textContent = cells[0].textContent.trim();
+                startQuizSubject.textContent = cells[1].textContent.trim();
+                startQuizDue.textContent = cells[2].textContent.trim();
+            }
+        });
+    });
+
+    if (confirmStartQuizBtn && startQuizModal) {
+        confirmStartQuizBtn.addEventListener('click', function() {
+            const title = startQuizTitle ? startQuizTitle.textContent.trim() : '';
+            const subject = startQuizSubject ? startQuizSubject.textContent.trim() : '';
+            const due = startQuizDue ? startQuizDue.textContent.trim() : '';
+            const params = new URLSearchParams({
+                title,
+                subject,
+                due
+            });
+            window.location.href = `/student/quiz/start?${params.toString()}`;
+        });
+    }
+});
+
 // Inlined from /assets/js/student/student-assignments.js
 // Assignment data - in a real application, this would come from a database
 const assignments = {
@@ -714,7 +904,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </body>
 
 </html>
-
-
-
 

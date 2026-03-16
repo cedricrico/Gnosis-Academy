@@ -355,6 +355,38 @@ main {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
+/* Subject tiles */
+
+.subject-tile {
+  border: 1px solid rgba(13, 110, 253, 0.15);
+  border-radius: 12px;
+  padding: 1rem;
+  background-color: #ffffff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+}
+
+.subject-tile:hover {
+  transform: translateY(-2px);
+  border-color: rgba(13, 110, 253, 0.35);
+  box-shadow: 0 6px 16px rgba(13, 110, 253, 0.12);
+}
+
+.subject-tile.active {
+  border-color: #0d6efd;
+  box-shadow: 0 6px 16px rgba(13, 110, 253, 0.2);
+}
+
+.subject-tile .subject-title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.subject-tile .subject-meta {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
 /* Table styling */
 
 .table-hover tbody tr:hover {
@@ -480,88 +512,111 @@ body {
                     <h1 class="h2">Lessons</h1>
                 </div>
                 <div class="row">
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">Introduction to Programming</h5>
-                                <h6 class="text-muted mb-2 card-subtitle">Computer Science</h6>
-                                <p class="mb-2 card-text"><strong>Uploaded by:</strong> Prof. Johnson</p>
-                                <p class="mb-3 card-text"><strong>Upload Date:</strong> March 1, 2026</p>
+                    <div class="col-12">
+                        <div class="card mb-4" id="lessonSubjectChooser">
+                            <div class="card-header">
+                                <h5 class="mb-0">Choose a Subject</h5>
                             </div>
-                            <div class="card-footer"><button class="btn btn-primary btn-sm"><svg class="bi bi-download" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
-                                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"></path>
-                                    </svg> Download </button></div>
+                            <div class="card-body">
+                                <div class="row g-3" id="lessonSubjectTiles"></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">Database Systems</h5>
-                                <h6 class="text-muted mb-2 card-subtitle">Computer Science</h6>
-                                <p class="mb-2 card-text"><strong>Uploaded by:</strong> Dr. Martinez</p>
-                                <p class="mb-3 card-text"><strong>Upload Date:</strong> March 5, 2026</p>
+                        <div class="card mb-4 d-none" id="lessonListCard">
+                            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div>
+                                    <h5 class="mb-0">Available Lessons</h5>
+                                    <small class="text-muted d-block" id="selectedLessonSubjectLabel">Subject</small>
+                                </div>
+                                <button class="btn btn-outline-secondary btn-sm" id="backToLessonSubjectsBtn" type="button">Back to Subjects</button>
                             </div>
-                            <div class="card-footer"><button class="btn btn-primary btn-sm"><svg class="bi bi-download" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
-                                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"></path>
-                                    </svg> Download </button></div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100">
                             <div class="card-body">
-                                <h5 class="card-title">Web Development</h5>
-                                <h6 class="text-muted mb-2 card-subtitle">Computer Science</h6>
-                                <p class="mb-2 card-text"><strong>Uploaded by:</strong> Prof. Wilson</p>
-                                <p class="mb-3 card-text"><strong>Upload Date:</strong> March 8, 2026</p>
+                                <div class="row" id="lessonCards">
+                                    <div class="col-md-6 col-lg-4 mb-4" data-subject="Computer Science">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Introduction to Programming</h5>
+                                                <h6 class="text-muted mb-2 card-subtitle">Computer Science</h6>
+                                                <p class="mb-2 card-text"><strong>Uploaded by:</strong> Prof. Johnson</p>
+                                                <p class="mb-3 card-text"><strong>Upload Date:</strong> March 1, 2026</p>
+                                            </div>
+                                            <div class="card-footer"><button class="btn btn-primary btn-sm"><svg class="bi bi-download" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
+                                                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"></path>
+                                                    </svg> Download </button></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-4 mb-4" data-subject="Computer Science">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Database Systems</h5>
+                                                <h6 class="text-muted mb-2 card-subtitle">Computer Science</h6>
+                                                <p class="mb-2 card-text"><strong>Uploaded by:</strong> Dr. Martinez</p>
+                                                <p class="mb-3 card-text"><strong>Upload Date:</strong> March 5, 2026</p>
+                                            </div>
+                                            <div class="card-footer"><button class="btn btn-primary btn-sm"><svg class="bi bi-download" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
+                                                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"></path>
+                                                    </svg> Download </button></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-4 mb-4" data-subject="Computer Science">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Web Development</h5>
+                                                <h6 class="text-muted mb-2 card-subtitle">Computer Science</h6>
+                                                <p class="mb-2 card-text"><strong>Uploaded by:</strong> Prof. Wilson</p>
+                                                <p class="mb-3 card-text"><strong>Upload Date:</strong> March 8, 2026</p>
+                                            </div>
+                                            <div class="card-footer"><button class="btn btn-primary btn-sm"><svg class="bi bi-download" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
+                                                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"></path>
+                                                    </svg> Download </button></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-4 mb-4" data-subject="Mathematics">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Mathematics Fundamentals</h5>
+                                                <h6 class="text-muted mb-2 card-subtitle">Mathematics</h6>
+                                                <p class="mb-2 card-text"><strong>Uploaded by:</strong> Dr. Chen</p>
+                                                <p class="mb-3 card-text"><strong>Upload Date:</strong> February 28, 2026</p>
+                                            </div>
+                                            <div class="card-footer"><button class="btn btn-primary btn-sm"><svg class="bi bi-download" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
+                                                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"></path>
+                                                    </svg> Download </button></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-4 mb-4" data-subject="English">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <h5 class="card-title">English Composition</h5>
+                                                <h6 class="text-muted mb-2 card-subtitle">English</h6>
+                                                <p class="mb-2 card-text"><strong>Uploaded by:</strong> Prof. Davis</p>
+                                                <p class="mb-3 card-text"><strong>Upload Date:</strong> March 3, 2026</p>
+                                            </div>
+                                            <div class="card-footer"><button class="btn btn-primary btn-sm"><svg class="bi bi-download" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
+                                                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"></path>
+                                                    </svg> Download </button></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-4 mb-4" data-subject="Science">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Science Basics</h5>
+                                                <h6 class="text-muted mb-2 card-subtitle">Science</h6>
+                                                <p class="mb-2 card-text"><strong>Uploaded by:</strong> Dr. Rodriguez</p>
+                                                <p class="mb-3 card-text"><strong>Upload Date:</strong> March 10, 2026</p>
+                                            </div>
+                                            <div class="card-footer"><button class="btn btn-primary btn-sm"><svg class="bi bi-download" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
+                                                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"></path>
+                                                    </svg> Download </button></div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="card-footer"><button class="btn btn-primary btn-sm"><svg class="bi bi-download" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
-                                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"></path>
-                                    </svg> Download </button></div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">Mathematics Fundamentals</h5>
-                                <h6 class="text-muted mb-2 card-subtitle">Mathematics</h6>
-                                <p class="mb-2 card-text"><strong>Uploaded by:</strong> Dr. Chen</p>
-                                <p class="mb-3 card-text"><strong>Upload Date:</strong> February 28, 2026</p>
-                            </div>
-                            <div class="card-footer"><button class="btn btn-primary btn-sm"><svg class="bi bi-download" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
-                                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"></path>
-                                    </svg> Download </button></div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">English Composition</h5>
-                                <h6 class="text-muted mb-2 card-subtitle">English</h6>
-                                <p class="mb-2 card-text"><strong>Uploaded by:</strong> Prof. Davis</p>
-                                <p class="mb-3 card-text"><strong>Upload Date:</strong> March 3, 2026</p>
-                            </div>
-                            <div class="card-footer"><button class="btn btn-primary btn-sm"><svg class="bi bi-download" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
-                                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"></path>
-                                    </svg> Download </button></div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">Science Basics</h5>
-                                <h6 class="text-muted mb-2 card-subtitle">Science</h6>
-                                <p class="mb-2 card-text"><strong>Uploaded by:</strong> Dr. Rodriguez</p>
-                                <p class="mb-3 card-text"><strong>Upload Date:</strong> March 10, 2026</p>
-                            </div>
-                            <div class="card-footer"><button class="btn btn-primary btn-sm"><svg class="bi bi-download" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
-                                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"></path>
-                                    </svg> Download </button></div>
                         </div>
                     </div>
                 </div>
@@ -592,6 +647,85 @@ body {
     </script>
     <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script>
+// Lesson subject tiles + filter
+document.addEventListener('DOMContentLoaded', function() {
+    const subjectTilesContainer = document.getElementById('lessonSubjectTiles');
+    const subjectChooserCard = document.getElementById('lessonSubjectChooser');
+    const lessonListCard = document.getElementById('lessonListCard');
+    const backToSubjectsBtn = document.getElementById('backToLessonSubjectsBtn');
+    const selectedSubjectLabel = document.getElementById('selectedLessonSubjectLabel');
+    const lessonCards = Array.from(document.querySelectorAll('#lessonCards [data-subject]'));
+
+    if (!subjectTilesContainer || lessonCards.length === 0) {
+        return;
+    }
+
+    const subjectCounts = lessonCards.reduce((acc, card) => {
+        const subject = card.dataset.subject;
+        acc[subject] = (acc[subject] || 0) + 1;
+        return acc;
+    }, {});
+
+    const subjects = Object.keys(subjectCounts).sort();
+
+    subjects.forEach(subject => {
+        const col = document.createElement('div');
+        col.className = 'col-12 col-sm-6 col-lg-4';
+
+        const tile = document.createElement('button');
+        tile.type = 'button';
+        tile.className = 'subject-tile text-start w-100';
+        tile.setAttribute('data-subject', subject);
+
+        const title = document.createElement('div');
+        title.className = 'subject-title';
+        title.textContent = subject;
+
+        const meta = document.createElement('div');
+        meta.className = 'subject-meta';
+        meta.textContent = `${subjectCounts[subject]} lesson${subjectCounts[subject] === 1 ? '' : 's'}`;
+
+        tile.appendChild(title);
+        tile.appendChild(meta);
+        col.appendChild(tile);
+        subjectTilesContainer.appendChild(col);
+    });
+
+    function showLessonsForSubject(subject) {
+        lessonCards.forEach(card => {
+            card.style.display = card.dataset.subject === subject ? '' : 'none';
+        });
+        if (selectedSubjectLabel) {
+            selectedSubjectLabel.textContent = subject;
+        }
+        if (subjectChooserCard) {
+            subjectChooserCard.classList.add('d-none');
+        }
+        if (lessonListCard) {
+            lessonListCard.classList.remove('d-none');
+        }
+    }
+
+    subjectTilesContainer.addEventListener('click', function(event) {
+        const tile = event.target.closest('.subject-tile');
+        if (!tile) {
+            return;
+        }
+        showLessonsForSubject(tile.getAttribute('data-subject'));
+    });
+
+    if (backToSubjectsBtn) {
+        backToSubjectsBtn.addEventListener('click', function() {
+            if (lessonListCard) {
+                lessonListCard.classList.add('d-none');
+            }
+            if (subjectChooserCard) {
+                subjectChooserCard.classList.remove('d-none');
+            }
+        });
+    }
+});
+
 // Inlined from /assets/js/student/student-assignments.js
 // Assignment data - in a real application, this would come from a database
 const assignments = {

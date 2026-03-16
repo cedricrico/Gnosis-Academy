@@ -74,6 +74,11 @@ public class StudentController {
 		return "student/student-quiz";
 	}
 
+	@GetMapping("/quiz/start")
+	public String studentQuizStart() {
+		return "student/student-quiz-start";
+	}
+
 	private static String blankToDefault(String value, String defaultValue) {
 		if (value == null) {
 			return defaultValue;
