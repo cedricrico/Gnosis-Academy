@@ -900,7 +900,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </script>
     <script>
-// Inlined from /assets/js/instructor/lessons.jsdocument.addEventListener('DOMContentLoaded', function() {
+// Inlined from /assets/js/instructor/lessons.js
+document.addEventListener('DOMContentLoaded', function() {
     // Filter lessons based on selected criteria
     function filterLessons() {
         const subjectFilter = document.getElementById('lessonSubjectFilter').value;
@@ -976,6 +977,13 @@ document.addEventListener('DOMContentLoaded', function() {
         return colors[type] || 'bg-secondary';
     }
 
+    function isValidLessonTitle(title) {
+        const trimmed = title.trim();
+        if (!trimmed) return false;
+        if (!/^[A-Za-z0-9 #&'().,\-\/:]+$/.test(trimmed)) return false;
+        return /[A-Za-z]/.test(trimmed);
+    }
+
     // Upload Lesson functionality
     document.querySelector('#uploadLessonModal .btn-primary').addEventListener('click', function() {
         const title = document.getElementById('lessonTitle').value.trim();
@@ -985,6 +993,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const lessonType = document.getElementById('lessonType').value;
         
         // Simple validation - check for empty/null/undefined or empty string
+        if (!isValidLessonTitle(title)) {
+            alert('Lesson title must contain at least one letter and only letters, numbers, spaces, or common punctuation.');
+            return;
+        }
         if (!title || title === '') {
             alert('Please enter a lesson title.');
             return;
@@ -1541,7 +1553,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Export announcements to CSV
     function exportAnnouncementsToCSV() {
         const announcements = document.querySelectorAll('.announcement-card');
-        let csvContent = 'Title,Subject,Date,Status\';
+        let csvContent = 'Title,Subject,Date,Status\n';
         
         announcements.forEach(announcement => {
             if (announcement.style.display !== 'none') {
@@ -1553,7 +1565,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Escape commas and quotes in CSV
                 const escapeCSV = (str) => `"${str.replace(/"/g, '""')}"`;
                 
-                csvContent += `${escapeCSV(title)},${escapeCSV(subject)},${escapeCSV(dateText)},${escapeCSV(status)}\`;
+                csvContent += `${escapeCSV(title)},${escapeCSV(subject)},${escapeCSV(dateText)},${escapeCSV(status)}\n`;
             }
         });
         
@@ -2005,7 +2017,7 @@ function exportAssignments() {
     const rows = document.querySelectorAll('tbody tr');
     
     // Create CSV header
-    let csvContent = 'Title,Subject,Due Date,Status\';
+    let csvContent = 'Title,Subject,Due Date,Status\n';
     
     // Add each assignment to CSV
     rows.forEach(row => {
@@ -2018,7 +2030,7 @@ function exportAssignments() {
             const dueDate = cells[3].textContent;
             const status = cells[4].textContent;
             
-            csvContent += `"${title}","${subject}","${dueDate}","${status}"\`;
+            csvContent += `"${title}","${subject}","${dueDate}","${status}"\n`;
         }
     });
     
@@ -2083,16 +2095,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add event listeners to all action buttons
     document.querySelectorAll('tbody tr').forEach(row => {
         const buttons = row.querySelectorAll('.btn-group .btn');
-        
-        buttons[0].addEventListener('click', () => viewAssignment(row));
-        buttons[1].addEventListener('click', () => editAssignment(row));
-        buttons[2].addEventListener('click', () => deleteAssignment(row));
+        if (buttons.length >= 3) {
+            buttons[0].addEventListener('click', () => viewAssignment(row));
+            buttons[1].addEventListener('click', () => editAssignment(row));
+            buttons[2].addEventListener('click', () => deleteAssignment(row));
+        }
     });
     
-    // Add event listeners for filters
-    document.getElementById('subjectFilter').addEventListener('change', filterAssignments);
-    document.getElementById('statusFilter').addEventListener('change', filterAssignments);
-    document.getElementById('searchInput').addEventListener('input', filterAssignments);
+    // Add event listeners for filters (only if present on this page)
+    const subjectFilter = document.getElementById('subjectFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const searchInput = document.getElementById('searchInput');
+    if (subjectFilter) subjectFilter.addEventListener('change', filterAssignments);
+    if (statusFilter) statusFilter.addEventListener('change', filterAssignments);
+    if (searchInput) searchInput.addEventListener('input', filterAssignments);
     
     // Add event listener for Create Assignment button in modal (only if exists)
     const createAssignmentBtn = document.querySelector('#createAssignmentModal .btn-primary');
@@ -2132,16 +2148,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize assignments data from existing table
     const rows = document.querySelectorAll('tbody tr');
-    rows.forEach(row => {
-        const cells = row.querySelectorAll('td');
-        assignmentsData.push({
-            title: cells[1].textContent,
-            subject: cells[2].textContent,
-            dueDate: cells[3].textContent,
-            status: cells[4].querySelector('.badge').textContent,
-            submissions: cells[5].textContent
+    if (subjectFilter || statusFilter || searchInput) {
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            assignmentsData.push({
+                title: cells[1].textContent,
+                subject: cells[2].textContent,
+                dueDate: cells[3].textContent,
+                status: cells[4].querySelector('.badge').textContent,
+                submissions: cells[5].textContent
+            });
         });
-    });
+    }
 });
 </script>
     <script>
@@ -2165,7 +2183,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Event delegation for table actions - attach to tbody for dynamic content
-    quizTableBody.addEventListener('click', function(e) {
+    if (quizTableBody) {
+        quizTableBody.addEventListener('click', function(e) {
         const target = e.target;
         
         // Find the closest button element
@@ -2206,7 +2225,8 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             deleteQuiz(row);
         }
-    });
+        });
+    }
     
     // Filter quizzes based on selected filters and search
     function filterQuizzes() {
@@ -2214,7 +2234,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const statusFilter = quizStatusFilter ? quizStatusFilter.value : '';
         const searchTerm = quizSearch ? quizSearch.value.toLowerCase() : '';
         
-        const rows = quizTableBody.querySelectorAll('tr');
+        const rows = quizTableBody ? quizTableBody.querySelectorAll('tr') : [];
         let visibleCount = 0;
         
         rows.forEach(row => {

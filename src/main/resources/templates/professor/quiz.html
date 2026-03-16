@@ -743,13 +743,81 @@ body {
                             </div>
                         </div>
                         <div class="mb-3"><label class="form-label" for="quizDescription">Description</label><textarea class="form-control" id="quizDescription" placeholder="Enter quiz description" rows="2"></textarea></div>
-                        <div class="mb-3"><label class="form-label">Question Types</label>
-                            <div>
-                                <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" checked="" id="mcqCheck"><label class="form-check-label" for="mcqCheck">Multiple Choice</label></div>
-                                <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" checked="" id="tfCheck"><label class="form-check-label" for="tfCheck">True/False</label></div>
-                                <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="essayCheck"><label class="form-check-label" for="essayCheck">Essay</label></div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <label class="form-label mb-0">Questions</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Count</span>
+                                    <input class="form-control" type="number" id="questionCountInput" min="1" max="100" value="1">
+                                </div>
+                                <button class="btn btn-outline-secondary btn-sm" type="button" id="setQuestionCountBtn">Set</button>
+                                <button class="btn btn-outline-primary btn-sm" type="button" id="addQuestionBtn">Add Question</button>
                             </div>
                         </div>
+                        <div id="questionsContainer"></div>
+                        <template id="questionTemplate">
+                            <div class="border rounded p-3 mb-3 quiz-question-item">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <h6 class="mb-0">Question <span class="question-number">1</span></h6>
+                                    <button class="btn btn-outline-danger btn-sm remove-question" type="button">Remove</button>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Question Type</label>
+                                    <select class="form-select question-type">
+                                        <option value="" selected="">Select type...</option>
+                                        <option value="multiple_choice">Multiple Choice</option>
+                                        <option value="identification">Identification</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Question</label>
+                                    <textarea class="form-control question-text" rows="2" placeholder="Enter the question"></textarea>
+                                </div>
+                                <div class="mcq-fields">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3"><label class="form-label">Choice A</label><input class="form-control mcq-choice" data-choice="A" type="text" placeholder="Choice A"></div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3"><label class="form-label">Choice B</label><input class="form-control mcq-choice" data-choice="B" type="text" placeholder="Choice B"></div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3"><label class="form-label">Choice C</label><input class="form-control mcq-choice" data-choice="C" type="text" placeholder="Choice C"></div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3"><label class="form-label">Choice D</label><input class="form-control mcq-choice" data-choice="D" type="text" placeholder="Choice D"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Correct Answer</label>
+                                        <select class="form-select mcq-correct">
+                                            <option value="" selected="">Select correct choice...</option>
+                                            <option value="A">A</option>
+                                            <option value="B">B</option>
+                                            <option value="C">C</option>
+                                            <option value="D">D</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="identification-fields" style="display: none;">
+                                    <div class="mb-3">
+                                        <label class="form-label">Correct Answer</label>
+                                        <input class="form-control identification-answer" type="text" placeholder="Enter the correct answer">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Answer Matching</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input identification-case" type="radio" name="identCaseMatch" value="case_sensitive">
+                                            <label class="form-check-label">Case sensitive</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input identification-case" type="radio" name="identCaseMatch" value="case_insensitive" checked>
+                                            <label class="form-check-label">Case insensitive</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
                     </form>
                 </div>
                 <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary" type="button">Create Quiz</button></div>
@@ -1082,9 +1150,221 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
     // Create Quiz Modal functionality
     const createQuizButton = document.querySelector('#createQuizModal .btn-primary');
+    const createQuizModal = document.getElementById('createQuizModal');
+    const addQuestionBtn = document.getElementById('addQuestionBtn');
+    const setQuestionCountBtn = document.getElementById('setQuestionCountBtn');
+    const questionCountInput = document.getElementById('questionCountInput');
+    const questionsContainer = document.getElementById('questionsContainer');
+    const questionTemplate = document.getElementById('questionTemplate');
     
     if (createQuizButton) {
         createQuizButton.addEventListener('click', createQuiz);
+    }
+
+    let questionInstanceId = 0;
+
+    if (addQuestionBtn) {
+        addQuestionBtn.addEventListener('click', function() {
+            addQuestion();
+        });
+    }
+
+    if (setQuestionCountBtn) {
+        setQuestionCountBtn.addEventListener('click', function() {
+            const target = parseInt(questionCountInput.value, 10);
+            if (!Number.isFinite(target) || target < 1 || target > 100) {
+                alert('Please enter a valid question count between 1 and 100');
+                return;
+            }
+            setQuestionCount(target);
+        });
+    }
+
+    if (questionsContainer) {
+        addQuestion();
+    }
+
+    if (createQuizModal) {
+        createQuizModal.addEventListener('shown.bs.modal', function() {
+            if (questionsContainer && questionsContainer.children.length === 0) {
+                addQuestion();
+            }
+        });
+    }
+
+    function isValidQuizTitle(title) {
+        const trimmed = title.trim();
+        if (!trimmed) return false;
+        if (!/^[A-Za-z0-9 #&'().,\-\/:]+$/.test(trimmed)) return false;
+        return /[A-Za-z]/.test(trimmed);
+    }
+
+    function setQuestionCount(target) {
+        const current = questionsContainer.querySelectorAll('.quiz-question-item').length;
+        if (current < target) {
+            for (let i = current; i < target; i += 1) {
+                addQuestion();
+            }
+        } else if (current > target) {
+            const items = Array.from(questionsContainer.querySelectorAll('.quiz-question-item'));
+            for (let i = items.length - 1; i >= target; i -= 1) {
+                items[i].remove();
+            }
+            renumberQuestions();
+        }
+    }
+
+    function addQuestion() {
+        const questionItem = createQuestionItem();
+        questionsContainer.appendChild(questionItem);
+        renumberQuestions();
+    }
+
+    function createQuestionItem() {
+        const templateNode = questionTemplate && questionTemplate.content ? questionTemplate.content.firstElementChild : null;
+        const node = templateNode ? templateNode.cloneNode(true) : buildQuestionItemFallback();
+        questionInstanceId += 1;
+        const caseInputs = node.querySelectorAll('.identification-case');
+        caseInputs.forEach(input => {
+            input.name = `identCaseMatch_${questionInstanceId}`;
+        });
+        const typeSelect = node.querySelector('.question-type');
+        const removeButton = node.querySelector('.remove-question');
+
+        typeSelect.addEventListener('change', function() {
+            updateQuestionTypeUI(node);
+        });
+
+        removeButton.addEventListener('click', function() {
+            node.remove();
+            renumberQuestions();
+        });
+
+        updateQuestionTypeUI(node);
+        return node;
+    }
+
+    function updateQuestionTypeUI(questionItem) {
+        const type = questionItem.querySelector('.question-type').value;
+        const mcqFields = questionItem.querySelector('.mcq-fields');
+        const identificationFields = questionItem.querySelector('.identification-fields');
+
+        if (type === 'multiple_choice') {
+            mcqFields.style.display = 'block';
+            identificationFields.style.display = 'none';
+            clearIdentificationFields(questionItem);
+        } else if (type === 'identification') {
+            mcqFields.style.display = 'none';
+            identificationFields.style.display = 'block';
+            clearMcqFields(questionItem);
+        } else {
+            mcqFields.style.display = 'none';
+            identificationFields.style.display = 'none';
+            clearMcqFields(questionItem);
+            clearIdentificationFields(questionItem);
+        }
+    }
+
+    function clearMcqFields(questionItem) {
+        questionItem.querySelectorAll('.mcq-choice').forEach(input => {
+            input.value = '';
+        });
+        questionItem.querySelector('.mcq-correct').value = '';
+    }
+
+    function clearIdentificationFields(questionItem) {
+        questionItem.querySelector('.identification-answer').value = '';
+        const caseInputs = questionItem.querySelectorAll('.identification-case');
+        caseInputs.forEach(input => {
+            input.checked = input.value === 'case_insensitive';
+        });
+    }
+
+    function renumberQuestions() {
+        const items = questionsContainer.querySelectorAll('.quiz-question-item');
+        items.forEach((item, index) => {
+            item.querySelector('.question-number').textContent = index + 1;
+        });
+
+        const removeButtons = questionsContainer.querySelectorAll('.remove-question');
+        if (removeButtons.length === 1) {
+            removeButtons[0].disabled = true;
+        } else {
+            removeButtons.forEach(button => {
+                button.disabled = false;
+            });
+        }
+        if (questionCountInput) {
+            questionCountInput.value = items.length;
+        }
+    }
+
+    function buildQuestionItemFallback() {
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = `
+            <div class="border rounded p-3 mb-3 quiz-question-item">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="mb-0">Question <span class="question-number">1</span></h6>
+                    <button class="btn btn-outline-danger btn-sm remove-question" type="button">Remove</button>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Question Type</label>
+                    <select class="form-select question-type">
+                        <option value="" selected="">Select type...</option>
+                        <option value="multiple_choice">Multiple Choice</option>
+                        <option value="identification">Identification</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Question</label>
+                    <textarea class="form-control question-text" rows="2" placeholder="Enter the question"></textarea>
+                </div>
+                <div class="mcq-fields">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3"><label class="form-label">Choice A</label><input class="form-control mcq-choice" data-choice="A" type="text" placeholder="Choice A"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3"><label class="form-label">Choice B</label><input class="form-control mcq-choice" data-choice="B" type="text" placeholder="Choice B"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3"><label class="form-label">Choice C</label><input class="form-control mcq-choice" data-choice="C" type="text" placeholder="Choice C"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3"><label class="form-label">Choice D</label><input class="form-control mcq-choice" data-choice="D" type="text" placeholder="Choice D"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Correct Answer</label>
+                        <select class="form-select mcq-correct">
+                            <option value="" selected="">Select correct choice...</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="identification-fields" style="display: none;">
+                    <div class="mb-3">
+                        <label class="form-label">Correct Answer</label>
+                        <input class="form-control identification-answer" type="text" placeholder="Enter the correct answer">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Answer Matching</label>
+                        <div class="form-check">
+                            <input class="form-check-input identification-case" type="radio" name="identCaseMatch" value="case_sensitive">
+                            <label class="form-check-label">Case sensitive</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input identification-case" type="radio" name="identCaseMatch" value="case_insensitive" checked>
+                            <label class="form-check-label">Case insensitive</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        return wrapper.firstElementChild;
     }
     
     // Create Quiz Function
@@ -1096,33 +1376,84 @@ document.addEventListener('DOMContentLoaded', function() {
         const attempts = document.getElementById('quizAttempts').value.trim();
         const description = document.getElementById('quizDescription').value.trim();
         
-        // Get question types
-        const mcqChecked = document.getElementById('mcqCheck').checked;
-        const tfChecked = document.getElementById('tfCheck').checked;
-        const essayChecked = document.getElementById('essayCheck').checked;
-        
         // Validation
+        if (!isValidQuizTitle(title)) {
+            alert('Quiz title must contain at least one letter and only letters, numbers, spaces, or common punctuation.');
+            return;
+        }
+
         if (!title || !subject || !duration) {
             alert('Please fill in all required fields: Title, Subject, and Duration');
             return;
         }
-        
-        if (!mcqChecked && !tfChecked && !essayChecked) {
-            alert('Please select at least one question type');
+
+        const questionItems = questionsContainer.querySelectorAll('.quiz-question-item');
+        if (questionItems.length === 0) {
+            alert('Please add at least one question');
             return;
+        }
+
+        let questionCount = questionItems.length;
+        for (let i = 0; i < questionItems.length; i += 1) {
+            const questionItem = questionItems[i];
+            const number = i + 1;
+            const type = questionItem.querySelector('.question-type').value;
+            const questionText = questionItem.querySelector('.question-text').value.trim();
+
+            if (!type) {
+                alert(`Please select a question type for Question ${number}`);
+                return;
+            }
+
+            if (!questionText) {
+                alert(`Please enter the question text for Question ${number}`);
+                return;
+            }
+
+            if (type === 'multiple_choice') {
+                const choices = Array.from(questionItem.querySelectorAll('.mcq-choice')).map(input => input.value.trim());
+                const filledChoices = choices.filter(choice => choice !== '');
+                const correct = questionItem.querySelector('.mcq-correct').value;
+                const correctInput = questionItem.querySelector(`.mcq-choice[data-choice="${correct}"]`);
+
+                if (filledChoices.length < 2) {
+                    alert(`Please provide at least two choices for Question ${number}`);
+                    return;
+                }
+
+                if (!correct) {
+                    alert(`Please select the correct answer for Question ${number}`);
+                    return;
+                }
+
+                if (!correctInput || !correctInput.value.trim()) {
+                    alert(`The selected correct answer must match a filled choice for Question ${number}`);
+                    return;
+                }
+            }
+
+            if (type === 'identification') {
+                const identAnswer = questionItem.querySelector('.identification-answer').value.trim();
+                if (!identAnswer) {
+                    alert(`Please enter the correct answer for Question ${number}`);
+                    return;
+                }
+            }
         }
         
         // Create new quiz row
-        addQuizToTable(title, subject, duration, attempts, description);
+        addQuizToTable(title, subject, duration, attempts, description, questionCount);
         
         // Reset form and close modal
         document.querySelector('#createQuizModal form').reset();
+        questionsContainer.innerHTML = '';
+        addQuestion();
         const modal = bootstrap.Modal.getInstance(document.getElementById('createQuizModal'));
         modal.hide();
     }
     
     // Add quiz to table
-    function addQuizToTable(title, subject, duration, attempts, description) {
+    function addQuizToTable(title, subject, duration, attempts, description, questionCount) {
         const tableBody = document.querySelector('table.table tbody');
         const rows = tableBody.querySelectorAll('tr');
         const nextNumber = rows.length + 1;
@@ -1133,7 +1464,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <td scope="row">${nextNumber}</td>
             <td>${title}</td>
             <td>${subject}</td>
-            <td>0</td>
+            <td>${questionCount}</td>
             <td>${duration} mins</td>
             <td><span class="badge bg-warning">Draft</span></td>
             <td>
@@ -1222,10 +1553,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </body>
 
 </html>
-
-
-
-
 
 
 

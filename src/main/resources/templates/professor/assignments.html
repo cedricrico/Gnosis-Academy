@@ -1416,10 +1416,18 @@ function confirmDeleteAssignment() {
     // Update row numbers
     updateRowNumbers();
     
-    // Close modal
-    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteAssignmentModal'));
-    deleteModal.hide();
-}
+      // Close modal
+      const deleteModalElement = document.getElementById('deleteAssignmentModal');
+      const deleteModal = bootstrap.Modal.getOrCreateInstance(deleteModalElement);
+      deleteModal.hide();
+      // Defensive cleanup in case backdrop is left behind
+      setTimeout(() => {
+          document.body.classList.remove('modal-open');
+          document.body.style.removeProperty('padding-right');
+          document.body.style.removeProperty('overflow');
+          document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+      }, 0);
+  }
 
 // Update row numbers after deletion
 function updateRowNumbers() {
@@ -1478,6 +1486,13 @@ function filterAssignments() {
 }
 
 // NEW ASSIGNMENT FUNCTIONALITY
+function isValidAssignmentTitle(title) {
+    const trimmed = title.trim();
+    if (!trimmed) return false;
+    if (!/^[A-Za-z0-9 #&'().,\-\/:]+$/.test(trimmed)) return false;
+    return /[A-Za-z]/.test(trimmed);
+}
+
 function createAssignment() {
     // Get form values
     const title = document.getElementById('assignmentTitle').value;
@@ -1487,14 +1502,22 @@ function createAssignment() {
     const status = 'Draft'; // Default status for new assignments
     
     // Validate required fields
+    if (!isValidAssignmentTitle(title)) {
+        alert('Assignment title must contain at least one letter and only letters, numbers, spaces, or common punctuation.');
+        return;
+    }
     if (!title || !subject || !dueDate) {
         alert('Please fill in all required fields');
         return;
     }
+    const parsedDate = new Date(dueDate);
+    if (Number.isNaN(parsedDate.getTime())) {
+        alert('Please enter a valid due date');
+        return;
+    }
     
     // Format due date
-    const date = new Date(dueDate);
-    const formattedDate = date.toLocaleDateString('en-US', { 
+    const formattedDate = parsedDate.toLocaleDateString('en-US', { 
         month: 'short', 
         day: 'numeric', 
         year: 'numeric' 

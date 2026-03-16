@@ -1504,7 +1504,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Export announcements to CSV
     function exportAnnouncementsToCSV() {
         const announcements = document.querySelectorAll('.announcement-card');
-        let csvContent = 'Title,Subject,Date,Status\';
+        let csvContent = 'Title,Subject,Date,Status\n';
         
         announcements.forEach(announcement => {
             if (announcement.style.display !== 'none') {
@@ -1516,7 +1516,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Escape commas and quotes in CSV
                 const escapeCSV = (str) => `"${str.replace(/"/g, '""')}"`;
                 
-                csvContent += `${escapeCSV(title)},${escapeCSV(subject)},${escapeCSV(dateText)},${escapeCSV(status)}\`;
+                csvContent += `${escapeCSV(title)},${escapeCSV(subject)},${escapeCSV(dateText)},${escapeCSV(status)}\n`;
             }
         });
         
@@ -1596,6 +1596,13 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
+
+    function isValidAnnouncementTitle(title) {
+        const trimmed = title.trim();
+        if (!trimmed) return false;
+        if (!/^[A-Za-z0-9 #&'().,\-\/:]+$/.test(trimmed)) return false;
+        return /[A-Za-z]/.test(trimmed);
+    }
     
     // Handle new announcement form submission
     const postAnnouncementBtn = document.getElementById('postAnnouncementBtn');
@@ -1606,6 +1613,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const content = document.getElementById('announcementContent').value;
             const date = document.getElementById('announcementDate').value;
             const status = document.getElementById('announcementStatus').value;
+
+            if (!isValidAnnouncementTitle(title)) {
+                alert('Title must contain at least one letter and only letters, numbers, and spaces.');
+                return;
+            }
             
             // Validate form
             if (!title || !subject || !content || !date || !status) {
@@ -1968,7 +1980,7 @@ function exportAssignments() {
     const rows = document.querySelectorAll('tbody tr');
     
     // Create CSV header
-    let csvContent = 'Title,Subject,Due Date,Status\';
+    let csvContent = 'Title,Subject,Due Date,Status\n';
     
     // Add each assignment to CSV
     rows.forEach(row => {
@@ -1981,7 +1993,7 @@ function exportAssignments() {
             const dueDate = cells[3].textContent;
             const status = cells[4].textContent;
             
-            csvContent += `"${title}","${subject}","${dueDate}","${status}"\`;
+            csvContent += `"${title}","${subject}","${dueDate}","${status}"\n`;
         }
     });
     
