@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html data-bs-theme="light" lang="en">
+<html data-bs-theme="light" lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title>Quizzes - Instructor Dashboard</title>
     <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
     <style>
@@ -139,8 +141,19 @@
 }
 
 .btn-group-sm svg {
+  margin: 0;
+  padding: 0;
   width: 0.875rem;
   height: 0.875rem;
+  display: block;
+  fill: currentColor;
+}
+
+.btn-group-sm .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 /* Ensure action buttons are properly spaced */
@@ -271,8 +284,17 @@ table.table tbody tr td .btn-group {
 }/* Mobile sidebar toggle */
 
 .sidebar {
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
+
+/* Smooth collapse animation for sidebar */
+.sidebar.collapsing {
+  height: auto;
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
 
 @media (max-width: 767.98px) {
   .sidebar {
@@ -282,6 +304,9 @@ table.table tbody tr td .btn-group {
     bottom: 0;
     z-index: 1040;
     transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
     overflow-y: auto;
     background-color: #f8f9fa;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
@@ -292,14 +317,19 @@ table.table tbody tr td .btn-group {
 @media (max-width: 767.98px) {
   .sidebar.show {
     transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 }
 
 /* Hide sidebar by default on mobile */
-
 @media (max-width: 767.98px) {
   .sidebar:not(.show) {
-    display: none;
+    transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 }
 
@@ -520,10 +550,10 @@ body {
             </div>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">
-                    <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" id="navbarProfile"><svg class="bi bi-person-circle me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"></path>
-                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"></path>
-                        </svg><span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${professorFullName}">Instructor User</span><span class="text-muted small fw-semibold">ID: <span th:text="${professorId}">I2024001</span></span></span></button>
+                    <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" id="navbarProfile">
+                        <img id="navbarProfilePhoto" src="https://via.placeholder.com/32" alt="Profile photo" width="32" height="32" class="rounded-circle me-2">
+                        <span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${professorFullName}">Instructor User</span><span class="text-muted small fw-semibold">ID: <span th:text="${professorId}">I2024001</span></span></span>
+                    </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarProfile">
                         <li><a class="dropdown-item" href="/professor/profile"><svg class="bi bi-person me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"></path>
@@ -600,19 +630,20 @@ body {
                 <div class="card mb-4">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-4"><label class="form-label" for="quizSubjectFilter">Filter by Subject</label><select class="form-select" id="quizSubjectFilter">
+                            <div class="col-md-3"><label class="form-label" for="quizSubjectFilter">Filter by Subject</label><select class="form-select" id="quizSubjectFilter">
                                     <option value="" selected="">All Subjects</option>
-                                    <option value="MATH101">MATH101 - Calculus I</option>
-                                    <option value="PHYS101">PHYS101 - General Physics I</option>
-                                    <option value="CHEM101">CHEM101 - General Chemistry I</option>
                                 </select></div>
-                            <div class="col-md-4"><label class="form-label" for="quizStatusFilter">Filter by Status</label><select class="form-select" id="quizStatusFilter">
+                            <div class="col-md-3"><label class="form-label" for="quizSectionFilter">Filter by Section</label><select class="form-select" id="quizSectionFilter">
+                                    <option value="" selected="">All Sections</option>
+                                </select></div>
+                            <div class="col-md-3"><label class="form-label" for="quizStatusFilter">Filter by Status</label><select class="form-select" id="quizStatusFilter">
                                     <option value="" selected="">All Statuses</option>
                                     <option value="Published">Published</option>
                                     <option value="Draft">Draft</option>
+                                    <option value="Expired">Expired</option>
                                     <option value="Archived">Archived</option>
                                 </select></div>
-                            <div class="col-md-4"><label class="form-label" for="quizSearch">Search</label><input type="text" class="form-control" id="quizSearch" placeholder="Search quizzes..."></div>
+                            <div class="col-md-3"><label class="form-label" for="quizSearch">Search</label><input type="text" class="form-control" id="quizSearch" placeholder="Search quizzes..."></div>
                         </div>
                     </div>
                 </div>
@@ -624,94 +655,18 @@ body {
                         <div class="table-responsive">
                             <table class="table table-striped table-hover">
                                 <thead>
-                                    <tr>
+                                    <tr data-section="All Sections">
                                         <th scope="col">#</th>
                                         <th scope="col">Title</th>
                                         <th scope="col">Subject</th>
                                         <th scope="col">Questions</th>
                                         <th scope="col">Duration</th>
+                                        <th scope="col">Due Date</th>
                                         <th scope="col">Status</th>
                                         <th scope="col">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td scope="row">1</td>
-                                        <td>Functions &amp; Graphs Quiz</td>
-                                        <td>MATH101</td>
-                                        <td>15</td>
-                                        <td>30 mins</td>
-                                        <td><span class="badge bg-success">Published</span></td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm" role="group"><a class="btn btn-outline-primary" role="button" href="#"><svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
-                                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
-                                                    </svg></a><a class="btn btn-outline-warning" role="button" href="#"><svg class="bi bi-pencil" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"></path>
-                                                    </svg></a><a class="btn btn-outline-danger" role="button" href="#"><svg class="bi bi-trash" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
-                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
-                                                    </svg></a></div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td scope="row">2</td>
-                                        <td>Kinematics Quiz</td>
-                                        <td>PHYS101</td>
-                                        <td>12</td>
-                                        <td>25 mins</td>
-                                        <td><span class="badge bg-success">Published</span></td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm" role="group"><a class="btn btn-outline-primary" role="button" href="#"><svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
-                                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
-                                                    </svg></a><a class="btn btn-outline-warning" role="button" href="#"><svg class="bi bi-pencil" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"></path>
-                                                    </svg></a><a class="btn btn-outline-danger" role="button" href="#"><svg class="bi bi-trash" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
-                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
-                                                    </svg></a></div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td scope="row">3</td>
-                                        <td>Chemical Bonding Quiz</td>
-                                        <td>CHEM101</td>
-                                        <td>20</td>
-                                        <td>40 mins</td>
-                                        <td><span class="badge bg-warning">Draft</span></td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm" role="group"><a class="btn btn-outline-primary" role="button" href="#"><svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
-                                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
-                                                    </svg></a><a class="btn btn-outline-warning" role="button" href="#"><svg class="bi bi-pencil" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"></path>
-                                                    </svg></a><a class="btn btn-outline-danger" role="button" href="#"><svg class="bi bi-trash" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
-                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
-                                                    </svg></a></div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td scope="row">4</td>
-                                        <td>Integration Techniques</td>
-                                        <td>MATH101</td>
-                                        <td>18</td>
-                                        <td>35 mins</td>
-                                        <td><span class="badge bg-secondary">Archived</span></td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm" role="group"><a class="btn btn-outline-primary" role="button" href="#"><svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
-                                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
-                                                    </svg></a><a class="btn btn-outline-warning" role="button" href="#"><svg class="bi bi-pencil" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"></path>
-                                                    </svg></a><a class="btn btn-outline-danger" role="button" href="#"><svg class="bi bi-trash" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
-                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
-                                                    </svg></a></div>
-                                        </td>
-                                    </tr>
-                                </tbody>
+                                <tbody></tbody>
                             </table>
                         </div>
                     </div>
@@ -728,16 +683,43 @@ body {
                 <div class="modal-body">
                     <form>
                         <div class="mb-3"><label class="form-label" for="quizTitle">Quiz Title</label><input class="form-control" type="text" id="quizTitle" placeholder="Enter quiz title"></div>
+                        <div class="mb-3"><label class="form-label" for="quizCode">Quiz Code</label><input class="form-control" type="text" id="quizCode" placeholder="000-000" inputmode="numeric" pattern="\\d{3}-\\d{3}" maxlength="7"></div>
                         <div class="mb-3"><label class="form-label" for="quizSubject">Subject</label><select class="form-select" id="quizSubject">
                                 <option value="" selected="">Select subject...</option>
-                                <option value="MATH101">MATH101 - Calculus I</option>
-                                <option value="PHYS101">PHYS101 - General Physics I</option>
-                                <option value="CHEM101">CHEM101 - General Chemistry I</option>
                             </select></div>
+                        <div class="mb-3">
+                            <label class="form-label" for="quizSection">Section</label>
+                            <select class="form-select" id="quizSection">
+                                <option value="" selected="">Select section...</option>
+                                <option value="All Sections">All Sections</option>
+                            </select>
+                        </div>
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="mb-3"><label class="form-label" for="quizDuration">Duration (minutes)</label><input class="form-control" type="number" id="quizDuration" placeholder="e.g., 30"></div>
+                                <div class="mb-3">
+                                    <label class="form-label">Duration</label>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <div class="input-group">
+                                                <input class="form-control" type="number" id="quizDurationHours" min="0" placeholder="0">
+                                                <span class="input-group-text">Hours</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="input-group">
+                                                <input class="form-control" type="number" id="quizDurationMinutes" min="0" max="59" placeholder="0">
+                                                <span class="input-group-text">Minutes</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label" for="quizDueDate">Due Date</label>
+                                    <input class="form-control" type="datetime-local" id="quizDueDate" required>
+                                </div>
+                            </div>
+                        </div>
                             <div class="col-md-6">
                                 <div class="mb-3"><label class="form-label" for="quizAttempts">Allowed Attempts</label><input class="form-control" type="number" id="quizAttempts" placeholder="e.g., 2" value="1"></div>
                             </div>
@@ -820,7 +802,7 @@ body {
                         </template>
                     </form>
                 </div>
-                <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary" type="button">Create Quiz</button></div>
+                <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary" type="button" id="createQuizButton">Create Quiz</button></div>
             </div>
         </div>
     </div>
@@ -830,9 +812,12 @@ body {
 document.addEventListener('DOMContentLoaded', function() {
     // Quiz Filtering and Search functionality
     const quizSubjectFilter = document.getElementById('quizSubjectFilter');
+    const quizSectionFilter = document.getElementById('quizSectionFilter');
     const quizStatusFilter = document.getElementById('quizStatusFilter');
     const quizSearch = document.getElementById('quizSearch');
     const quizTableBody = document.querySelector('table.table tbody');
+    const quizStore = window.quizStore || { list: [], cache: new Map() };
+    window.quizStore = quizStore;
     
     // Add event listeners for filtering
     if (quizSubjectFilter) {
@@ -840,6 +825,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     if (quizStatusFilter) {
         quizStatusFilter.addEventListener('change', filterQuizzes);
+    }
+    if (quizSectionFilter) {
+        quizSectionFilter.addEventListener('change', filterQuizzes);
     }
     if (quizSearch) {
         quizSearch.addEventListener('input', filterQuizzes);
@@ -850,48 +838,70 @@ document.addEventListener('DOMContentLoaded', function() {
         const target = e.target;
         
         // Find the closest button element
-        const button = target.closest('button.btn');
+        const button = target.closest('button');
         
         // If clicked element is not a button or doesn't have the right classes, return
-        if (!button || !(button.classList.contains('btn-outline-primary') || 
+        if (!button || !(button.dataset.action ||
+                         button.classList.contains('btn-outline-primary') || 
+                         button.classList.contains('btn-outline-success') ||
                          button.classList.contains('btn-outline-warning') || 
                          button.classList.contains('btn-outline-danger'))) {
+            return;
+        }
+
+        if (button.disabled) {
             return;
         }
         
         const row = button.closest('tr');
         const cells = row.querySelectorAll('td');
+        const id = button.dataset.id || row.dataset.id;
+        const cached = id ? quizStore.cache.get(String(id)) : null;
         
         // Extract quiz data from the row
-        const quizData = {
-            id: cells[0].textContent,
+        const quizData = cached || {
+            id: id || cells[0].textContent,
             title: cells[1].textContent,
             subject: cells[2].textContent,
-            questions: cells[3].textContent,
+            questionCount: parseInt(cells[3].textContent, 10) || 0,
             duration: cells[4].textContent,
-            status: cells[5].querySelector('.badge').textContent
+            dueDate: cells[5].textContent,
+            status: cells[6].querySelector('.badge').textContent,
+            section: row.getAttribute('data-section') || null
         };
         
         // Handle View button (eye icon)
-        if (button.classList.contains('btn-outline-primary')) {
+        if (button.dataset.action === 'view' || button.classList.contains('btn-outline-primary')) {
             e.preventDefault();
             showViewModal(quizData);
         }
+        // Handle Publish button
+        else if (button.dataset.action === 'publish' || button.classList.contains('btn-outline-success')) {
+            e.preventDefault();
+            publishQuiz(quizData, row).catch(error => {
+                console.error(error);
+                alert(error && error.message ? error.message : 'Unable to publish quiz.');
+            });
+        }
         // Handle Edit button (pencil icon)
-        else if (button.classList.contains('btn-outline-warning')) {
+        else if (button.dataset.action === 'edit' || button.classList.contains('btn-outline-warning')) {
             e.preventDefault();
             showEditModal(quizData, row);
         }
         // Handle Delete button (trash icon)
-        else if (button.classList.contains('btn-outline-danger')) {
+        else if (button.dataset.action === 'delete' || button.classList.contains('btn-outline-danger')) {
             e.preventDefault();
-            deleteQuiz(row);
+            deleteQuiz(row).catch(error => {
+                console.error(error);
+                alert(error && error.message ? error.message : 'Unable to delete quiz.');
+            });
         }
     });
     
     // Filter quizzes based on selected filters and search
     function filterQuizzes() {
         const subjectFilter = quizSubjectFilter ? quizSubjectFilter.value : '';
+        const sectionFilter = quizSectionFilter ? quizSectionFilter.value : '';
         const statusFilter = quizStatusFilter ? quizStatusFilter.value : '';
         const searchTerm = quizSearch ? quizSearch.value.toLowerCase() : '';
         
@@ -901,12 +911,17 @@ document.addEventListener('DOMContentLoaded', function() {
         rows.forEach(row => {
             const cells = row.querySelectorAll('td');
             const subject = cells[2].textContent;
-            const status = cells[5].querySelector('.badge').textContent;
+            const status = cells[6].querySelector('.badge').textContent;
             const title = cells[1].textContent.toLowerCase();
+            const rowSection = (row.getAttribute('data-section') || '').toLowerCase();
             
             // Check subject filter
             const subjectMatch = subjectFilter === '' || subject.includes(subjectFilter);
             
+            // Check section filter
+            const sectionMatch = !sectionFilter || sectionFilter === '' || sectionFilter === 'All Sections'
+                || rowSection.includes(sectionFilter.toLowerCase());
+
             // Check status filter  
             const statusMatch = statusFilter === '' || status.toLowerCase() === statusFilter.toLowerCase();
             
@@ -916,7 +931,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                subject.toLowerCase().includes(searchTerm);
             
             // Show/hide row based on all filters
-            if (subjectMatch && statusMatch && searchMatch) {
+            if (subjectMatch && sectionMatch && statusMatch && searchMatch) {
                 row.style.display = '';
                 visibleCount++;
             } else {
@@ -941,8 +956,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Populate modal with quiz data
         document.getElementById('viewQuizTitle').textContent = quizData.title;
         document.getElementById('viewQuizSubject').textContent = quizData.subject;
-        document.getElementById('viewQuizQuestions').textContent = quizData.questions;
-        document.getElementById('viewQuizDuration').textContent = quizData.duration;
+        const questionsValue = quizData.questionCount ?? quizData.questions;
+        document.getElementById('viewQuizQuestions').textContent = questionsValue;
+        const durationText = quizData.durationMinutes != null ? formatDurationText(quizData.durationMinutes) : quizData.duration;
+        document.getElementById('viewQuizDuration').textContent = durationText;
+        document.getElementById('viewQuizDueDate').textContent = formatDueDateDisplay(quizData.dueDate);
         document.getElementById('viewQuizStatus').textContent = quizData.status;
         
         // Set status badge color
@@ -963,22 +981,135 @@ document.addEventListener('DOMContentLoaded', function() {
             modal = createEditModal();
             document.body.appendChild(modal);
         }
-        
+
+        const editQuestionsContainer = document.getElementById('editQuestionsContainer');
+        const editQuestionCountInput = document.getElementById('editQuestionCountInput');
+        const editAddQuestionBtn = document.getElementById('editAddQuestionBtn');
+        const editSetQuestionCountBtn = document.getElementById('editSetQuestionCountBtn');
+        const helpers = window.quizQuestionHelpers;
+        if (modal && modal.dataset.questionsBound !== 'true') {
+            if (editAddQuestionBtn) {
+                editAddQuestionBtn.addEventListener('click', function() {
+                    if (helpers && typeof helpers.addQuestion === 'function') {
+                        helpers.addQuestion(editQuestionsContainer, editQuestionCountInput);
+                    }
+                });
+            }
+            if (editSetQuestionCountBtn) {
+                editSetQuestionCountBtn.addEventListener('click', function() {
+                    const target = parseInt(editQuestionCountInput.value, 10);
+                    if (!Number.isFinite(target) || target < 1 || target > 100) {
+                        alert('Please enter a valid question count between 1 and 100');
+                        return;
+                    }
+                    if (helpers && typeof helpers.setQuestionCount === 'function') {
+                        helpers.setQuestionCount(target, editQuestionsContainer, editQuestionCountInput);
+                    }
+                });
+            }
+            modal.dataset.questionsBound = 'true';
+        }
+
+        const editSubjectSelect = document.getElementById('editQuizSubject');
+        if (editSubjectSelect && editSubjectSelect.options.length <= 1) {
+            const sourceSelect = document.getElementById('quizSubject');
+            if (sourceSelect && sourceSelect.options.length > 1) {
+                const clonedOptions = Array.from(sourceSelect.options).map(option => {
+                    const clone = option.cloneNode(true);
+                    clone.selected = false;
+                    return clone;
+                });
+                editSubjectSelect.innerHTML = '';
+                clonedOptions.forEach(option => editSubjectSelect.appendChild(option));
+            } else if (Array.isArray(window.quizMetaSubjects) && window.quizMetaSubjects.length) {
+                editSubjectSelect.innerHTML = '';
+                const placeholderOption = document.createElement('option');
+                placeholderOption.value = '';
+                placeholderOption.textContent = 'Select subject...';
+                placeholderOption.selected = true;
+                editSubjectSelect.appendChild(placeholderOption);
+                window.quizMetaSubjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject;
+                    option.textContent = subject;
+                    editSubjectSelect.appendChild(option);
+                });
+            }
+        }
+
         // Populate form fields
         document.getElementById('editQuizTitle').value = quizData.title;
-        document.getElementById('editQuizSubject').value = quizData.subject;
-        document.getElementById('editQuizQuestions').value = quizData.questions.replace(/\D/g, ''); // Extract numbers only
-        document.getElementById('editQuizDuration').value = quizData.duration.replace(/\D/g, ''); // Extract numbers only
+        if (editSubjectSelect) {
+            editSubjectSelect.value = quizData.subject;
+        }
+        const cachedQuiz = quizData.id && window.quizStore ? window.quizStore.cache.get(String(quizData.id)) : null;
+        const questionsCount = quizData.questionCount != null
+            ? quizData.questionCount
+            : parseInt(String(quizData.questions || '').replace(/\D/g, ''), 10);
+        document.getElementById('editQuizQuestions').value = Number.isFinite(questionsCount) ? questionsCount : '';
+        if (editQuestionCountInput) {
+            editQuestionCountInput.value = Number.isFinite(questionsCount) && questionsCount > 0 ? questionsCount : 1;
+        }
+        const editDurationMinutes = quizData.durationMinutes != null
+            ? quizData.durationMinutes
+            : parseDurationToMinutes(quizData.duration);
+        const editParts = minutesToParts(editDurationMinutes);
+        document.getElementById('editQuizDurationHours').value = editParts.hours;
+        document.getElementById('editQuizDurationMinutes').value = editParts.minutes;
+        const rowDueDate = row ? (row.dataset.dueDate || quizData.dueDate) : quizData.dueDate;
+        document.getElementById('editQuizDueDate').value = normalizeDateTime(rowDueDate);
         
         // Set status select
         const statusSelect = document.getElementById('editQuizStatus');
-        statusSelect.value = quizData.status.toLowerCase();
+        if (statusSelect) {
+            const normalizedStatus = quizData.status ? quizData.status.toLowerCase() : 'draft';
+            const republishOption = document.getElementById('republishQuizOption');
+            const publishedOption = document.getElementById('publishedQuizStatusOption');
+
+            if (publishedOption) {
+                publishedOption.remove();
+            }
+
+            if (normalizedStatus === 'published') {
+                if (republishOption) {
+                    republishOption.hidden = true;
+                    republishOption.disabled = true;
+                }
+                const newPublished = document.createElement('option');
+                newPublished.id = 'publishedQuizStatusOption';
+                newPublished.value = 'published';
+                newPublished.textContent = 'Published';
+                statusSelect.appendChild(newPublished);
+            } else if (republishOption) {
+                republishOption.hidden = normalizedStatus !== 'expired';
+                republishOption.disabled = normalizedStatus !== 'expired';
+            }
+
+            statusSelect.value = normalizedStatus;
+        }
         
         // Set up save handler
         const saveButton = document.getElementById('saveQuizChanges');
         saveButton.onclick = function() {
-            saveQuizChanges(quizData.id, row);
+            saveQuizChanges(quizData.id, row).catch(error => {
+                console.error(error);
+                alert(error && error.message ? error.message : 'Unable to save quiz changes.');
+            });
         };
+
+        const questionsJson = cachedQuiz?.questionsJson || quizData.questionsJson || '';
+        if (helpers && typeof helpers.parseQuestionsJson === 'function' && typeof helpers.populateQuestionsContainer === 'function') {
+            const parsedQuestions = helpers.parseQuestionsJson(questionsJson);
+            helpers.populateQuestionsContainer(
+                editQuestionsContainer,
+                editQuestionCountInput,
+                parsedQuestions,
+                Number.isFinite(questionsCount) ? questionsCount : 1
+            );
+        } else if (helpers && typeof helpers.addQuestion === 'function' && editQuestionsContainer) {
+            editQuestionsContainer.innerHTML = '';
+            helpers.addQuestion(editQuestionsContainer, editQuestionCountInput);
+        }
         
         // Show modal
         const bsModal = new bootstrap.Modal(modal);
@@ -986,37 +1117,189 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Save Quiz Changes
-    function saveQuizChanges(quizId, row) {
+    async function saveQuizChanges(quizId, row) {
         const title = document.getElementById('editQuizTitle').value;
         const subject = document.getElementById('editQuizSubject').value;
         const questions = document.getElementById('editQuizQuestions').value;
-        const duration = document.getElementById('editQuizDuration').value + ' mins';
-        const status = document.getElementById('editQuizStatus').value;
+        const editHoursRaw = document.getElementById('editQuizDurationHours').value;
+        const editMinutesRaw = document.getElementById('editQuizDurationMinutes').value;
+        const editHours = editHoursRaw === '' ? 0 : parseInt(editHoursRaw, 10);
+        const editMinutes = editMinutesRaw === '' ? 0 : parseInt(editMinutesRaw, 10);
+        const editTotalMinutes = (Number.isFinite(editHours) ? editHours : 0) * 60 + (Number.isFinite(editMinutes) ? editMinutes : 0);
+        const duration = formatDurationText(editTotalMinutes);
+        const rawStatus = document.getElementById('editQuizStatus').value;
+        const status = rawStatus === 'republish' ? 'published' : rawStatus;
+        const dueDate = document.getElementById('editQuizDueDate').value;
+        const editQuestionsContainer = document.getElementById('editQuestionsContainer');
+        const helpers = window.quizQuestionHelpers;
+        const serializedQuestions = helpers && typeof helpers.serializeQuestionsFromContainer === 'function'
+            ? helpers.serializeQuestionsFromContainer(editQuestionsContainer)
+            : null;
+        if (!serializedQuestions) {
+            return;
+        }
+        document.getElementById('editQuizQuestions').value = serializedQuestions.questionCount;
+
+        if (!editTotalMinutes) {
+            alert('Please enter a duration (hours and/or minutes).');
+            return;
+        }
+        if (!dueDate) {
+            alert('Please enter a due date.');
+            return;
+        }
+        if (rawStatus === 'republish' && isExpired({ dueDate })) {
+            alert('Please update the due date before republishing an expired quiz.');
+            return;
+        }
         
-        // Update table row
-        const cells = row.querySelectorAll('td');
-        cells[1].textContent = title;
-        cells[2].textContent = subject;
-        cells[3].textContent = questions;
-        cells[4].textContent = duration;
-        
-        // Update status badge
-        const statusBadge = cells[5].querySelector('.badge');
-        statusBadge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
-        statusBadge.className = 'badge ' + getStatusColor(status);
+        const cachedQuiz = quizId && window.quizStore ? window.quizStore.cache.get(String(quizId)) : null;
+        const payload = {
+            title,
+            code: cachedQuiz?.code || row.dataset.code || row.dataset.quizCode || '',
+            subject,
+            section: cachedQuiz?.section || row.getAttribute('data-section') || null,
+            durationMinutes: editTotalMinutes,
+            questionCount: serializedQuestions.questionCount || parseInt(questions, 10) || 0,
+            attempts: cachedQuiz?.attempts ?? null,
+            description: cachedQuiz?.description ?? '',
+            dueDate,
+            status: status.toUpperCase(),
+            questionsJson: serializedQuestions.questionsJson
+        };
+
+        if (window.fetchProfessorJson && quizId) {
+            const updated = await window.fetchProfessorJson(`/professor/api/quizzes/${quizId}`, {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+            });
+            if (window.loadQuizzes) {
+                await window.loadQuizzes();
+            } else if (updated) {
+                const cells = row.querySelectorAll('td');
+                cells[1].textContent = updated.title || title;
+                cells[2].textContent = updated.subject || subject;
+                cells[3].textContent = updated.questionCount || questions;
+                cells[4].textContent = formatDurationText(updated.durationMinutes || editTotalMinutes);
+                cells[5].textContent = formatDueDateDisplay(updated.dueDate || dueDate);
+                row.dataset.dueDate = updated.dueDate || dueDate;
+                const statusBadge = cells[6].querySelector('.badge');
+                statusBadge.textContent = formatStatusLabel(updated.status || status);
+                statusBadge.className = 'badge ' + getStatusColor(updated.status || status);
+                updatePublishButtonState(row, updated.status || status);
+            }
+        }
         
         // Close modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('editQuizModal'));
         modal.hide();
     }
+
+    async function publishQuiz(quizData, row) {
+        const statusBadge = row.querySelector('.badge');
+        const currentStatus = statusBadge ? statusBadge.textContent.trim().toLowerCase() : '';
+        if (currentStatus !== 'draft') {
+            return;
+        }
+
+        const confirmed = confirm(`Publish quiz "${quizData.title}" now?`);
+        if (!confirmed) return;
+
+        if (window.fetchProfessorJson && quizData.id) {
+            const cachedQuiz = window.quizStore ? window.quizStore.cache.get(String(quizData.id)) : null;
+            const payload = {
+                title: cachedQuiz?.title || quizData.title,
+                code: cachedQuiz?.code || '',
+                subject: cachedQuiz?.subject || quizData.subject,
+                section: cachedQuiz?.section || row.getAttribute('data-section') || null,
+                durationMinutes: cachedQuiz?.durationMinutes || parseDurationToMinutes(quizData.duration),
+                questionCount: cachedQuiz?.questionCount || parseInt(String(quizData.questions || '').replace(/\D/g, ''), 10) || 1,
+                attempts: cachedQuiz?.attempts ?? null,
+                description: cachedQuiz?.description ?? '',
+                dueDate: cachedQuiz?.dueDate || row.dataset.dueDate || quizData.dueDate || '',
+                status: 'PUBLISHED'
+            };
+            await window.fetchProfessorJson(`/professor/api/quizzes/${quizData.id}`, {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+            });
+            if (window.loadQuizzes) {
+                await window.loadQuizzes();
+                return;
+            }
+        }
+
+        statusBadge.textContent = 'Published';
+        statusBadge.className = 'badge ' + getStatusColor('published');
+        updatePublishButtonState(row, 'published');
+    }
     
     // Delete Quiz Functionality
-    function deleteQuiz(row) {
+    function resolveQuizId(row) {
+        const direct = row.dataset.id || row.querySelector('[data-id]')?.dataset?.id;
+        if (direct && direct !== 'undefined' && direct !== 'null') {
+            return direct;
+        }
+
+        const code = row.dataset.code;
+        if (code && quizStore && Array.isArray(quizStore.list)) {
+            const match = quizStore.list.find(item => item && item.code === code);
+            if (match && match.id != null) {
+                return match.id;
+            }
+        }
+
+        const cells = row.querySelectorAll('td');
+        const title = cells[1]?.textContent?.trim() || '';
+        const subject = cells[2]?.textContent?.trim() || '';
+        const dueDate = row.dataset.dueDate || cells[5]?.textContent?.trim() || '';
+        if (quizStore && Array.isArray(quizStore.list)) {
+            const fallback = quizStore.list.find(item => {
+                if (!item) return false;
+                const itemTitle = (item.title || '').trim();
+                const itemSubject = (item.subject || '').trim();
+                const itemDue = (item.dueDate || '').trim();
+                if (title && itemTitle !== title) return false;
+                if (subject && itemSubject !== subject) return false;
+                if (dueDate && itemDue && itemDue !== dueDate) return false;
+                return true;
+            });
+            if (fallback && fallback.id != null) {
+                return fallback.id;
+            }
+        }
+
+        return '';
+    }
+
+    async function deleteQuiz(row) {
         const quizTitle = row.querySelector('td:nth-child(2)').textContent;
         
         if (confirm(`Are you sure you want to delete the quiz "${quizTitle}"? This action cannot be undone.`)) {
+            const id = resolveQuizId(row);
+            if (!id) {
+                alert('Unable to find the quiz id. Please refresh the page and try again.');
+                return;
+            }
+            if (window.fetchProfessorJson && id) {
+                try {
+                    await window.fetchProfessorJson(`/professor/api/quizzes/${id}`, { method: 'DELETE' });
+                    if (window.loadQuizzes) {
+                        await window.loadQuizzes();
+                        return;
+                    }
+                } catch (error) {
+                    if (error && error.message === 'Quiz not found.') {
+                        if (window.loadQuizzes) {
+                            await window.loadQuizzes();
+                        }
+                        alert('Quiz was not found. The list has been refreshed.');
+                        return;
+                    }
+                    throw error;
+                }
+            }
             row.remove();
-            // Optionally update row numbers
             updateRowNumbers();
         }
     }
@@ -1034,9 +1317,168 @@ document.addEventListener('DOMContentLoaded', function() {
         switch(status.toLowerCase()) {
             case 'published': return 'bg-success';
             case 'draft': return 'bg-warning';
+            case 'expired': return 'bg-danger';
             case 'archived': return 'bg-secondary';
             default: return 'bg-secondary';
         }
+    }
+
+    function formatStatusLabel(status) {
+        const safe = (status || '').toString().toLowerCase();
+        if (!safe) return 'Draft';
+        return safe.charAt(0).toUpperCase() + safe.slice(1);
+    }
+
+    function formatDueDateDisplay(value) {
+        if (!value) return '';
+        return value.replace('T', ' ');
+    }
+
+    function formatDueDateDisplay(value) {
+        if (!value) return '';
+        return value.replace('T', ' ');
+    }
+
+    function normalizeDateTime(value) {
+        if (!value) return '';
+        return value.includes('T') ? value : `${value}T00:00`;
+    }
+
+    function formatDueDateDisplay(value) {
+        if (!value) return '';
+        return value.replace('T', ' ');
+    }
+
+    function parseDueDate(value) {
+        if (!value) return null;
+        const normalized = normalizeDateTime(value);
+        const parsed = new Date(normalized);
+        if (Number.isNaN(parsed.getTime())) return null;
+        return parsed;
+    }
+
+    function isExpired(quiz) {
+        const due = parseDueDate(quiz.dueDate);
+        if (!due) return false;
+        return Date.now() >= due.getTime();
+    }
+
+    function expirePastDueQuizzes() {
+        if (!quizTableBody) return;
+        const rows = quizTableBody.querySelectorAll('tr');
+        rows.forEach(row => {
+            const statusBadge = row.querySelector('.badge');
+            if (!statusBadge) return;
+            const status = statusBadge.textContent.trim().toLowerCase();
+            if (status === 'expired' || status === 'archived') return;
+            const dueDate = row.dataset.dueDate || row.querySelector('td:nth-child(6)')?.textContent || '';
+            if (isExpired({ dueDate })) {
+                statusBadge.textContent = 'Expired';
+                statusBadge.className = 'badge ' + getStatusColor('expired');
+                updatePublishButtonState(row, 'expired');
+                const quizId = row.dataset.id;
+                const cachedQuiz = quizId && quizStore ? quizStore.cache.get(String(quizId)) : null;
+                if (cachedQuiz && window.fetchProfessorJson) {
+                    const payload = buildQuizPayload(cachedQuiz, { status: 'EXPIRED' });
+                    window.fetchProfessorJson(`/professor/api/quizzes/${cachedQuiz.id}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(payload)
+                    }).catch(error => {
+                        console.warn('Failed to mark quiz expired:', error);
+                    });
+                }
+            }
+        });
+    }
+
+    function updatePublishButtonState(row, statusText) {
+        if (!row) return;
+        const publishButton = row.querySelector('.btn-outline-success, .btn-outline-secondary');
+        if (!publishButton) return;
+        const status = (statusText || '').toString().toLowerCase();
+        const isDraft = status === 'draft';
+
+        if (isDraft) {
+            publishButton.disabled = false;
+            publishButton.removeAttribute('aria-disabled');
+            publishButton.classList.remove('btn-outline-secondary');
+            publishButton.classList.add('btn-outline-success');
+        } else {
+            publishButton.disabled = true;
+            publishButton.setAttribute('aria-disabled', 'true');
+            publishButton.classList.remove('btn-outline-success');
+            publishButton.classList.add('btn-outline-secondary');
+        }
+    }
+
+    function parseDurationToMinutes(text) {
+        if (!text) return 0;
+        const lower = text.toLowerCase();
+        const hoursMatch = lower.match(/(\d+)\s*h/);
+        const minsMatch = lower.match(/(\d+)\s*m/);
+        const hours = hoursMatch ? parseInt(hoursMatch[1], 10) : 0;
+        const mins = minsMatch ? parseInt(minsMatch[1], 10) : 0;
+        if (!hoursMatch && !minsMatch) {
+            const fallback = parseInt(lower.replace(/\D/g, ''), 10);
+            return Number.isFinite(fallback) ? fallback : 0;
+        }
+        return hours * 60 + mins;
+    }
+
+    function minutesToParts(totalMinutes) {
+        const safeMinutes = Math.max(0, totalMinutes || 0);
+        const hours = Math.floor(safeMinutes / 60);
+        const minutes = safeMinutes % 60;
+        return { hours, minutes };
+    }
+
+    function formatDurationText(totalMinutes) {
+        const { hours, minutes } = minutesToParts(totalMinutes);
+        if (hours && minutes) return `${hours} hrs ${minutes} mins`;
+        if (hours) return `${hours} hrs`;
+        return `${minutes} mins`;
+    }
+
+    function buildQuizPayload(quiz, overrides = {}) {
+        const base = quiz || {};
+        return {
+            title: overrides.title ?? base.title ?? '',
+            code: overrides.code ?? base.code ?? '',
+            subject: overrides.subject ?? base.subject ?? '',
+            section: overrides.section ?? base.section ?? null,
+            durationMinutes: overrides.durationMinutes ?? base.durationMinutes ?? 0,
+            questionCount: overrides.questionCount ?? base.questionCount ?? 0,
+            attempts: overrides.attempts ?? base.attempts ?? null,
+            description: overrides.description ?? base.description ?? '',
+            dueDate: overrides.dueDate ?? base.dueDate ?? '',
+            status: (overrides.status ?? base.status ?? '').toString().toUpperCase(),
+            questionsJson: overrides.questionsJson ?? base.questionsJson ?? '[]'
+        };
+    }
+
+    function formatDueDateDisplay(value) {
+        if (!value) return '';
+        return value.replace('T', ' ');
+    }
+
+    function formatDueDateDisplay(value) {
+        if (!value) return '';
+        return value.replace('T', ' ');
+    }
+
+    function formatDueDateDisplay(value) {
+        if (!value) return '';
+        return value.replace('T', ' ');
+    }
+
+    function formatDueDateDisplay(value) {
+        if (!value) return '';
+        return value.replace('T', ' ');
+    }
+
+    function formatDueDateDisplay(value) {
+        if (!value) return '';
+        return value.replace('T', ' ');
     }
     
     // Create View Modal HTML
@@ -1066,6 +1508,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="row mb-3">
                                 <div class="col-sm-4 fw-bold">Duration:</div>
                                 <div class="col-sm-8" id="viewQuizDuration"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Due Date:</div>
+                                <div class="col-sm-8" id="viewQuizDueDate"></div>
                             </div>
                             <div class="row mb-3">
                                 <div class="col-sm-4 fw-bold">Status:</div>
@@ -1104,32 +1550,62 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="mb-3">
                                     <label class="form-label" for="editQuizSubject">Subject</label>
                                     <select class="form-select" id="editQuizSubject">
-                                        <option value="MATH101">MATH101 - Calculus I</option>
-                                        <option value="PHYS101">PHYS101 - General Physics I</option>
-                                        <option value="CHEM101">CHEM101 - General Chemistry I</option>
+                                        <option value="" selected="">Select subject...</option>
                                     </select>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label class="form-label" for="editQuizQuestions">Number of Questions</label>
-                                            <input class="form-control" type="number" id="editQuizQuestions" min="1" required>
+                                    <label class="form-label" for="editQuizQuestions">Number of Questions</label>
+                                    <input class="form-control" type="number" id="editQuizQuestions" min="1" required readonly>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label class="form-label" for="editQuizDuration">Duration (minutes)</label>
-                                            <input class="form-control" type="number" id="editQuizDuration" min="1" required>
+                                            <label class="form-label">Duration</label>
+                                            <div class="row g-2">
+                                                <div class="col-6">
+                                                    <div class="input-group">
+                                                        <input class="form-control" type="number" id="editQuizDurationHours" min="0" placeholder="0">
+                                                        <span class="input-group-text">Hours</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="input-group">
+                                                        <input class="form-control" type="number" id="editQuizDurationMinutes" min="0" max="59" placeholder="0">
+                                                        <span class="input-group-text">Minutes</span>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mb-3">
+                                    <label class="form-label" for="editQuizDueDate">Due Date</label>
+                                    <input class="form-control" type="datetime-local" id="editQuizDueDate" required>
+                                </div>
+                                <div class="mb-3">
                                     <label class="form-label" for="editQuizStatus">Status</label>
                                     <select class="form-select" id="editQuizStatus">
-                                        <option value="published">Published</option>
                                         <option value="draft">Draft</option>
+                                        <option value="expired">Expired</option>
+                                        <option value="republish" id="republishQuizOption" hidden disabled>Republish</option>
                                         <option value="archived">Archived</option>
                                     </select>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <label class="form-label mb-0">Questions</label>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text">Count</span>
+                                                <input class="form-control" type="number" id="editQuestionCountInput" min="1" max="100" value="1">
+                                            </div>
+                                            <button class="btn btn-outline-primary btn-sm" type="button" id="editAddQuestionBtn">Add Question</button>
+                                            <button class="btn btn-outline-secondary btn-sm" type="button" id="editSetQuestionCountBtn">Set</button>
+                                        </div>
+                                    </div>
+                                    <div id="editQuestionsContainer"></div>
                                 </div>
                             </form>
                         </div>
@@ -1143,13 +1619,29 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         return modalDiv.firstElementChild;
     }
+
+    const initialRows = quizTableBody ? quizTableBody.querySelectorAll('tr') : [];
+    initialRows.forEach(row => {
+        const statusBadge = row.querySelector('.badge');
+        updatePublishButtonState(row, statusBadge ? statusBadge.textContent : '');
+    });
+    expirePastDueQuizzes();
+    setInterval(() => {
+        expirePastDueQuizzes();
+    }, 30000);
 });
 </script>
-    <script>
+<script>
 // Inlined from /assets/js/instructor/quiz.js// Quiz Management JavaScript
+if (typeof window.formatDueDateDisplay !== 'function') {
+    window.formatDueDateDisplay = function(value) {
+        if (!value) return '';
+        return value.replace('T', ' ');
+    };
+}
 document.addEventListener('DOMContentLoaded', function() {
     // Create Quiz Modal functionality
-    const createQuizButton = document.querySelector('#createQuizModal .btn-primary');
+    const createQuizButton = document.getElementById('createQuizButton') || document.querySelector('#createQuizModal .btn-primary');
     const createQuizModal = document.getElementById('createQuizModal');
     const addQuestionBtn = document.getElementById('addQuestionBtn');
     const setQuestionCountBtn = document.getElementById('setQuestionCountBtn');
@@ -1158,8 +1650,171 @@ document.addEventListener('DOMContentLoaded', function() {
     const questionTemplate = document.getElementById('questionTemplate');
     
     if (createQuizButton) {
-        createQuizButton.addEventListener('click', createQuiz);
+        createQuizButton.addEventListener('click', function() {
+            createQuiz().catch(error => {
+                console.error(error);
+                alert(error && error.message ? `Create quiz failed: ${error.message}` : 'Create quiz failed.');
+            });
+        });
     }
+
+    const quizTableBody = document.querySelector('table.table tbody');
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+    const quizStore = window.quizStore || { list: [], cache: new Map() };
+    window.quizStore = quizStore;
+
+    async function fetchProfessorJson(url, options = {}) {
+        const headers = new Headers(options.headers || {});
+        if (!(options.body instanceof FormData) && !headers.has('Content-Type')) {
+            headers.set('Content-Type', 'application/json');
+        }
+        if (csrfToken && csrfHeader && !headers.has(csrfHeader)) {
+            headers.set(csrfHeader, csrfToken);
+        }
+        const response = await fetch(url, { ...options, headers });
+        const contentType = response.headers.get('content-type') || '';
+        const text = await response.text();
+        if (!response.ok) {
+            throw new Error(text || response.statusText);
+        }
+        if (response.status === 204 || text.trim() === '') return null;
+        if (!contentType.includes('application/json')) return text;
+        return JSON.parse(text);
+    }
+    window.fetchProfessorJson = fetchProfessorJson;
+
+    function formatStatusLabel(status) {
+        const safe = (status || '').toString().toLowerCase();
+        if (!safe) return 'Draft';
+        return safe.charAt(0).toUpperCase() + safe.slice(1);
+    }
+
+    function getStatusColor(status) {
+        switch ((status || '').toString().toLowerCase()) {
+            case 'published': return 'bg-success';
+            case 'draft': return 'bg-warning';
+            case 'expired': return 'bg-danger';
+            case 'archived': return 'bg-secondary';
+            default: return 'bg-secondary';
+        }
+    }
+
+    function publishButtonState(status) {
+        const normalized = (status || '').toString().toLowerCase();
+        if (normalized === 'draft') {
+            return { className: 'btn btn-outline-success', disabledAttr: '' };
+        }
+        return { className: 'btn btn-outline-secondary', disabledAttr: 'disabled aria-disabled="true"' };
+    }
+
+    function renderQuizzes(list) {
+        if (!quizTableBody) return;
+        quizStore.cache.clear();
+        quizTableBody.innerHTML = '';
+        (list || []).forEach((quiz, index) => {
+            quizStore.cache.set(String(quiz.id), quiz);
+            const statusLabel = formatStatusLabel(quiz.status);
+            const durationText = formatDurationText(quiz.durationMinutes || 0);
+            const dueDateDisplay = formatDueDateDisplay(quiz.dueDate);
+            const publishState = publishButtonState(quiz.status);
+            const row = document.createElement('tr');
+            row.dataset.id = quiz.id;
+            row.dataset.section = quiz.section || 'All Sections';
+            row.dataset.code = quiz.code || '';
+            if (quiz.dueDate) {
+                row.dataset.dueDate = quiz.dueDate;
+            }
+            row.innerHTML = `
+                <td scope="row">${index + 1}</td>
+                <td>${quiz.title || ''}</td>
+                <td>${quiz.subject || ''}</td>
+                <td>${quiz.questionCount || 0}</td>
+                <td>${durationText}</td>
+                <td>${dueDateDisplay}</td>
+                <td><span class="badge ${getStatusColor(statusLabel)}">${statusLabel}</span></td>
+                <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button class="btn btn-outline-primary" type="button" data-action="view" data-id="${quiz.id}">View</button>
+                        <button class="${publishState.className}" type="button" data-action="publish" data-id="${quiz.id}" ${publishState.disabledAttr}>Publish</button>
+                        <button class="btn btn-outline-warning" type="button" data-action="edit" data-id="${quiz.id}">Edit</button>
+                        <button class="btn btn-outline-danger" type="button" data-action="delete" data-id="${quiz.id}">Delete</button>
+                    </div>
+                </td>
+            `;
+            quizTableBody.appendChild(row);
+        });
+        if (typeof expirePastDueQuizzes === 'function') {
+            expirePastDueQuizzes();
+        }
+    }
+    window.renderQuizzes = renderQuizzes;
+
+    async function loadQuizzes() {
+        const data = await fetchProfessorJson('/professor/api/quizzes');
+        quizStore.list = Array.isArray(data) ? data : [];
+        renderQuizzes(quizStore.list);
+    }
+    window.loadQuizzes = loadQuizzes;
+
+    const quizSubjectFilter = document.getElementById('quizSubjectFilter');
+    const quizSectionFilter = document.getElementById('quizSectionFilter');
+    const quizSubjectSelect = document.getElementById('quizSubject');
+    const quizSectionSelect = document.getElementById('quizSection');
+    const editQuizSubjectSelect = document.getElementById('editQuizSubject');
+
+    function resetSelectOptions(select, options, placeholder, includeAllOption) {
+        if (!select) return;
+        const current = select.value;
+        select.innerHTML = '';
+        if (placeholder) {
+            const placeholderOption = document.createElement('option');
+            placeholderOption.value = '';
+            placeholderOption.textContent = placeholder;
+            placeholderOption.selected = true;
+            select.appendChild(placeholderOption);
+        }
+        if (includeAllOption) {
+            const allOption = document.createElement('option');
+            allOption.value = includeAllOption;
+            allOption.textContent = includeAllOption;
+            select.appendChild(allOption);
+        }
+        (options || []).forEach(optionValue => {
+            const option = document.createElement('option');
+            option.value = optionValue;
+            option.textContent = optionValue;
+            select.appendChild(option);
+        });
+        if (current) {
+            select.value = current;
+        }
+    }
+
+    async function loadQuizMeta() {
+        try {
+            const response = await fetch('/professor/api/quizzes/meta', { cache: 'no-store' });
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+            const meta = await response.json();
+            const subjects = Array.isArray(meta.subjects) ? meta.subjects : [];
+            const sections = Array.isArray(meta.sections) ? meta.sections : [];
+
+            window.quizMetaSubjects = subjects;
+            window.quizMetaSections = sections;
+
+            resetSelectOptions(quizSubjectFilter, subjects, 'All Subjects', null);
+            resetSelectOptions(quizSectionFilter, sections, 'All Sections', null);
+            resetSelectOptions(quizSubjectSelect, subjects, 'Select subject...', null);
+            resetSelectOptions(quizSectionSelect, sections, 'Select section...', 'All Sections');
+            resetSelectOptions(editQuizSubjectSelect, subjects, 'Select subject...', null);
+        } catch (error) {
+            console.warn('Failed to load quiz metadata:', error);
+        }
+    }
+
+    loadQuizMeta();
 
     let questionInstanceId = 0;
 
@@ -1192,6 +1847,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    const quizCodeInput = document.getElementById('quizCode');
+    if (quizCodeInput) {
+        quizCodeInput.addEventListener('input', function() {
+            const digits = this.value.replace(/\D/g, '').slice(0, 6);
+            if (digits.length <= 3) {
+                this.value = digits;
+            } else {
+                this.value = `${digits.slice(0, 3)}-${digits.slice(3)}`;
+            }
+        });
+    }
+
     function isValidQuizTitle(title) {
         const trimmed = title.trim();
         if (!trimmed) return false;
@@ -1199,29 +1866,64 @@ document.addEventListener('DOMContentLoaded', function() {
         return /[A-Za-z]/.test(trimmed);
     }
 
-    function setQuestionCount(target) {
-        const current = questionsContainer.querySelectorAll('.quiz-question-item').length;
+    function parseDurationToMinutes(text) {
+        if (!text) return 0;
+        const lower = text.toLowerCase();
+        const hoursMatch = lower.match(/(\d+)\s*h/);
+        const minsMatch = lower.match(/(\d+)\s*m/);
+        const hours = hoursMatch ? parseInt(hoursMatch[1], 10) : 0;
+        const mins = minsMatch ? parseInt(minsMatch[1], 10) : 0;
+        if (!hoursMatch && !minsMatch) {
+            const fallback = parseInt(lower.replace(/\D/g, ''), 10);
+            return Number.isFinite(fallback) ? fallback : 0;
+        }
+        return hours * 60 + mins;
+    }
+
+    function minutesToParts(totalMinutes) {
+        const safeMinutes = Math.max(0, totalMinutes || 0);
+        const hours = Math.floor(safeMinutes / 60);
+        const minutes = safeMinutes % 60;
+        return { hours, minutes };
+    }
+
+    function formatDurationText(totalMinutes) {
+        const { hours, minutes } = minutesToParts(totalMinutes);
+        if (hours && minutes) return `${hours} hrs ${minutes} mins`;
+        if (hours) return `${hours} hrs`;
+        return `${minutes} mins`;
+    }
+
+    function setQuestionCount(target, container = questionsContainer, countInput = questionCountInput) {
+        if (!container) return;
+        const current = container.querySelectorAll('.quiz-question-item').length;
         if (current < target) {
             for (let i = current; i < target; i += 1) {
-                addQuestion();
+                addQuestion(container, countInput);
             }
         } else if (current > target) {
-            const items = Array.from(questionsContainer.querySelectorAll('.quiz-question-item'));
+            const items = Array.from(container.querySelectorAll('.quiz-question-item'));
             for (let i = items.length - 1; i >= target; i -= 1) {
                 items[i].remove();
             }
-            renumberQuestions();
+            renumberQuestions(container, countInput);
         }
     }
 
-    function addQuestion() {
-        const questionItem = createQuestionItem();
-        questionsContainer.appendChild(questionItem);
-        renumberQuestions();
+    function addQuestion(container = questionsContainer, countInput = questionCountInput) {
+        if (!container) return;
+        const questionItem = createQuestionItem({ container, countInput });
+        container.appendChild(questionItem);
+        renumberQuestions(container, countInput);
     }
 
-    function createQuestionItem() {
-        const templateNode = questionTemplate && questionTemplate.content ? questionTemplate.content.firstElementChild : null;
+    function createQuestionItem(options = {}) {
+        const {
+            container = questionsContainer,
+            countInput = questionCountInput,
+            template = questionTemplate
+        } = options;
+        const templateNode = template && template.content ? template.content.firstElementChild : null;
         const node = templateNode ? templateNode.cloneNode(true) : buildQuestionItemFallback();
         questionInstanceId += 1;
         const caseInputs = node.querySelectorAll('.identification-case');
@@ -1237,7 +1939,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         removeButton.addEventListener('click', function() {
             node.remove();
-            renumberQuestions();
+            renumberQuestions(container, countInput);
         });
 
         updateQuestionTypeUI(node);
@@ -1280,13 +1982,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function renumberQuestions() {
-        const items = questionsContainer.querySelectorAll('.quiz-question-item');
+    function renumberQuestions(container = questionsContainer, countInput = questionCountInput) {
+        if (!container) return;
+        const items = container.querySelectorAll('.quiz-question-item');
         items.forEach((item, index) => {
             item.querySelector('.question-number').textContent = index + 1;
         });
 
-        const removeButtons = questionsContainer.querySelectorAll('.remove-question');
+        const removeButtons = container.querySelectorAll('.remove-question');
         if (removeButtons.length === 1) {
             removeButtons[0].disabled = true;
         } else {
@@ -1294,8 +1997,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.disabled = false;
             });
         }
-        if (questionCountInput) {
-            questionCountInput.value = items.length;
+        if (countInput) {
+            countInput.value = items.length;
         }
     }
 
@@ -1366,13 +2069,171 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         return wrapper.firstElementChild;
     }
+
+    function parseQuestionsJson(raw) {
+        if (!raw) return [];
+        try {
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+            console.warn('Failed to parse questionsJson:', error);
+            return [];
+        }
+    }
+
+    function serializeQuestionsFromContainer(container) {
+        const items = container ? container.querySelectorAll('.quiz-question-item') : [];
+        if (!items.length) {
+            alert('Please add at least one question');
+            return null;
+        }
+        const questions = [];
+        for (let i = 0; i < items.length; i += 1) {
+            const questionItem = items[i];
+            const number = i + 1;
+            const type = questionItem.querySelector('.question-type').value;
+            const questionText = questionItem.querySelector('.question-text').value.trim();
+
+            if (!type) {
+                alert(`Please select a question type for Question ${number}`);
+                return null;
+            }
+            if (!questionText) {
+                alert(`Please enter the question text for Question ${number}`);
+                return null;
+            }
+
+            if (type === 'multiple_choice') {
+                const choiceInputs = Array.from(questionItem.querySelectorAll('.mcq-choice'));
+                const choices = {};
+                choiceInputs.forEach(input => {
+                    const key = input.dataset.choice || '';
+                    choices[key] = input.value.trim();
+                });
+                const filledChoices = Object.values(choices).filter(choice => choice !== '');
+                const correct = questionItem.querySelector('.mcq-correct').value;
+                const correctValue = choices[correct] || '';
+
+                if (filledChoices.length < 2) {
+                    alert(`Please provide at least two choices for Question ${number}`);
+                    return null;
+                }
+                if (!correct) {
+                    alert(`Please select the correct answer for Question ${number}`);
+                    return null;
+                }
+                if (!correctValue.trim()) {
+                    alert(`The selected correct answer must match a filled choice for Question ${number}`);
+                    return null;
+                }
+
+                questions.push({
+                    type,
+                    question: questionText,
+                    choices,
+                    correct
+                });
+            } else if (type === 'identification') {
+                const identAnswer = questionItem.querySelector('.identification-answer').value.trim();
+                if (!identAnswer) {
+                    alert(`Please enter the correct answer for Question ${number}`);
+                    return null;
+                }
+                const matchCaseInput = questionItem.querySelector('.identification-case:checked');
+                const matchCase = matchCaseInput ? matchCaseInput.value : 'case_insensitive';
+                questions.push({
+                    type,
+                    question: questionText,
+                    answer: identAnswer,
+                    matchCase
+                });
+            } else {
+                alert(`Unsupported question type for Question ${number}`);
+                return null;
+            }
+        }
+
+        return {
+            questionCount: questions.length,
+            questionsJson: JSON.stringify(questions)
+        };
+    }
+
+    function populateQuestionsContainer(container, countInput, questions, fallbackCount) {
+        if (!container) return;
+        container.innerHTML = '';
+        const list = Array.isArray(questions) ? questions : [];
+        const targetCount = list.length || fallbackCount || 1;
+
+        if (list.length) {
+            list.forEach(question => {
+                const item = createQuestionItem({ container, countInput });
+                container.appendChild(item);
+                const typeSelect = item.querySelector('.question-type');
+                const textInput = item.querySelector('.question-text');
+                if (typeSelect) {
+                    typeSelect.value = question.type || '';
+                }
+                if (textInput) {
+                    textInput.value = question.question || '';
+                }
+                updateQuestionTypeUI(item);
+                if (question.type === 'multiple_choice') {
+                    const choices = question.choices || {};
+                    item.querySelectorAll('.mcq-choice').forEach(input => {
+                        const key = input.dataset.choice || '';
+                        input.value = choices[key] || '';
+                    });
+                    const correctSelect = item.querySelector('.mcq-correct');
+                    if (correctSelect) {
+                        correctSelect.value = question.correct || '';
+                    }
+                } else if (question.type === 'identification') {
+                    const answerInput = item.querySelector('.identification-answer');
+                    if (answerInput) {
+                        answerInput.value = question.answer || '';
+                    }
+                    const matchCase = question.matchCase || 'case_insensitive';
+                    item.querySelectorAll('.identification-case').forEach(input => {
+                        input.checked = input.value === matchCase;
+                    });
+                }
+            });
+        } else {
+            for (let i = 0; i < targetCount; i += 1) {
+                const item = createQuestionItem({ container, countInput });
+                container.appendChild(item);
+            }
+        }
+
+        renumberQuestions(container, countInput);
+    }
+
+    window.quizQuestionHelpers = {
+        addQuestion,
+        setQuestionCount,
+        createQuestionItem,
+        updateQuestionTypeUI,
+        renumberQuestions,
+        parseQuestionsJson,
+        serializeQuestionsFromContainer,
+        populateQuestionsContainer
+    };
     
     // Create Quiz Function
-    function createQuiz() {
+    async function createQuiz() {
         // Get form values
+        if (!questionsContainer) {
+            alert('Quiz questions container is missing. Please refresh the page.');
+            return;
+        }
         const title = document.getElementById('quizTitle').value.trim();
+        const quizCode = document.getElementById('quizCode').value.trim();
         const subject = document.getElementById('quizSubject').value;
-        const duration = document.getElementById('quizDuration').value.trim();
+        const section = document.getElementById('quizSection').value;
+        const hoursRaw = document.getElementById('quizDurationHours').value.trim();
+        const minutesRaw = document.getElementById('quizDurationMinutes').value.trim();
+        const dueDate = document.getElementById('quizDueDate').value;
         const attempts = document.getElementById('quizAttempts').value.trim();
         const description = document.getElementById('quizDescription').value.trim();
         
@@ -1382,67 +2243,47 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        if (!title || !subject || !duration) {
-            alert('Please fill in all required fields: Title, Subject, and Duration');
+        const hours = hoursRaw === '' ? 0 : parseInt(hoursRaw, 10);
+        const minutes = minutesRaw === '' ? 0 : parseInt(minutesRaw, 10);
+        const totalMinutes = (Number.isFinite(hours) ? hours : 0) * 60 + (Number.isFinite(minutes) ? minutes : 0);
+
+        if (!title || !quizCode || !subject || totalMinutes <= 0 || !dueDate) {
+            alert('Please fill in all required fields: Title, Code, Subject, Duration, and Due Date');
             return;
         }
 
-        const questionItems = questionsContainer.querySelectorAll('.quiz-question-item');
-        if (questionItems.length === 0) {
-            alert('Please add at least one question');
+        if (!/^\d{3}-\d{3}$/.test(quizCode)) {
+            alert('Quiz code must be in the format 123-123.');
             return;
         }
 
-        let questionCount = questionItems.length;
-        for (let i = 0; i < questionItems.length; i += 1) {
-            const questionItem = questionItems[i];
-            const number = i + 1;
-            const type = questionItem.querySelector('.question-type').value;
-            const questionText = questionItem.querySelector('.question-text').value.trim();
-
-            if (!type) {
-                alert(`Please select a question type for Question ${number}`);
-                return;
-            }
-
-            if (!questionText) {
-                alert(`Please enter the question text for Question ${number}`);
-                return;
-            }
-
-            if (type === 'multiple_choice') {
-                const choices = Array.from(questionItem.querySelectorAll('.mcq-choice')).map(input => input.value.trim());
-                const filledChoices = choices.filter(choice => choice !== '');
-                const correct = questionItem.querySelector('.mcq-correct').value;
-                const correctInput = questionItem.querySelector(`.mcq-choice[data-choice="${correct}"]`);
-
-                if (filledChoices.length < 2) {
-                    alert(`Please provide at least two choices for Question ${number}`);
-                    return;
-                }
-
-                if (!correct) {
-                    alert(`Please select the correct answer for Question ${number}`);
-                    return;
-                }
-
-                if (!correctInput || !correctInput.value.trim()) {
-                    alert(`The selected correct answer must match a filled choice for Question ${number}`);
-                    return;
-                }
-            }
-
-            if (type === 'identification') {
-                const identAnswer = questionItem.querySelector('.identification-answer').value.trim();
-                if (!identAnswer) {
-                    alert(`Please enter the correct answer for Question ${number}`);
-                    return;
-                }
-            }
+        const serializedQuestions = serializeQuestionsFromContainer(questionsContainer);
+        if (!serializedQuestions) {
+            return;
         }
+        const questionCount = serializedQuestions.questionCount;
         
         // Create new quiz row
-        addQuizToTable(title, subject, duration, attempts, description, questionCount);
+        const attemptsValue = attempts === '' ? null : parseInt(attempts, 10);
+        const payload = {
+            title,
+            code: quizCode,
+            subject,
+            section: section === 'All Sections' ? null : section,
+            durationMinutes: totalMinutes,
+            questionCount,
+            attempts: Number.isFinite(attemptsValue) ? attemptsValue : null,
+            description,
+            dueDate,
+            status: 'DRAFT',
+            questionsJson: serializedQuestions.questionsJson
+        };
+
+        await fetchProfessorJson('/professor/api/quizzes', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        await loadQuizzes();
         
         // Reset form and close modal
         document.querySelector('#createQuizModal form').reset();
@@ -1451,42 +2292,33 @@ document.addEventListener('DOMContentLoaded', function() {
         const modal = bootstrap.Modal.getInstance(document.getElementById('createQuizModal'));
         modal.hide();
     }
-    
+
     // Add quiz to table
-    function addQuizToTable(title, subject, duration, attempts, description, questionCount) {
+    function addQuizToTable(title, subject, duration, dueDateDisplay, attempts, description, questionCount, section, dueDateValue) {
         const tableBody = document.querySelector('table.table tbody');
         const rows = tableBody.querySelectorAll('tr');
         const nextNumber = rows.length + 1;
         
         // Create new row
         const newRow = document.createElement('tr');
+        newRow.setAttribute('data-section', section || 'All Sections');
+        if (dueDateValue) {
+            newRow.dataset.dueDate = dueDateValue;
+        }
         newRow.innerHTML = `
             <td scope="row">${nextNumber}</td>
             <td>${title}</td>
             <td>${subject}</td>
             <td>${questionCount}</td>
-            <td>${duration} mins</td>
+            <td>${duration}</td>
+            <td>${dueDateDisplay || ''}</td>
             <td><span class="badge bg-warning">Draft</span></td>
             <td>
                 <div class="btn-group btn-group-sm" role="group">
-                    <button class="btn btn-outline-primary" type="button">
-                        <svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8z"></path>
-                            <path d="M8 5a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path>
-                        </svg>
-                    </button>
-                    <button class="btn btn-outline-warning" type="button">
-                        <svg class="bi bi-pencil" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10z"></path>
-                            <path d="M11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5z"></path>
-                        </svg>
-                    </button>
-                    <button class="btn btn-outline-danger" type="button">
-                        <svg class="bi bi-trash" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M5.5 5.5A.5.5 0 0 1 6 5h4a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-1 0V6h-3v7.5a.5.5 0 0 1-1 0v-8z"></path>
-                            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4H2.5a1 1 0 0 1 0-2H5h6h2.5a1 1 0 0 1 1 1z"></path>
-                        </svg>
-                    </button>
+                    <button class="btn btn-outline-primary" type="button">View</button>
+                    <button class="btn btn-outline-success" type="button">Publish</button>
+                    <button class="btn btn-outline-warning" type="button">Edit</button>
+                    <button class="btn btn-outline-danger" type="button">Delete</button>
                 </div>
             </td>
         `;
@@ -1548,26 +2380,67 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Run initialization
     setTimeout(initializeActionButtons, 100);
+    loadQuizzes().catch(error => {
+        console.error(error);
+        alert(error && error.message ? error.message : 'Unable to load quizzes.');
+    });
+
+    if (!window.__quizAutoReload) {
+        window.__quizAutoReload = setInterval(() => {
+            loadQuizzes().catch(error => {
+                console.warn('Auto-refresh failed:', error);
+            });
+        }, 30000);
+    }
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.__genericRefreshBound) return;
+    const refreshButton = document.querySelector('[id^="refresh"]')
+        || document.querySelector('.btn-toolbar .btn-outline-success.btn-sm');
+    if (!refreshButton) return;
+    if (refreshButton.dataset.refreshBound === 'true') return;
+    refreshButton.dataset.refreshBound = 'true';
+    window.__genericRefreshBound = true;
+
+    const refreshIcon = refreshButton.querySelector('svg');
+
+    function ensurePulseStyle() {
+        if (document.getElementById('refreshPulseStyle')) return;
+        const style = document.createElement('style');
+        style.id = 'refreshPulseStyle';
+        style.textContent = '@keyframes refreshPulse { 0% { opacity: 0.6; } 100% { opacity: 1; } } body.page-refreshing .container-fluid { animation: refreshPulse 0.35s ease-in-out; }';
+        document.head.appendChild(style);
+    }
+
+    refreshButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        ensurePulseStyle();
+        document.body.classList.add('page-refreshing');
+        if (refreshIcon) {
+            refreshIcon.classList.add('spin-animation');
+        }
+        setTimeout(function() {
+            window.location.reload();
+        }, 150);
+    });
+});
+</script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const photo = document.getElementById('navbarProfilePhoto');
+    if (!photo) return;
+    fetch('/professor/api/profile', { cache: 'no-store' })
+        .then(response => response.ok ? response.json() : null)
+        .then(profile => {
+            if (profile && profile.photoUrl) {
+                photo.src = `${profile.photoUrl}?t=${Date.now()}`;
+            }
+        })
+        .catch(() => {});
+});
+    </script>
 </body>
 
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

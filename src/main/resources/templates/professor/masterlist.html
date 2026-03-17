@@ -27,6 +27,39 @@
   background-color: #f8f9fa;
 }
 
+#studentMasterlistTable th,
+#studentMasterlistTable td {
+  vertical-align: middle;
+}
+
+#studentMasterlistTable th:nth-child(1),
+#studentMasterlistTable td:nth-child(1) {
+  width: 16%;
+}
+
+#studentMasterlistTable th:nth-child(2),
+#studentMasterlistTable td:nth-child(2) {
+  width: 26%;
+}
+
+#studentMasterlistTable th:nth-child(3),
+#studentMasterlistTable td:nth-child(3) {
+  width: 16%;
+  text-align: center;
+}
+
+#studentMasterlistTable th:nth-child(4),
+#studentMasterlistTable td:nth-child(4) {
+  width: 18%;
+  text-align: center;
+}
+
+#studentMasterlistTable th:nth-child(5),
+#studentMasterlistTable td:nth-child(5) {
+  width: 24%;
+  text-align: center;
+}
+
 .badge {
   font-size: 0.75em;
 }
@@ -270,8 +303,17 @@ table.table tbody tr td .btn-group {
 }/* Mobile sidebar toggle */
 
 .sidebar {
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
+
+/* Smooth collapse animation for sidebar */
+.sidebar.collapsing {
+  height: auto;
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
 
 @media (max-width: 767.98px) {
   .sidebar {
@@ -281,6 +323,9 @@ table.table tbody tr td .btn-group {
     bottom: 0;
     z-index: 1040;
     transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
     overflow-y: auto;
     background-color: #f8f9fa;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
@@ -291,14 +336,19 @@ table.table tbody tr td .btn-group {
 @media (max-width: 767.98px) {
   .sidebar.show {
     transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 }
 
 /* Hide sidebar by default on mobile */
-
 @media (max-width: 767.98px) {
   .sidebar:not(.show) {
-    display: none;
+    transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 }
 
@@ -519,10 +569,10 @@ body {
             </div>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">
-                    <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" id="navbarProfile"><svg class="bi bi-person-circle me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"></path>
-                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"></path>
-                        </svg><span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${professorFullName}">Instructor User</span><span class="text-muted small fw-semibold">ID: <span th:text="${professorId}">I2024001</span></span></span></button>
+                    <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" id="navbarProfile">
+                        <img id="navbarProfilePhoto" src="https://via.placeholder.com/32" alt="Profile photo" width="32" height="32" class="rounded-circle me-2">
+                        <span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${professorFullName}">Instructor User</span><span class="text-muted small fw-semibold">ID: <span th:text="${professorId}">I2024001</span></span></span>
+                    </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarProfile">
                         <li><a class="dropdown-item" href="/professor/profile"><svg class="bi bi-person me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"></path>
@@ -580,130 +630,86 @@ body {
             </div>
             <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4">
                 <div class="d-flex justify-content-between align-items-center flex-wrap flex-md-nowrap pt-3 mb-3 pb-2 border-bottom">
-                    <h1 class="h2">Class Masterlist - MATH101 Section A</h1>
+                    <h1 class="h2">Class Masterlist</h1>
                     <div class="btn-toolbar mb-2 mb-md-0"></div>
                 </div>
                 <div class="card mb-4">
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3"><label class="form-label" for="studentSearch">Search Students</label><input type="text" class="form-control" id="studentSearch" placeholder="Search by name or ID"></div>
-                            <div class="col-md-3"><label class="form-label" for="studentStatusFilter">Filter by Status</label><select class="form-select" id="studentStatusFilter">
+                        <div class="row g-3">
+                            <div class="col-md-4"><label class="form-label" for="studentSearch">Search Students</label><input type="text" class="form-control" id="studentSearch" placeholder="Search by name or ID"></div>
+                            <div class="col-md-4"><label class="form-label" for="studentStatusFilter">Filter by Status</label><select class="form-select" id="studentStatusFilter">
                                     <option value="" selected="">All Statuses</option>
-                                    <option value="">Active</option>
-                                    <option value="">Inactive</option>
-                                    <option value="">On Leave</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                    <option value="On Leave">On Leave</option>
                                 </select></div>
-                            <div class="col-md-3"><label class="form-label" for="sortOrder">Sort By</label><select class="form-select" id="sortOrder">
-                                    <option value="">Name (A-Z)</option>
-                                    <option value="">Name (Z-A)</option>
-                                    <option value="">ID Number</option>
-                                    <option value="">Grade Average</option>
+                            <div class="col-md-4"><label class="form-label" for="sortOrder">Sort By</label><select class="form-select" id="sortOrder">
+                                    <option value="name-asc">Name (A-Z)</option>
+                                    <option value="name-desc">Name (Z-A)</option>
+                                    <option value="id-asc">ID Number</option>
+                                    <option value="avg-desc">Grade Average</option>
                                 </select></div>
-                            <div class="col-md-3 d-flex align-items-end"><button class="btn btn-outline-primary w-100" type="button"><svg class="bi bi-funnel" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"></path>
-                                    </svg> Apply Filters </button></div>
                         </div>
                     </div>
                 </div>
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0 card-title">Student List (32 Students)</h5>
+                        <h5 class="mb-0 card-title">Student List (<span id="masterlistCountValue" th:text="${masterlistCount}">0</span> Students)</h5>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover">
+                            <table class="table table-striped table-hover" id="studentMasterlistTable">
                                 <thead>
                                     <tr>
                                         <th scope="col">ID</th>
                                         <th scope="col">Name</th>
-                                        <th scope="col">Email</th>
                                         <th scope="col">Enrollment Status</th>
                                         <th scope="col">Average Grade</th>
                                         <th scope="col">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>20230001</td>
-                                        <td>John Smith</td>
-                                        <td>j.smith@student.edu</td>
-                                        <td><span class="badge bg-success">Active</span></td>
-                                        <td>87.5%</td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm" role="group"><a class="btn btn-outline-primary" role="button" href="/professor/grade-records?student=20230001"><svg class="bi bi-bar-chart" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M4 11H2v3h2zm5-4H7v7h2zm5-5v12h-2V2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1z"></path>
-                                                    </svg></a><a class="btn btn-outline-info" role="button" href="#"><svg class="bi bi-envelope" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"></path>
-                                                    </svg></a></div>
-                                        </td>
+                                <tbody id="studentMasterlistBody">
+                                    <tr th:if="${professorMasterlistStudents == null or professorMasterlistStudents.isEmpty()}">
+                                        <td colspan="5" class="text-center text-muted">No students found for this class.</td>
                                     </tr>
-                                    <tr>
-                                        <td>20230002</td>
-                                        <td>Emily Johnson</td>
-                                        <td>e.johnson@student.edu</td>
-                                        <td><span class="badge bg-success">Active</span></td>
-                                        <td>92.0%</td>
+                                    <tr th:each="student : ${professorMasterlistStudents}">
+                                        <td th:text="${student.studentId}">S2024-0001</td>
+                                        <td th:text="${student.fullName}">Student Name</td>
                                         <td>
-                                            <div class="btn-group btn-group-sm" role="group"><a class="btn btn-outline-primary" role="button" href="/professor/grade-records?student=20230002"><svg class="bi bi-bar-chart" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M4 11H2v3h2zm5-4H7v7h2zm5-5v12h-2V2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1z"></path>
-                                                    </svg></a><a class="btn btn-outline-info" role="button" href="#"><svg class="bi bi-envelope" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"></path>
-                                                    </svg></a></div>
+                                            <span class="badge bg-success" th:text="${student.status}">Active</span>
                                         </td>
-                                    </tr>
-                                    <tr>
-                                        <td>20230003</td>
-                                        <td>Michael Brown</td>
-                                        <td>m.brown@student.edu</td>
-                                        <td><span class="badge bg-warning">On Leave</span></td>
-                                        <td>76.3%</td>
+                                        <td th:text="${student.averageGrade}">-</td>
                                         <td>
-                                            <div class="btn-group btn-group-sm" role="group"><a class="btn btn-outline-primary" role="button" href="/professor/grade-records?student=20230003"><svg class="bi bi-bar-chart" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M4 11H2v3h2zm5-4H7v7h2zm5-5v12h-2V2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1z"></path>
-                                                    </svg></a><a class="btn btn-outline-info" role="button" href="#"><svg class="bi bi-envelope" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"></path>
-                                                    </svg></a></div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>20230004</td>
-                                        <td>Sarah Davis</td>
-                                        <td>s.davis@student.edu</td>
-                                        <td><span class="badge bg-success">Active</span></td>
-                                        <td>89.7%</td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm" role="group"><a class="btn btn-outline-primary" role="button" href="/professor/grade-records?student=20230004"><svg class="bi bi-bar-chart" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M4 11H2v3h2zm5-4H7v7h2zm5-5v12h-2V2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1z"></path>
-                                                    </svg></a><a class="btn btn-outline-info" role="button" href="#"><svg class="bi bi-envelope" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"></path>
-                                                    </svg></a></div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>20230005</td>
-                                        <td>Robert Wilson</td>
-                                        <td>r.wilson@student.edu</td>
-                                        <td><span class="badge bg-success">Active</span></td>
-                                        <td>81.2%</td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm" role="group"><a class="btn btn-outline-primary" role="button" href="/professor/grade-records?student=20230005"><svg class="bi bi-bar-chart" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M4 11H2v3h2zm5-4H7v7h2zm5-5v12h-2V2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1z"></path>
-                                                    </svg></a><a class="btn btn-outline-info" role="button" href="#"><svg class="bi bi-envelope" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"></path>
-                                                    </svg></a></div>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button class="btn btn-outline-primary d-inline-flex align-items-center gap-1" type="button" data-action="view">
+                                                    <svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8z"></path>
+                                                        <path d="M8 5a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path>
+                                                    </svg>
+                                                    <span>View</span>
+                                                </button>
+                                                <button class="btn btn-outline-warning d-inline-flex align-items-center gap-1" type="button" data-action="edit">
+                                                    <svg class="bi bi-pencil" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-9.5 9.5a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l9.5-9.5z"></path>
+                                                        <path d="M11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5z"></path>
+                                                    </svg>
+                                                    <span>Edit</span>
+                                                </button>
+                                                <button class="btn btn-outline-danger d-inline-flex align-items-center gap-1" type="button" data-action="delete">
+                                                    <svg class="bi bi-trash" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 5h4a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-1 0V6h-3v7.5a.5.5 0 0 1-1 0v-8z"></path>
+                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4H2.5a1 1 0 0 1 0-2H5h6h2.5a1 1 0 0 1 1 1z"></path>
+                                                    </svg>
+                                                    <span>Delete</span>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                         <nav aria-label="Student list pagination">
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item disabled"><a class="page-link" href="#" aria-disabled="true" tabindex="-1">Previous</a></li>
-                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                <li class="page-item"><a class="page-link" href="#">Next</a></li>
-                            </ul>
+                            <ul class="pagination justify-content-center" id="studentPagination"></ul>
                         </nav>
                     </div>
                 </div>
@@ -2319,9 +2325,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="mb-3">
                                     <label class="form-label" for="editQuizSubject">Subject</label>
                                     <select class="form-select" id="editQuizSubject">
-                                        <option value="MATH101">MATH101 - Calculus I</option>
-                                        <option value="PHYS101">PHYS101 - General Physics I</option>
-                                        <option value="CHEM101">CHEM101 - General Chemistry I</option>
+                                        <option value="" selected disabled>Select subject</option>
                                     </select>
                                 </div>
                                 <div class="row">
@@ -2454,6 +2458,10 @@ document.addEventListener('DOMContentLoaded', function() {
         rows.forEach(row => {
             const actionButtons = row.querySelectorAll('.btn-group .btn');
             if (actionButtons.length === 3) {
+                const hasDataAction = Array.from(actionButtons).some(btn => btn.hasAttribute('data-action'));
+                if (hasDataAction) {
+                    return;
+                }
                 // Check if the buttons already have proper content
                 if (!actionButtons[0].querySelector('i')) {
                     actionButtons[0].innerHTML = '<i class="bi bi-eye"></i>';
@@ -2484,15 +2492,395 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(initializeActionButtons, 100);
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.__genericRefreshBound) return;
+    const refreshButton = document.querySelector('[id^="refresh"]')
+        || document.querySelector('.btn-toolbar .btn-outline-success.btn-sm');
+    if (!refreshButton) return;
+    if (refreshButton.dataset.refreshBound === 'true') return;
+    refreshButton.dataset.refreshBound = 'true';
+    window.__genericRefreshBound = true;
+
+    const refreshIcon = refreshButton.querySelector('svg');
+
+    function ensurePulseStyle() {
+        if (document.getElementById('refreshPulseStyle')) return;
+        const style = document.createElement('style');
+        style.id = 'refreshPulseStyle';
+        style.textContent = '@keyframes refreshPulse { 0% { opacity: 0.6; } 100% { opacity: 1; } } body.page-refreshing .container-fluid { animation: refreshPulse 0.35s ease-in-out; }';
+        document.head.appendChild(style);
+    }
+
+    refreshButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        ensurePulseStyle();
+        document.body.classList.add('page-refreshing');
+        if (refreshIcon) {
+            refreshIcon.classList.add('spin-animation');
+        }
+        setTimeout(function() {
+            window.location.reload();
+        }, 150);
+    });
+});
+</script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const photo = document.getElementById('navbarProfilePhoto');
+    if (!photo) return;
+    fetch('/professor/api/profile', { cache: 'no-store' })
+        .then(response => response.ok ? response.json() : null)
+        .then(profile => {
+            if (profile && profile.photoUrl) {
+                photo.src = `${profile.photoUrl}?t=${Date.now()}`;
+            }
+        })
+        .catch(() => {});
+});
+    </script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tableBody = document.getElementById('studentMasterlistBody');
+    if (!tableBody) return;
+
+    function ensureStudentActionLabels() {
+        const buttons = tableBody.querySelectorAll('button[data-action]');
+        buttons.forEach(button => {
+            if (!button.querySelector('span')) {
+                const label = button.dataset.action === 'view'
+                    ? 'View'
+                    : button.dataset.action === 'edit'
+                        ? 'Edit'
+                        : 'Delete';
+                const span = document.createElement('span');
+                span.textContent = label;
+                button.appendChild(span);
+            }
+        });
+    }
+
+    function getStudentData(row) {
+        const cells = row.querySelectorAll('td');
+        return {
+            id: cells[0]?.textContent.trim() || '-',
+            name: cells[1]?.textContent.trim() || '-',
+            status: cells[2]?.querySelector('.badge')?.textContent.trim() || '-',
+            average: cells[3]?.textContent.trim() || '-'
+        };
+    }
+
+    const pageSize = 10;
+    const pagination = document.getElementById('studentPagination');
+    const searchInput = document.getElementById('studentSearch');
+    const statusFilter = document.getElementById('studentStatusFilter');
+    const sortOrder = document.getElementById('sortOrder');
+    let currentPage = 1;
+    let filteredRows = [];
+
+    function getStudentRows() {
+        return Array.from(tableBody.querySelectorAll('tr')).filter(row => {
+            if (row.id === 'studentFilterEmptyRow') return false;
+            return !row.querySelector('.text-muted');
+        });
+    }
+
+    function ensureFilterEmptyRow() {
+        let row = document.getElementById('studentFilterEmptyRow');
+        if (row) return row;
+        row = document.createElement('tr');
+        row.id = 'studentFilterEmptyRow';
+        row.innerHTML = '<td colspan="5" class="text-center text-muted">No students match your filters.</td>';
+        return row;
+    }
+
+    function updateCount() {
+        const countEl = document.getElementById('masterlistCountValue');
+        if (!countEl) return;
+        countEl.textContent = filteredRows.length.toString();
+    }
+
+    function renderPagination() {
+        if (!pagination) return;
+        const totalRows = filteredRows.length;
+        const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        pagination.innerHTML = '';
+
+        function createItem(label, page, disabled, active) {
+            const li = document.createElement('li');
+            li.className = `page-item${disabled ? ' disabled' : ''}${active ? ' active' : ''}`;
+            const a = document.createElement('a');
+            a.className = 'page-link';
+            a.href = '#';
+            a.textContent = label;
+            if (!disabled) {
+                a.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    currentPage = page;
+                    applyPagination();
+                });
+            }
+            li.appendChild(a);
+            return li;
+        }
+
+        pagination.appendChild(createItem('Previous', Math.max(1, currentPage - 1), currentPage === 1, false));
+        for (let i = 1; i <= totalPages; i += 1) {
+            pagination.appendChild(createItem(String(i), i, false, i === currentPage));
+        }
+        pagination.appendChild(createItem('Next', Math.min(totalPages, currentPage + 1), currentPage === totalPages, false));
+    }
+
+    function applyPagination() {
+        const rows = filteredRows;
+        const start = (currentPage - 1) * pageSize;
+        const end = start + pageSize;
+        const allRows = getStudentRows();
+        allRows.forEach(row => {
+            row.style.display = 'none';
+        });
+
+        if (rows.length === 0) {
+            const emptyRow = ensureFilterEmptyRow();
+            if (!tableBody.contains(emptyRow)) {
+                tableBody.appendChild(emptyRow);
+            }
+            return;
+        }
+        const emptyRow = document.getElementById('studentFilterEmptyRow');
+        if (emptyRow) {
+            emptyRow.remove();
+        }
+        rows.forEach((row, index) => {
+            row.style.display = (index >= start && index < end) ? '' : 'none';
+        });
+        renderPagination();
+    }
+
+    function sortRows(rows) {
+        const mode = sortOrder ? sortOrder.value : 'name-asc';
+        const sorted = [...rows];
+        sorted.sort((a, b) => {
+            const left = getStudentData(a);
+            const right = getStudentData(b);
+            if (mode === 'name-desc') {
+                return right.name.localeCompare(left.name);
+            }
+            if (mode === 'id-asc') {
+                return left.id.localeCompare(right.id);
+            }
+            if (mode === 'avg-desc') {
+                const leftAvg = parseFloat(left.average) || 0;
+                const rightAvg = parseFloat(right.average) || 0;
+                return rightAvg - leftAvg;
+            }
+            return left.name.localeCompare(right.name);
+        });
+        sorted.forEach(row => tableBody.appendChild(row));
+        return sorted;
+    }
+
+    function filterStudents() {
+        const searchTerm = (searchInput?.value || '').trim().toLowerCase();
+        const statusValue = (statusFilter?.value || '').trim().toLowerCase();
+        const rows = sortRows(getStudentRows());
+        filteredRows = rows.filter(row => {
+            const data = getStudentData(row);
+            const matchesSearch = !searchTerm
+                || data.name.toLowerCase().includes(searchTerm)
+                || data.id.toLowerCase().includes(searchTerm);
+            const matchesStatus = !statusValue
+                || data.status.toLowerCase() === statusValue;
+            return matchesSearch && matchesStatus;
+        });
+        currentPage = 1;
+        updateCount();
+        applyPagination();
+    }
+
+    function ensureViewModal() {
+        let modal = document.getElementById('viewStudentModal');
+        if (modal) return modal;
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = `
+            <div class="modal fade" id="viewStudentModal" tabindex="-1" aria-labelledby="viewStudentModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="viewStudentModalLabel">Student Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Student ID:</div>
+                                <div class="col-sm-8" id="viewStudentId"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Name:</div>
+                                <div class="col-sm-8" id="viewStudentName"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Status:</div>
+                                <div class="col-sm-8" id="viewStudentStatus"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Average Grade:</div>
+                                <div class="col-sm-8" id="viewStudentAverage"></div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        modal = wrapper.firstElementChild;
+        document.body.appendChild(modal);
+        return modal;
+    }
+
+    function ensureEditModal() {
+        let modal = document.getElementById('editStudentModal');
+        if (modal) return modal;
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = `
+            <div class="modal fade" id="editStudentModal" tabindex="-1" aria-labelledby="editStudentModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editStudentModalLabel">Edit Student</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label class="form-label" for="editStudentName">Name</label>
+                                    <input class="form-control" type="text" id="editStudentName">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="editStudentStatus">Status</label>
+                                    <select class="form-select" id="editStudentStatus">
+                                        <option value="Active">Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                        <option value="On Leave">On Leave</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="editStudentAverage">Average Grade</label>
+                                    <input class="form-control" type="text" id="editStudentAverage">
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="saveStudentChanges">Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        modal = wrapper.firstElementChild;
+        document.body.appendChild(modal);
+        return modal;
+    }
+
+    function setStatusBadge(cell, status) {
+        const badge = cell.querySelector('.badge') || document.createElement('span');
+        badge.className = 'badge';
+        const normalized = (status || '').toLowerCase();
+        if (normalized === 'inactive') {
+            badge.classList.add('bg-secondary');
+        } else if (normalized === 'on leave') {
+            badge.classList.add('bg-warning');
+        } else {
+            badge.classList.add('bg-success');
+        }
+        badge.textContent = status || '-';
+        if (!cell.contains(badge)) {
+            cell.textContent = '';
+            cell.appendChild(badge);
+        }
+    }
+
+    let activeRow = null;
+
+    tableBody.addEventListener('click', function(event) {
+        const button = event.target.closest('button[data-action]');
+        if (!button) return;
+        const row = button.closest('tr');
+        if (!row || row.querySelector('.text-muted')) return;
+        const action = button.getAttribute('data-action');
+        const data = getStudentData(row);
+
+        if (action === 'view') {
+            const modal = ensureViewModal();
+            document.getElementById('viewStudentId').textContent = data.id;
+            document.getElementById('viewStudentName').textContent = data.name;
+            document.getElementById('viewStudentStatus').textContent = data.status;
+            document.getElementById('viewStudentAverage').textContent = data.average;
+            new bootstrap.Modal(modal).show();
+            return;
+        }
+
+        if (action === 'edit') {
+            activeRow = row;
+            const modal = ensureEditModal();
+            document.getElementById('editStudentName').value = data.name;
+            document.getElementById('editStudentStatus').value = data.status || 'Active';
+            document.getElementById('editStudentAverage').value = data.average;
+            new bootstrap.Modal(modal).show();
+            return;
+        }
+
+        if (action === 'delete') {
+            if (!confirm(`Delete ${data.name}? This cannot be undone.`)) return;
+            row.remove();
+            updateCount();
+            applyPagination();
+        }
+    });
+
+    document.addEventListener('click', function(event) {
+        if (!event.target || event.target.id !== 'saveStudentChanges') return;
+        if (!activeRow) return;
+        const name = document.getElementById('editStudentName').value.trim() || '-';
+        const status = document.getElementById('editStudentStatus').value.trim() || '-';
+        const average = document.getElementById('editStudentAverage').value.trim() || '-';
+
+        const cells = activeRow.querySelectorAll('td');
+        if (cells[1]) cells[1].textContent = name;
+        if (cells[2]) setStatusBadge(cells[2], status);
+        if (cells[3]) cells[3].textContent = average;
+
+        const modalEl = document.getElementById('editStudentModal');
+        const modal = modalEl ? bootstrap.Modal.getInstance(modalEl) : null;
+        if (modal) modal.hide();
+        activeRow = null;
+    });
+
+    if (searchInput) {
+        searchInput.addEventListener('input', filterStudents);
+    }
+    if (statusFilter) {
+        statusFilter.addEventListener('change', filterStudents);
+    }
+    if (sortOrder) {
+        sortOrder.addEventListener('change', filterStudents);
+    }
+
+    ensureStudentActionLabels();
+    setTimeout(ensureStudentActionLabels, 150);
+    filteredRows = getStudentRows();
+    updateCount();
+    applyPagination();
+});
+    </script>
 </body>
 
 </html>
-
-
-
-
-
-
 
 
 

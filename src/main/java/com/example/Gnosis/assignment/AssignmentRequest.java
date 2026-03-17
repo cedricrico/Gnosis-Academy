@@ -7,6 +7,7 @@ public class AssignmentRequest {
 	private java.util.List<String> sections;
 	private String status;
 	private String dueDate;
+	private Integer points;
 
 	public String getTitle() {
 		return title;
@@ -54,5 +55,13 @@ public class AssignmentRequest {
 
 	public void setDueDate(String dueDate) {
 		this.dueDate = dueDate;
+	}
+
+	public Integer getPoints() {
+		return points;
+	}
+
+	public void setPoints(Integer points) {
+		this.points = points;
 	}
 }

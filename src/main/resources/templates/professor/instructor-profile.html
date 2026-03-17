@@ -4,6 +4,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title>Instructor Profile - Instructor Dashboard</title>
     <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
     <style>
@@ -148,6 +150,21 @@
   padding: 0.25rem 0.5rem;
 }
 
+/* Password toggle */
+.password-toggle {
+  background: #fff;
+  border: 1px solid #ced4da;
+  border-left: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.75rem;
+}
+
+.password-toggle img {
+  width: 20px;
+  height: 20px;
+}
+
 /* Make sure buttons maintain proper styling when dynamically added */
 
 .btn-group .btn-outline-primary:hover, .btn-group .btn-outline-warning:hover, .btn-group .btn-outline-danger:hover {
@@ -270,8 +287,17 @@ table.table tbody tr td .btn-group {
 }/* Mobile sidebar toggle */
 
 .sidebar {
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
+
+/* Smooth collapse animation for sidebar */
+.sidebar.collapsing {
+  height: auto;
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
 
 @media (max-width: 767.98px) {
   .sidebar {
@@ -281,6 +307,9 @@ table.table tbody tr td .btn-group {
     bottom: 0;
     z-index: 1040;
     transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
     overflow-y: auto;
     background-color: #f8f9fa;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
@@ -291,14 +320,19 @@ table.table tbody tr td .btn-group {
 @media (max-width: 767.98px) {
   .sidebar.show {
     transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 }
 
 /* Hide sidebar by default on mobile */
-
 @media (max-width: 767.98px) {
   .sidebar:not(.show) {
-    display: none;
+    transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 }
 
@@ -519,10 +553,10 @@ body {
             </div>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">
-                    <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" id="navbarProfile"><svg class="bi bi-person-circle me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"></path>
-                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"></path>
-                        </svg><span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${professorFullName}">Instructor User</span><span class="text-muted small fw-semibold">ID: <span th:text="${professorId}">I2024001</span></span></span></button>
+                    <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" id="navbarProfile">
+                        <img id="navbarProfilePhoto" src="https://via.placeholder.com/32" alt="Profile photo" width="32" height="32" class="rounded-circle me-2">
+                        <span class="d-inline-flex flex-column align-items-start ms-1"><span id="navbarProfessorName" th:text="${professorFullName}">Instructor User</span><span class="text-muted small fw-semibold">ID: <span id="navbarProfessorId" th:text="${professorId}">I2024001</span></span></span>
+                    </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarProfile">
                         <li><a class="dropdown-item" href="/professor/profile"><svg class="bi bi-person me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"></path>
@@ -588,8 +622,10 @@ body {
                             <div class="card-header">
                                 <h5 class="mb-0 card-title">Profile Picture</h5>
                             </div>
-                            <div class="card-body text-center"><img class="rounded-circle mb-3" src="https://via.placeholder.com/150" alt="Profile Picture" width="150" height="150">
-                                <div class="mb-3"><button class="btn btn-outline-primary btn-sm"><svg class="bi bi-camera" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                            <div class="card-body text-center">
+                                <img class="rounded-circle mb-3" id="profilePhoto" src="https://via.placeholder.com/150" alt="Profile Picture" width="150" height="150">
+                                <input type="file" id="profilePhotoInput" accept="image/png,image/jpeg,image/jpg,image/webp,image/gif" class="d-none">
+                                <div class="mb-3"><button class="btn btn-outline-primary btn-sm" type="button" id="changePhotoBtn"><svg class="bi bi-camera" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                                             <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z"></path>
                                             <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"></path>
                                         </svg> Change Photo </button></div>
@@ -602,22 +638,16 @@ body {
                             <div class="card-body">
                                 <ul class="list-group list-group-flush">
                                     <li class="list-group-item"><small class="text-muted">Full Name</small>
-                                        <p class="mb-0">Dr. John Anderson</p>
+                                        <p class="mb-0" id="profileFullName">Dr. John Anderson</p>
                                     </li>
                                     <li class="list-group-item"><small class="text-muted">Employee ID</small>
-                                        <p class="mb-0">INST-2023-001</p>
+                                        <p class="mb-0" id="profileEmployeeId">INST-2023-001</p>
                                     </li>
                                     <li class="list-group-item"><small class="text-muted">Department</small>
-                                        <p class="mb-0">Mathematics Department</p>
-                                    </li>
-                                    <li class="list-group-item"><small class="text-muted">Position</small>
-                                        <p class="mb-0">Senior Lecturer</p>
+                                        <p class="mb-0" id="profileDepartment">Mathematics Department</p>
                                     </li>
                                     <li class="list-group-item"><small class="text-muted">Email</small>
-                                        <p class="mb-0">j.anderson@school.edu</p>
-                                    </li>
-                                    <li class="list-group-item"><small class="text-muted">Phone</small>
-                                        <p class="mb-0">(555) 123-4567</p>
+                                        <p class="mb-0" id="profileEmail">j.anderson@school.edu</p>
                                     </li>
                                 </ul>
                             </div>
@@ -629,14 +659,15 @@ body {
                                 <h5 class="mb-0 card-title">Update Profile Information</h5>
                             </div>
                             <div class="card-body">
-                                <form>
+                                <form id="profileForm">
                                     <div class="row">
-                                        <div class="col-md-6 mb-3"><label class="form-label" for="firstName">First Name</label><input class="form-control" type="text" id="firstName" value="John"></div>
-                                        <div class="col-md-6 mb-3"><label class="form-label" for="lastName">Last Name</label><input class="form-control" type="text" id="lastName" value="Anderson"></div>
+                                        <div class="col-md-5 mb-3"><label class="form-label" for="firstName">First Name</label><input class="form-control" type="text" id="firstName" value="John"></div>
+                                        <div class="col-md-2 mb-3"><label class="form-label" for="middleInitial">Middle Initial</label><input class="form-control" type="text" id="middleInitial" maxlength="1" value=""></div>
+                                        <div class="col-md-5 mb-3"><label class="form-label" for="lastName">Last Name</label><input class="form-control" type="text" id="lastName" value="Anderson"></div>
                                     </div>
+                                    <div class="mb-3"><label class="form-label" for="department">Department</label><input class="form-control" type="text" id="department" value="Mathematics Department"></div>
                                     <div class="mb-3"><label class="form-label" for="email">Email Address</label><input class="form-control" type="email" id="email" value="j.anderson@school.edu"></div>
-                                    <div class="mb-3"><label class="form-label" for="phone">Phone Number</label><input class="form-control" type="tel" id="phone" value="(555) 123-4567"></div>
-                                    <div class="mb-3"><label class="form-label" for="bio">Bio</label><textarea class="form-control" id="bio" rows="3">Senior lecturer with over 10 years of experience in mathematics education. Specializes in calculus and differential equations.</textarea></div><button class="btn btn-primary" type="submit">Save Changes</button>
+                                    <button class="btn btn-primary" type="submit">Save Changes</button>
                                 </form>
                             </div>
                         </div>
@@ -645,11 +676,38 @@ body {
                                 <h5 class="mb-0 card-title">Change Password</h5>
                             </div>
                             <div class="card-body">
-                                <form>
-                                    <div class="mb-3"><label class="form-label" for="currentPassword">Current Password</label><input class="form-control" type="password" id="currentPassword"></div>
-                                    <div class="mb-3"><label class="form-label" for="newPassword">New Password</label><input class="form-control" type="password" id="newPassword"></div>
-                                    <div class="mb-3"><label class="form-label" for="confirmPassword">Confirm New Password</label><input class="form-control" type="password" id="confirmPassword"></div><button class="btn btn-success" type="submit">Update Password</button>
+                                <form id="passwordForm">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="currentPassword">Current Password</label>
+                                        <div class="input-group">
+                                            <input class="form-control" type="password" id="currentPassword">
+                                            <button class="password-toggle btn" type="button" data-target="currentPassword" aria-label="Toggle current password">
+                                                <img src="/assets/img/hide.png" alt="Hide password">
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label" for="newPassword">New Password</label>
+                                        <div class="input-group">
+                                            <input class="form-control" type="password" id="newPassword">
+                                            <button class="password-toggle btn" type="button" data-target="newPassword" aria-label="Toggle new password">
+                                                <img src="/assets/img/hide.png" alt="Hide password">
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label" for="confirmPassword">Confirm New Password</label>
+                                        <div class="input-group">
+                                            <input class="form-control" type="password" id="confirmPassword">
+                                            <button class="password-toggle btn" type="button" data-target="confirmPassword" aria-label="Toggle confirm password">
+                                                <img src="/assets/img/hide.png" alt="Hide password">
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-success" type="submit">Update Password</button>
                                 </form>
+                                <hr>
+                                <button class="btn btn-outline-danger" type="button" id="deleteAccountBtn">Delete Account</button>
                             </div>
                         </div>
                     </div>
@@ -692,6 +750,21 @@ document.addEventListener('DOMContentLoaded', function() {
             filterAnnouncements();
         });
     }
+
+    document.querySelectorAll('.password-toggle').forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = button.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            if (!input) return;
+            const isHidden = input.getAttribute('type') === 'password';
+            input.setAttribute('type', isHidden ? 'text' : 'password');
+            const icon = button.querySelector('img');
+            if (icon) {
+                icon.src = isHidden ? '/assets/img/visible.png' : '/assets/img/hide.png';
+                icon.alt = isHidden ? 'Show password' : 'Hide password';
+            }
+        });
+    });
     
     // Make filterAnnouncements function globally available for refresh functionality
     window.filterAnnouncements = function() {
@@ -732,6 +805,209 @@ document.addEventListener('DOMContentLoaded', function() {
     window.filterAnnouncements();
 });
 </script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+
+    const profileForm = document.getElementById('profileForm');
+    const passwordForm = document.getElementById('passwordForm');
+    const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+    const changePhotoBtn = document.getElementById('changePhotoBtn');
+    const profilePhotoInput = document.getElementById('profilePhotoInput');
+    const profilePhoto = document.getElementById('profilePhoto');
+
+    async function fetchProfessorJson(url, options = {}) {
+        const method = (options.method || 'GET').toUpperCase();
+        const headers = { ...(options.headers || {}) };
+        const isFormData = options.body instanceof FormData;
+
+        if (!headers['Content-Type'] && method !== 'GET' && method !== 'HEAD' && !isFormData) {
+            headers['Content-Type'] = 'application/json';
+        }
+        if (csrfToken && method !== 'GET' && method !== 'HEAD') {
+            headers[csrfHeader] = csrfToken;
+        }
+
+        const response = await fetch(url, {
+            credentials: 'same-origin',
+            ...options,
+            method,
+            headers
+        });
+
+        const contentType = response.headers.get('content-type') || '';
+        const text = await response.text();
+
+        if (!response.ok) {
+            throw new Error(text || response.statusText);
+        }
+        if (response.status === 204 || text.trim() === '') return null;
+        if (!contentType.includes('application/json')) return text;
+        return JSON.parse(text);
+    }
+
+    function setText(id, value) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value ?? '';
+    }
+
+    function setValue(id, value) {
+        const el = document.getElementById(id);
+        if (el) el.value = value ?? '';
+    }
+
+    function formatFullName(profile) {
+        if (!profile) return '';
+        const first = profile.firstName || '';
+        const mi = profile.middleInitial ? `${profile.middleInitial}.` : '';
+        const last = profile.lastName || '';
+        return [first, mi, last].filter(part => part && part.trim()).join(' ').trim();
+    }
+
+    async function loadProfile() {
+        const profile = await fetchProfessorJson('/professor/api/profile');
+        if (!profile) return;
+
+        const fullName = formatFullName(profile) || profile.employeeId || '';
+        setText('profileFullName', fullName);
+        setText('profileEmployeeId', profile.employeeId || '');
+        setText('profileDepartment', profile.department || '');
+        setText('profileEmail', profile.email || '');
+        setText('navbarProfessorName', fullName);
+        setText('navbarProfessorId', profile.employeeId || '');
+
+        setValue('firstName', profile.firstName || '');
+        setValue('middleInitial', profile.middleInitial || '');
+        setValue('lastName', profile.lastName || '');
+        setValue('department', profile.department || '');
+        setValue('email', profile.email || '');
+
+        if (profile.photoUrl) {
+            const photoSrc = `${profile.photoUrl}?t=${Date.now()}`;
+            if (profilePhoto) {
+                profilePhoto.src = photoSrc;
+            }
+            const navbarPhoto = document.getElementById('navbarProfilePhoto');
+            if (navbarPhoto) {
+                navbarPhoto.src = photoSrc;
+            }
+        }
+    }
+
+    if (profileForm) {
+        profileForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const payload = {
+                firstName: document.getElementById('firstName').value.trim(),
+                middleInitial: document.getElementById('middleInitial').value.trim(),
+                lastName: document.getElementById('lastName').value.trim(),
+                department: document.getElementById('department').value.trim(),
+                email: document.getElementById('email').value.trim()
+            };
+
+            try {
+                const updated = await fetchProfessorJson('/professor/api/profile', {
+                    method: 'PUT',
+                    body: JSON.stringify(payload)
+                });
+                if (updated) {
+                    const fullName = formatFullName(updated) || updated.employeeId || '';
+                    setText('profileFullName', fullName);
+                    setText('profileEmployeeId', updated.employeeId || '');
+                    setText('profileDepartment', updated.department || '');
+                    setText('profileEmail', updated.email || '');
+                    setText('navbarProfessorName', fullName);
+                    setText('navbarProfessorId', updated.employeeId || '');
+                }
+                alert('Profile updated.');
+            } catch (error) {
+                console.error(error);
+                alert(error && error.message ? error.message : 'Profile update failed.');
+            }
+        });
+    }
+
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const payload = {
+                currentPassword: document.getElementById('currentPassword').value,
+                newPassword: document.getElementById('newPassword').value,
+                confirmPassword: document.getElementById('confirmPassword').value
+            };
+            try {
+                await fetchProfessorJson('/professor/api/profile/password', {
+                    method: 'PUT',
+                    body: JSON.stringify(payload)
+                });
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+                alert('Password updated.');
+            } catch (error) {
+                console.error(error);
+                alert(error && error.message ? error.message : 'Password update failed.');
+            }
+        });
+    }
+
+    if (deleteAccountBtn) {
+        deleteAccountBtn.addEventListener('click', async function() {
+            const confirmed = confirm('Delete your account? This cannot be undone.');
+            if (!confirmed) return;
+            try {
+                await fetchProfessorJson('/professor/api/profile', { method: 'DELETE' });
+                window.location.href = '/Professor-login?deleted';
+            } catch (error) {
+                console.error(error);
+                alert(error && error.message ? error.message : 'Delete failed.');
+            }
+        });
+    }
+
+    if (changePhotoBtn && profilePhotoInput) {
+        changePhotoBtn.addEventListener('click', function() {
+            profilePhotoInput.click();
+        });
+    }
+
+    if (profilePhotoInput) {
+        profilePhotoInput.addEventListener('change', async function() {
+            const file = profilePhotoInput.files && profilePhotoInput.files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('photo', file);
+            try {
+                const response = await fetchProfessorJson('/professor/api/profile/photo', {
+                    method: 'PUT',
+                    body: formData
+                });
+                if (response && response.photoUrl) {
+                    const photoSrc = `${response.photoUrl}?t=${Date.now()}`;
+                    if (profilePhoto) {
+                        profilePhoto.src = photoSrc;
+                    }
+                    const navbarPhoto = document.getElementById('navbarProfilePhoto');
+                    if (navbarPhoto) {
+                        navbarPhoto.src = photoSrc;
+                    }
+                }
+                profilePhotoInput.value = '';
+                alert('Profile photo updated.');
+            } catch (error) {
+                console.error(error);
+                alert(error && error.message ? error.message : 'Photo upload failed.');
+            }
+        });
+    }
+
+    loadProfile().catch(error => {
+        console.error(error);
+        alert(error && error.message ? error.message : 'Unable to load profile.');
+    });
+});
+    </script>
     <script>
 // Inlined from /assets/js/instructor/assignments-1.js// Legacy placeholder kept for backward compatibility with exported HTML.
 // The real logic lives in assignments.js.
@@ -2431,9 +2707,52 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(initializeActionButtons, 100);
 });
 </script>
-</body>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.__genericRefreshBound) return;
+    const refreshButton = document.querySelector('[id^="refresh"]')
+        || document.querySelector('.btn-toolbar .btn-outline-success.btn-sm');
+    if (!refreshButton) return;
+    if (refreshButton.dataset.refreshBound === 'true') return;
+    refreshButton.dataset.refreshBound = 'true';
+    window.__genericRefreshBound = true;
+
+    const refreshIcon = refreshButton.querySelector('svg');
+
+    function ensurePulseStyle() {
+        if (document.getElementById('refreshPulseStyle')) return;
+        const style = document.createElement('style');
+        style.id = 'refreshPulseStyle';
+        style.textContent = '@keyframes refreshPulse { 0% { opacity: 0.6; } 100% { opacity: 1; } } body.page-refreshing .container-fluid { animation: refreshPulse 0.35s ease-in-out; }';
+        document.head.appendChild(style);
+    }
+
+    refreshButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        ensurePulseStyle();
+        document.body.classList.add('page-refreshing');
+        if (refreshIcon) {
+            refreshIcon.classList.add('spin-animation');
+        }
+        setTimeout(function() {
+            window.location.reload();
+        }, 150);
+    });
+});
+</script></body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
 
 
 

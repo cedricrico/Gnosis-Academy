@@ -27,6 +27,33 @@
   background-color: #f8f9fa;
 }
 
+#subjectTable th,
+#subjectTable td {
+  vertical-align: middle;
+}
+
+#subjectTable th:nth-child(1),
+#subjectTable td:nth-child(1) {
+  text-align: center;
+  width: 56px;
+}
+
+#subjectTable th:nth-child(2),
+#subjectTable td:nth-child(2) {
+  width: 20%;
+}
+
+#subjectTable th:nth-child(3),
+#subjectTable td:nth-child(3) {
+  width: 50%;
+  text-align: center;
+}
+
+#subjectTable th:nth-child(4),
+#subjectTable td:nth-child(4) {
+  width: 30%;
+}
+
 .badge {
   font-size: 0.75em;
 }
@@ -271,8 +298,17 @@ table.table tbody tr td .btn-group {
 }/* Mobile sidebar toggle */
 
 .sidebar {
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
+
+/* Smooth collapse animation for sidebar */
+.sidebar.collapsing {
+  height: auto;
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
 
 @media (max-width: 767.98px) {
   .sidebar {
@@ -282,6 +318,9 @@ table.table tbody tr td .btn-group {
     bottom: 0;
     z-index: 1040;
     transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
     overflow-y: auto;
     background-color: #f8f9fa;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
@@ -292,14 +331,19 @@ table.table tbody tr td .btn-group {
 @media (max-width: 767.98px) {
   .sidebar.show {
     transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 }
 
 /* Hide sidebar by default on mobile */
-
 @media (max-width: 767.98px) {
   .sidebar:not(.show) {
-    display: none;
+    transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 }
 
@@ -520,10 +564,10 @@ body {
             </div>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">
-                    <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" id="navbarProfile"><svg class="bi bi-person-circle me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"></path>
-                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"></path>
-                        </svg><span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${professorFullName}">Instructor User</span><span class="text-muted small fw-semibold">ID: <span th:text="${professorId}">I2024001</span></span></span></button>
+                    <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" id="navbarProfile">
+                        <img id="navbarProfilePhoto" src="https://via.placeholder.com/32" alt="Profile photo" width="32" height="32" class="rounded-circle me-2">
+                        <span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${professorFullName}">Instructor User</span><span class="text-muted small fw-semibold">ID: <span th:text="${professorId}">I2024001</span></span></span>
+                    </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarProfile">
                         <li><a class="dropdown-item" href="/professor/profile"><svg class="bi bi-person me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"></path>
@@ -581,7 +625,7 @@ body {
             </div>
             <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4">
                 <div class="d-flex justify-content-between align-items-center flex-wrap flex-md-nowrap pt-3 mb-3 pb-2 border-bottom">
-                    <h1 class="h2">Subjects - Section A</h1>
+                    <h1 class="h2">Subjects</h1>
                     <div class="btn-toolbar mb-2 mb-md-0"></div>
                 </div>
                 <div class="card">
@@ -596,98 +640,18 @@ body {
                                         <th scope="col">#</th>
                                         <th scope="col">Subject Code</th>
                                         <th scope="col">Subject Name</th>
-                                        <th scope="col">Units</th>
                                         <th scope="col">Schedule</th>
-                                        <th scope="col">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="subjectTableBody">
-                                    <tr>
-                                        <td scope="row">1</td>
-                                        <td>MATH101</td>
-                                        <td>Calculus I</td>
-                                        <td>3</td>
-                                        <td>MWF 8:00-9:30 AM</td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm" role="group">
-                                                <button class="btn btn-outline-primary" type="button" data-action="view" aria-label="View subject" title="View">
-                                                    <svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8z"></path>
-                                                        <path d="M8 5a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path>
-                                                    </svg>
-                                                </button>
-                                                <button class="btn btn-outline-warning" type="button" data-action="edit" aria-label="Edit subject" title="Edit">
-                                                    <svg class="bi bi-pencil" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-9.5 9.5a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l9.5-9.5z"></path>
-                                                        <path d="M11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5z"></path>
-                                                    </svg>
-                                                </button>
-                                                <button class="btn btn-outline-danger" type="button" data-action="delete" aria-label="Delete subject" title="Delete">
-                                                    <svg class="bi bi-trash" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 5h4a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-1 0V6h-3v7.5a.5.5 0 0 1-1 0v-8z"></path>
-                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4H2.5a1 1 0 0 1 0-2H5h6h2.5a1 1 0 0 1 1 1z"></path>
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </td>
+                                    <tr th:if="${professorSubjects == null or professorSubjects.isEmpty()}">
+                                        <td colspan="4" class="text-center text-muted">No subjects found for this section.</td>
                                     </tr>
-                                    <tr>
-                                        <td scope="row">2</td>
-                                        <td>PHYS101</td>
-                                        <td>General Physics I</td>
-                                        <td>4</td>
-                                        <td>TTH 10:00-11:30 AM</td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm" role="group">
-                                                <button class="btn btn-outline-primary" type="button" data-action="view" aria-label="View subject" title="View">
-                                                    <svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8z"></path>
-                                                        <path d="M8 5a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path>
-                                                    </svg>
-                                                </button>
-                                                <button class="btn btn-outline-warning" type="button" data-action="edit" aria-label="Edit subject" title="Edit">
-                                                    <svg class="bi bi-pencil" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-9.5 9.5a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l9.5-9.5z"></path>
-                                                        <path d="M11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5z"></path>
-                                                    </svg>
-                                                </button>
-                                                <button class="btn btn-outline-danger" type="button" data-action="delete" aria-label="Delete subject" title="Delete">
-                                                    <svg class="bi bi-trash" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 5h4a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-1 0V6h-3v7.5a.5.5 0 0 1-1 0v-8z"></path>
-                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4H2.5a1 1 0 0 1 0-2H5h6h2.5a1 1 0 0 1 1 1z"></path>
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td scope="row">3</td>
-                                        <td>CHEM101</td>
-                                        <td>General Chemistry I</td>
-                                        <td>4</td>
-                                        <td>MWF 1:00-2:30 PM</td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm" role="group">
-                                                <button class="btn btn-outline-primary" type="button" data-action="view" aria-label="View subject" title="View">
-                                                    <svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8z"></path>
-                                                        <path d="M8 5a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path>
-                                                    </svg>
-                                                </button>
-                                                <button class="btn btn-outline-warning" type="button" data-action="edit" aria-label="Edit subject" title="Edit">
-                                                    <svg class="bi bi-pencil" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-9.5 9.5a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l9.5-9.5z"></path>
-                                                        <path d="M11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5z"></path>
-                                                    </svg>
-                                                </button>
-                                                <button class="btn btn-outline-danger" type="button" data-action="delete" aria-label="Delete subject" title="Delete">
-                                                    <svg class="bi bi-trash" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 5h4a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-1 0V6h-3v7.5a.5.5 0 0 1-1 0v-8z"></path>
-                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4H2.5a1 1 0 0 1 0-2H5h6h2.5a1 1 0 0 1 1 1z"></path>
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </td>
+                                    <tr th:each="subject, iter : ${professorSubjects}">
+                                        <td th:text="${iter.count}">1</td>
+                                        <td th:text="${subject.code}">SUBJ101</td>
+                                        <td th:text="${subject.name}">Sample Subject</td>
+                                        <td th:text="${subject.schedule}">Mon, Wed 08:00-10:00</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -829,137 +793,8 @@ body {
 
     <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const subjectTableBody = document.getElementById('subjectTableBody');
-    if (!subjectTableBody) {
-        return;
-    }
-
-    let activeSubjectRow = null;
-
-    subjectTableBody.addEventListener('click', function(event) {
-        const actionButton = event.target.closest('button[data-action]');
-        if (!actionButton) {
-            return;
-        }
-
-        const row = actionButton.closest('tr');
-        if (!row) {
-            return;
-        }
-
-        const action = actionButton.getAttribute('data-action');
-        if (action === 'view') {
-            openSubjectView(row);
-        } else if (action === 'edit') {
-            openSubjectEdit(row);
-        } else if (action === 'delete') {
-            openSubjectDelete(row);
-        }
-    });
-
-    function getSubjectData(row) {
-        const cells = row.querySelectorAll('td');
-        return {
-            code: cells[1].textContent.trim(),
-            name: cells[2].textContent.trim(),
-            units: cells[3].textContent.trim(),
-            schedule: cells[4].textContent.trim()
-        };
-    }
-
-    function openSubjectView(row) {
-        const data = getSubjectData(row);
-        document.getElementById('viewSubjectCode').textContent = data.code;
-        document.getElementById('viewSubjectName').textContent = data.name;
-        document.getElementById('viewSubjectUnits').textContent = data.units;
-        document.getElementById('viewSubjectSchedule').textContent = data.schedule;
-
-        const modal = new bootstrap.Modal(document.getElementById('viewSubjectModal'));
-        modal.show();
-    }
-
-    function openSubjectEdit(row) {
-        const data = getSubjectData(row);
-        activeSubjectRow = row;
-
-        document.getElementById('editSubjectCode').value = data.code;
-        document.getElementById('editSubjectName').value = data.name;
-        document.getElementById('editSubjectUnits').value = data.units;
-        document.getElementById('editSubjectSchedule').value = data.schedule;
-
-        const modal = new bootstrap.Modal(document.getElementById('editSubjectModal'));
-        modal.show();
-    }
-
-    function openSubjectDelete(row) {
-        const data = getSubjectData(row);
-        activeSubjectRow = row;
-
-        document.getElementById('deleteSubjectName').textContent = `${data.code} - ${data.name}`;
-        const modal = new bootstrap.Modal(document.getElementById('deleteSubjectModal'));
-        modal.show();
-    }
-
-    const saveButton = document.getElementById('saveSubjectChanges');
-    if (saveButton) {
-        saveButton.addEventListener('click', function() {
-            if (!activeSubjectRow) {
-                return;
-            }
-
-            const code = document.getElementById('editSubjectCode').value.trim();
-            const name = document.getElementById('editSubjectName').value.trim();
-            const units = document.getElementById('editSubjectUnits').value.trim();
-            const schedule = document.getElementById('editSubjectSchedule').value.trim();
-
-            if (!code || !name || !units || !schedule) {
-                alert('Please fill in all subject fields before saving.');
-                return;
-            }
-
-            const cells = activeSubjectRow.querySelectorAll('td');
-            cells[1].textContent = code;
-            cells[2].textContent = name;
-            cells[3].textContent = units;
-            cells[4].textContent = schedule;
-
-            const modal = bootstrap.Modal.getInstance(document.getElementById('editSubjectModal'));
-            if (modal) {
-                modal.hide();
-            }
-        });
-    }
-
-    const deleteButton = document.getElementById('confirmDeleteSubject');
-    if (deleteButton) {
-        deleteButton.addEventListener('click', function() {
-            if (!activeSubjectRow) {
-                return;
-            }
-
-            activeSubjectRow.remove();
-            activeSubjectRow = null;
-            updateSubjectRowNumbers();
-
-            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteSubjectModal'));
-            if (modal) {
-                modal.hide();
-            }
-        });
-    }
-
-    function updateSubjectRowNumbers() {
-        const rows = subjectTableBody.querySelectorAll('tr');
-        rows.forEach((row, index) => {
-            const cell = row.querySelector('td');
-            if (cell) {
-                cell.textContent = index + 1;
-            }
-        });
-    }
-});
-</script>
+// Subject list actions removed.
+    </script>
     <script>
 // Inlined from /assets/js/instructor/announcements-1.js// announcements-1.js - Announcement filtering functionality
 
@@ -2577,9 +2412,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="mb-3">
                                     <label class="form-label" for="editQuizSubject">Subject</label>
                                     <select class="form-select" id="editQuizSubject">
-                                        <option value="MATH101">MATH101 - Calculus I</option>
-                                        <option value="PHYS101">PHYS101 - General Physics I</option>
-                                        <option value="CHEM101">CHEM101 - General Chemistry I</option>
+                                        <option value="" selected disabled>Select subject</option>
                                     </select>
                                 </div>
                                 <div class="row">
@@ -2760,9 +2593,68 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(initializeActionButtons, 100);
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.__genericRefreshBound) return;
+    const refreshButton = document.querySelector('[id^="refresh"]')
+        || document.querySelector('.btn-toolbar .btn-outline-success.btn-sm');
+    if (!refreshButton) return;
+    if (refreshButton.dataset.refreshBound === 'true') return;
+    refreshButton.dataset.refreshBound = 'true';
+    window.__genericRefreshBound = true;
+
+    const refreshIcon = refreshButton.querySelector('svg');
+
+    function ensurePulseStyle() {
+        if (document.getElementById('refreshPulseStyle')) return;
+        const style = document.createElement('style');
+        style.id = 'refreshPulseStyle';
+        style.textContent = '@keyframes refreshPulse { 0% { opacity: 0.6; } 100% { opacity: 1; } } body.page-refreshing .container-fluid { animation: refreshPulse 0.35s ease-in-out; }';
+        document.head.appendChild(style);
+    }
+
+    refreshButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        ensurePulseStyle();
+        document.body.classList.add('page-refreshing');
+        if (refreshIcon) {
+            refreshIcon.classList.add('spin-animation');
+        }
+        setTimeout(function() {
+            window.location.reload();
+        }, 150);
+    });
+});
+</script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const photo = document.getElementById('navbarProfilePhoto');
+    if (!photo) return;
+    fetch('/professor/api/profile', { cache: 'no-store' })
+        .then(response => response.ok ? response.json() : null)
+        .then(profile => {
+            if (profile && profile.photoUrl) {
+                photo.src = `${profile.photoUrl}?t=${Date.now()}`;
+            }
+        })
+        .catch(() => {});
+});
+    </script>
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

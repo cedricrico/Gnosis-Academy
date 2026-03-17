@@ -127,6 +127,21 @@
   display: inline-block;
 }
 
+/* Page refresh animation */
+
+@keyframes refreshPulse {
+  0% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+body.page-refreshing .container-fluid {
+  animation: refreshPulse 0.35s ease-in-out;
+}
+
 /* Fix for dropdown options in create assignment modal */
 
 #assignmentSubject option:not(:first-child) {
@@ -279,8 +294,17 @@ table.table tbody tr td .btn-group {
 }/* Mobile sidebar toggle */
 
 .sidebar {
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
+
+/* Smooth collapse animation for sidebar */
+.sidebar.collapsing {
+  height: auto;
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
 
 @media (max-width: 767.98px) {
   .sidebar {
@@ -290,6 +314,9 @@ table.table tbody tr td .btn-group {
     bottom: 0;
     z-index: 1040;
     transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
     overflow-y: auto;
     background-color: #f8f9fa;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
@@ -300,14 +327,19 @@ table.table tbody tr td .btn-group {
 @media (max-width: 767.98px) {
   .sidebar.show {
     transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 }
 
 /* Hide sidebar by default on mobile */
-
 @media (max-width: 767.98px) {
   .sidebar:not(.show) {
-    display: none;
+    transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 }
 
@@ -528,10 +560,10 @@ body {
             </div>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">
-                    <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" id="navbarProfile"><svg class="bi bi-person-circle me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"></path>
-                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"></path>
-                        </svg><span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${professorFullName}">Instructor User</span><span class="text-muted small fw-semibold">ID: <span th:text="${professorId}">I2024001</span></span></span></button>
+                    <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" id="navbarProfile">
+                        <img id="navbarProfilePhoto" src="https://via.placeholder.com/32" alt="Profile photo" width="32" height="32" class="rounded-circle me-2">
+                        <span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${professorFullName}">Instructor User</span><span class="text-muted small fw-semibold">ID: <span th:text="${professorId}">I2024001</span></span></span>
+                    </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarProfile">
                         <li><a class="dropdown-item" href="/professor/profile"><svg class="bi bi-person me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"></path>
@@ -599,7 +631,7 @@ body {
                                     <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
                                     <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"></path>
                                 </svg> Export </button></div>
-                        <div class="btn-group" role="group"><button class="btn btn-outline-success btn-sm" type="button" id="refreshAssignmentsBtn"><svg class="bi bi-arrow-repeat" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                        <div class="btn-group" role="group"><button class="btn btn-outline-success btn-sm" type="button" id="refreshAssignmentsBtn"><svg class="bi bi-arrow-repeat refresh-icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"></path>
                                     <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"></path>
                                 </svg> Refresh </button></div>
@@ -608,19 +640,19 @@ body {
                 <div class="card mb-4">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-4"><label class="form-label" for="subjectFilter">Filter by Subject</label><select class="form-select" id="subjectFilter">
+                            <div class="col-md-3"><label class="form-label" for="subjectFilter">Filter by Subject</label><select class="form-select" id="subjectFilter">
                                     <option value="" selected="">All Subjects</option>
-                                    <option value="MATH101">MATH101 - Calculus I</option>
-                                    <option value="PHYS101">PHYS101 - General Physics I</option>
-                                    <option value="CHEM101">CHEM101 - General Chemistry I</option>
                                 </select></div>
-                            <div class="col-md-4"><label class="form-label" for="statusFilter">Filter by Status</label><select class="form-select" id="statusFilter">
+                            <div class="col-md-3"><label class="form-label" for="sectionFilter">Filter by Section</label><select class="form-select" id="sectionFilter">
+                                    <option value="" selected="">All Sections</option>
+                                </select></div>
+                            <div class="col-md-3"><label class="form-label" for="statusFilter">Filter by Status</label><select class="form-select" id="statusFilter">
                                     <option value="" selected="">All Statuses</option>
-                                    <option value="Active">Active</option>
                                     <option value="Draft">Draft</option>
-                                    <option value="Past Due">Past Due</option>
+                                    <option value="Published">Published</option>
+                                    <option value="Expired">Expired</option>
                                 </select></div>
-                            <div class="col-md-4"><label class="form-label" for="searchInput">Search</label><input type="text" class="form-control" id="searchInput" placeholder="Search assignments..."></div>
+                            <div class="col-md-3"><label class="form-label" for="searchInput">Search</label><input type="text" class="form-control" id="searchInput" placeholder="Search assignments..."></div>
                         </div>
                     </div>
                 </div>
@@ -643,88 +675,7 @@ body {
                                         <th scope="col">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="assignmentsTableBody">
-                                    <tr>
-                                        <td scope="row">1</td>
-                                        <td>Problem Set #1</td>
-                                        <td>MATH101</td>
-                                        <td>Section A</td>
-                                        <td>Oct 15, 2023</td>
-                                        <td><span class="badge bg-success">Active</span></td>
-                                        <td>28/32</td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm" role="group"><button class="btn btn-outline-primary" type="button" data-action="view" aria-label="View assignment" title="View"><svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
-                                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
-                                                    </svg></button><button class="btn btn-outline-warning" type="button" data-action="edit" aria-label="Edit assignment" title="Edit"><svg class="bi bi-pencil" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"></path>
-                                                    </svg></button><button class="btn btn-outline-danger" type="button" data-action="delete" aria-label="Delete assignment" title="Delete"><svg class="bi bi-trash" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
-                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
-                                                    </svg></button></div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td scope="row">2</td>
-                                        <td>Lab Report #1</td>
-                                        <td>PHYS101</td>
-                                        <td>Section B</td>
-                                        <td>Oct 18, 2023</td>
-                                        <td><span class="badge bg-success">Active</span></td>
-                                        <td>25/28</td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm" role="group"><button class="btn btn-outline-primary" type="button" data-action="view" aria-label="View assignment" title="View"><svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
-                                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
-                                                    </svg></button><button class="btn btn-outline-warning" type="button" data-action="edit" aria-label="Edit assignment" title="Edit"><svg class="bi bi-pencil" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"></path>
-                                                    </svg></button><button class="btn btn-outline-danger" type="button" data-action="delete" aria-label="Delete assignment" title="Delete"><svg class="bi bi-trash" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
-                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
-                                                    </svg></button></div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td scope="row">3</td>
-                                        <td>Chapter 3 Exercises</td>
-                                        <td>CHEM101</td>
-                                        <td>Section C</td>
-                                        <td>Oct 20, 2023</td>
-                                        <td><span class="badge bg-warning">Draft</span></td>
-                                        <td>-/-</td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm" role="group"><button class="btn btn-outline-primary" type="button" data-action="view" aria-label="View assignment" title="View"><svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
-                                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
-                                                    </svg></button><button class="btn btn-outline-warning" type="button" data-action="edit" aria-label="Edit assignment" title="Edit"><svg class="bi bi-pencil" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"></path>
-                                                    </svg></button><button class="btn btn-outline-danger" type="button" data-action="delete" aria-label="Delete assignment" title="Delete"><svg class="bi bi-trash" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
-                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
-                                                    </svg></button></div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td scope="row">4</td>
-                                        <td>Midterm Project</td>
-                                        <td>MATH101</td>
-                                        <td>Section A</td>
-                                        <td>Sep 30, 2023</td>
-                                        <td><span class="badge bg-secondary">Past Due</span></td>
-                                        <td>32/32</td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm" role="group"><button class="btn btn-outline-primary" type="button" data-action="view" aria-label="View assignment" title="View"><svg class="bi bi-eye" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
-                                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
-                                                    </svg></button><button class="btn btn-outline-warning" type="button" data-action="edit" aria-label="Edit assignment" title="Edit"><svg class="bi bi-pencil" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"></path>
-                                                    </svg></button><button class="btn btn-outline-danger" type="button" data-action="delete" aria-label="Delete assignment" title="Delete"><svg class="bi bi-trash" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
-                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
-                                                    </svg></button></div>
-                                        </td>
-                                    </tr>
-                                </tbody>
+                                <tbody id="assignmentsTableBody"></tbody>
                             </table>
                         </div>
                     </div>
@@ -750,6 +701,10 @@ body {
                     <div class="row mb-3">
                         <div class="col-4 fw-bold"><span>Due Date:</span></div>
                         <div class="col-8" id="viewDueDate"></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4 fw-bold"><span>Points:</span></div>
+                        <div class="col-8" id="viewPoints"></div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-4 fw-bold"><span>Sections:</span></div>
@@ -786,36 +741,22 @@ body {
                     <form>
                         <div class="mb-3"><label class="form-label" for="editAssignmentTitle">Title</label><input class="form-control" type="text" id="editAssignmentTitle" required=""></div>
                         <div class="mb-3"><label class="form-label" for="editSubject">Subject</label><select class="form-select" id="editSubject" required="">
-                                <option value="MATH101">MATH101</option>
-                                <option value="PHYS101">PHYS101</option>
-                                <option value="CHEM101">CHEM101</option>
+                                <option value="" selected="">Select subject...</option>
                             </select></div>
                         <div class="mb-3">
-                            <label class="form-label">Sections</label>
-                            <div class="dropdown">
-                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start" type="button" id="editAssignmentSectionsToggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Select sections
-                                </button>
-                                <div class="dropdown-menu w-100 p-2" aria-labelledby="editAssignmentSectionsToggle" id="editAssignmentSections">
-                                    <label class="dropdown-item d-flex align-items-center gap-2">
-                                        <input class="form-check-input m-0 assignment-section-option" type="checkbox" value="" data-section-group="edit">
-                                        <span>Select all</span>
-                                    </label>
-                                    <div class="dropdown-divider"></div>
-                                    <label class="dropdown-item d-flex align-items-center gap-2" th:each="section : ${professorAnnouncementTargets}" th:if="${section != 'All Sections'}">
-                                        <input class="form-check-input m-0 assignment-section-option" type="checkbox" th:value="${section}" data-section-group="edit">
-                                        <span th:text="${section}"></span>
-                                    </label>
-                                </div>
-                            </div>
-                            <small class="text-muted">You can choose multiple sections.</small>
+                            <label class="form-label" for="editAssignmentSection">Section</label>
+                            <select class="form-select" id="editAssignmentSection">
+                                <option value="" selected="">Select section...</option>
+                            </select>
+                            <small class="text-muted">Choose one section or all sections.</small>
                         </div>
-                        <div class="mb-3"><label class="form-label" for="editDueDate">Due Date</label><input class="form-control" id="editDueDate" required="" type="date"></div>
+                        <div class="mb-3"><label class="form-label" for="editDueDate">Due Date &amp; Time</label><input class="form-control" id="editDueDate" required="" type="datetime-local"></div>
                         <div class="mb-3"><label class="form-label" for="editAssignmentDescription">Description</label><textarea class="form-control" id="editAssignmentDescription" rows="3" required=""></textarea></div>
+                        <div class="mb-3"><label class="form-label" for="editPoints">Points</label><input class="form-control" type="number" id="editPoints" placeholder="Total points" min="0" max="100" step="1"></div>
                         <div class="mb-3"><label class="form-label" for="editAssignmentStatus">Status</label><select class="form-select" id="editAssignmentStatus" required="">
-                                <option value="active">Active</option>
                                 <option value="draft">Draft</option>
-                                <option value="past due">Past Due</option>
+                                <option value="expired">Expired</option>
+                                <option value="republish" id="republishOption">Republish</option>
                             </select></div>
                         <div class="mb-3"><label class="form-label" for="editAssignmentFile">Replace Attachment (Optional)</label><input class="form-control" type="file" id="editAssignmentFile" accept=".pdf,.doc,.docx,.ppt,.pptx"></div>
                     </form>
@@ -849,37 +790,21 @@ body {
                         <div class="mb-3"><label class="form-label" for="assignmentTitle">Assignment Title</label><input class="form-control" type="text" id="assignmentTitle" placeholder="Enter assignment title"></div>
                         <div class="mb-3"><label class="form-label" for="assignmentSubject">Subject</label><select class="form-select" id="assignmentSubject">
                                 <option value="" selected="">Select subject...</option>
-                                <option value="MATH101 - Calculus I">MATH101 - Calculus I</option>
-                                <option value="PHYS101 - General Physics I">PHYS101 - General Physics I</option>
-                                <option value="CHEM101 - General Chemistry I">CHEM101 - General Chemistry I</option>
                             </select></div>
                         <div class="mb-3">
-                            <label class="form-label">Sections</label>
-                            <div class="dropdown">
-                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start" type="button" id="assignmentSectionsToggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Select sections
-                                </button>
-                                <div class="dropdown-menu w-100 p-2" aria-labelledby="assignmentSectionsToggle" id="assignmentSections">
-                                    <label class="dropdown-item d-flex align-items-center gap-2">
-                                        <input class="form-check-input m-0 assignment-section-option" type="checkbox" value="" data-section-group="create">
-                                        <span>Select all</span>
-                                    </label>
-                                    <div class="dropdown-divider"></div>
-                                    <label class="dropdown-item d-flex align-items-center gap-2" th:each="section : ${professorAnnouncementTargets}" th:if="${section != 'All Sections'}">
-                                        <input class="form-check-input m-0 assignment-section-option" type="checkbox" th:value="${section}" data-section-group="create">
-                                        <span th:text="${section}"></span>
-                                    </label>
-                                </div>
-                            </div>
-                            <small class="text-muted">You can choose multiple sections.</small>
+                            <label class="form-label" for="assignmentSection">Section</label>
+                            <select class="form-select" id="assignmentSection">
+                                <option value="" selected="">Select section...</option>
+                            </select>
+                            <small class="text-muted">Choose one section or all sections.</small>
                         </div>
                         <div class="mb-3"><label class="form-label" for="assignmentDescription">Description</label><textarea class="form-control" id="assignmentDescription" placeholder="Enter assignment description" rows="3"></textarea></div>
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="mb-3"><label class="form-label" for="dueDate">Due Date</label><input class="form-control" id="dueDate" type="date"></div>
+                                <div class="mb-3"><label class="form-label" for="dueDate">Due Date &amp; Time</label><input class="form-control" id="dueDate" type="datetime-local"></div>
                             </div>
                             <div class="col-md-6">
-                                <div class="mb-3"><label class="form-label" for="points">Points</label><input class="form-control" type="number" id="points" placeholder="Total points"></div>
+                                <div class="mb-3"><label class="form-label" for="points">Points</label><input class="form-control" type="number" id="points" placeholder="Total points" min="0" max="100" step="1"></div>
                             </div>
                         </div>
                         <div class="mb-3"><label class="form-label" for="assignmentFile">Attachment (Optional)</label><input class="form-control" type="file" id="assignmentFile" accept=".pdf,.doc,.docx,.ppt,.pptx"></div>
@@ -889,11 +814,6 @@ body {
             </div>
         </div>
     </div>
-    <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script>
-    <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script>
     <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -906,6 +826,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const deleteModalElement = document.getElementById('deleteAssignmentModal');
     const createModalElement = document.getElementById('createAssignmentModal');
 
+    const subjectFilter = document.getElementById('subjectFilter');
+    const sectionFilter = document.getElementById('sectionFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const searchInput = document.getElementById('searchInput');
+
     const createButton = document.getElementById('createAssignmentBtn');
     const saveButton = document.getElementById('saveAssignmentBtn');
     const confirmDeleteButton = document.getElementById('confirmDeleteAssignmentBtn');
@@ -913,8 +838,55 @@ document.addEventListener('DOMContentLoaded', function() {
     const exportButton = document.getElementById('exportAssignmentsBtn');
 
     let assignmentsCache = new Map();
+    let assignmentsList = [];
     let currentEditId = null;
     let currentDeleteId = null;
+    const expiringIds = new Set();
+
+    function resetSelectOptions(select, options, placeholder, includeAllOption) {
+        if (!select) return;
+        const current = select.value;
+        select.innerHTML = '';
+        if (placeholder) {
+            const placeholderOption = document.createElement('option');
+            placeholderOption.value = '';
+            placeholderOption.textContent = placeholder;
+            placeholderOption.selected = true;
+            select.appendChild(placeholderOption);
+        }
+        if (includeAllOption) {
+            const allOption = document.createElement('option');
+            allOption.value = includeAllOption;
+            allOption.textContent = includeAllOption;
+            select.appendChild(allOption);
+        }
+        (options || []).forEach(optionValue => {
+            const option = document.createElement('option');
+            option.value = optionValue;
+            option.textContent = optionValue;
+            select.appendChild(option);
+        });
+        if (current) {
+            select.value = current;
+        }
+    }
+
+    async function loadAssignmentMeta() {
+        try {
+            const meta = await fetchProfessorJson('/professor/api/assignments/meta');
+            const sections = Array.isArray(meta.sections) ? meta.sections : [];
+            const subjects = Array.isArray(meta.subjects) ? meta.subjects : [];
+
+            resetSelectOptions(subjectFilter, subjects, 'All Subjects', null);
+            resetSelectOptions(sectionFilter, sections, 'All Sections', null);
+            resetSelectOptions(document.getElementById('assignmentSubject'), subjects, 'Select subject...', null);
+            resetSelectOptions(document.getElementById('assignmentSection'), sections, 'Select section...', 'All Sections');
+            resetSelectOptions(document.getElementById('editSubject'), subjects, 'Select subject...', null);
+            resetSelectOptions(document.getElementById('editAssignmentSection'), sections, 'Select section...', 'All Sections');
+        } catch (error) {
+            console.warn('Failed to load assignment metadata:', error);
+        }
+    }
 
     function getModalInstance(modalElement) {
         if (!modalElement) return null;
@@ -957,6 +929,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (normalized === 'published') return 'bg-success';
         if (normalized === 'draft') return 'bg-warning';
         if (normalized === 'past due') return 'bg-danger';
+        if (normalized === 'expired') return 'bg-danger';
         return 'bg-secondary';
     }
 
@@ -965,10 +938,16 @@ document.addEventListener('DOMContentLoaded', function() {
         assignmentsTableBody.innerHTML = '';
         assignmentsCache.clear();
 
-        list.forEach((assignment, index) => {
+        const filtered = applyAssignmentFilters(list);
+        filtered.forEach((assignment, index) => {
             assignmentsCache.set(String(assignment.id), assignment);
             const statusText = assignment.status ? assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1).toLowerCase() : 'Draft';
             const sectionsText = Array.isArray(assignment.sections) ? assignment.sections.join(', ') : '';
+            const statusNormalized = (assignment.status || '').toLowerCase();
+            const isPublished = statusNormalized === 'published';
+            const isExpired = statusNormalized === 'expired';
+            const canPublish = statusNormalized === 'draft';
+            const publishButtonClass = canPublish ? 'btn-outline-success' : 'btn-outline-secondary';
 
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -976,11 +955,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${assignment.title || ''}</td>
                 <td>${assignment.subject || ''}</td>
                 <td>${sectionsText}</td>
-                <td>${assignment.dueDate || ''}</td>
+                <td>${formatDueDateDisplay(assignment.dueDate)}</td>
                 <td><span class="badge ${statusBadge(assignment.status)}">${statusText}</span></td>
+                <td>${assignment.submissions ?? '-'}</td>
                 <td>
                     <div class="btn-group btn-group-sm" role="group">
                         <button class="btn btn-outline-primary" type="button" data-action="view" data-id="${assignment.id}">View</button>
+                        <button class="btn ${publishButtonClass}" type="button" data-action="publish" data-id="${assignment.id}" ${canPublish ? '' : 'disabled aria-disabled="true"'}>Publish</button>
                         <button class="btn btn-outline-warning" type="button" data-action="edit" data-id="${assignment.id}">Edit</button>
                         <button class="btn btn-outline-danger" type="button" data-action="delete" data-id="${assignment.id}">Delete</button>
                     </div>
@@ -990,65 +971,93 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    async function loadAssignments() {
-        const data = await fetchProfessorJson('/professor/api/assignments');
-        renderAssignments(Array.isArray(data) ? data : []);
+    function normalizeDateTime(value) {
+        if (!value) return '';
+        return value.includes('T') ? value : `${value}T00:00`;
     }
 
-    function updateSectionToggleText(group, selected) {
-        const toggleId = group === 'edit' ? 'editAssignmentSectionsToggle' : 'assignmentSectionsToggle';
-        const toggle = document.getElementById(toggleId);
-        if (!toggle) return;
-        if (selected.length === 0) {
-            toggle.textContent = 'Select sections';
-        } else if (selected.length === 1) {
-            toggle.textContent = selected[0];
-        } else {
-            toggle.textContent = `${selected.length} sections selected`;
+    function formatDueDateDisplay(value) {
+        if (!value) return '';
+        return value.replace('T', ' ');
+    }
+
+    function parseDueDate(value) {
+        if (!value) return null;
+        const normalized = normalizeDateTime(value);
+        const parsed = new Date(normalized);
+        if (Number.isNaN(parsed.getTime())) return null;
+        return parsed;
+    }
+
+    function isExpired(assignment) {
+        const due = parseDueDate(assignment.dueDate);
+        if (!due) return false;
+        return Date.now() >= due.getTime();
+    }
+
+    function applyAssignmentFilters(list) {
+        const selectedSubject = subjectFilter ? subjectFilter.value.trim() : '';
+        const selectedSection = sectionFilter ? sectionFilter.value.trim() : '';
+        const selectedStatus = statusFilter ? statusFilter.value.trim() : '';
+        const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+        return list.filter(assignment => {
+            const subject = (assignment.subject || '').toString();
+            const status = (assignment.status || '').toString();
+            const sections = Array.isArray(assignment.sections) ? assignment.sections : [];
+            const sectionsText = sections.join(', ');
+            const title = (assignment.title || '').toString();
+
+            const subjectMatch = !selectedSubject || subject.includes(selectedSubject);
+            const sectionMatch = !selectedSection || selectedSection === 'All Sections'
+                || sections.some(section => section.toLowerCase() === selectedSection.toLowerCase())
+                || sectionsText.toLowerCase().includes(selectedSection.toLowerCase());
+            const statusMatch = !selectedStatus || status.toLowerCase() === selectedStatus.toLowerCase();
+            const searchMatch = !searchTerm
+                || title.toLowerCase().includes(searchTerm)
+                || subject.toLowerCase().includes(searchTerm)
+                || sectionsText.toLowerCase().includes(searchTerm);
+
+            return subjectMatch && sectionMatch && statusMatch && searchMatch;
+        });
+    }
+
+    async function loadAssignments() {
+        const data = await fetchProfessorJson('/professor/api/assignments');
+        assignmentsList = Array.isArray(data) ? data : [];
+        renderAssignments(assignmentsList);
+        expirePastDueAssignments(assignmentsList).catch(err => console.warn(err));
+    }
+
+    async function refreshAssignments() {
+        const refreshIcon = refreshButton ? refreshButton.querySelector('.refresh-icon') : null;
+        document.body.classList.add('page-refreshing');
+        if (refreshIcon) refreshIcon.classList.add('spin-animation');
+        try {
+            await loadAssignmentMeta();
+            await loadAssignments();
+        } catch (error) {
+            console.error(error);
+            alert(error.message || 'Unable to refresh assignments.');
+        } finally {
+            if (refreshIcon) refreshIcon.classList.remove('spin-animation');
+            setTimeout(() => document.body.classList.remove('page-refreshing'), 200);
         }
     }
 
     function collectSelectedSections(group) {
-        const checkboxes = document.querySelectorAll(`.assignment-section-option[data-section-group="${group}"]`);
-        const selected = [];
-        checkboxes.forEach(box => {
-            if (box.value && box.checked) {
-                selected.push(box.value);
-            }
-        });
-        updateSectionToggleText(group, selected);
-        return selected;
-    }
-
-    function bindSectionDropdown(group) {
-        const checkboxes = document.querySelectorAll(`.assignment-section-option[data-section-group="${group}"]`);
-        const selectAll = Array.from(checkboxes).find(box => !box.value);
-        if (selectAll) {
-            selectAll.addEventListener('change', function() {
-                checkboxes.forEach(box => {
-                    if (box.value) {
-                        box.checked = selectAll.checked;
-                    }
-                });
-                collectSelectedSections(group);
-            });
-        }
-        checkboxes.forEach(box => {
-            if (!box.value) return;
-            box.addEventListener('change', function() {
-                if (selectAll && !box.checked) {
-                    selectAll.checked = false;
-                }
-                collectSelectedSections(group);
-            });
-        });
+        const selectId = group === 'edit' ? 'editAssignmentSection' : 'assignmentSection';
+        const select = document.getElementById(selectId);
+        const value = select ? select.value.trim() : '';
+        return value ? [value] : [];
     }
 
     function openViewModal(assignment) {
         if (!assignment) return;
         document.getElementById('viewAssignmentTitle').textContent = assignment.title || '';
         document.getElementById('viewSubject').textContent = assignment.subject || '';
-        document.getElementById('viewDueDate').textContent = assignment.dueDate || '';
+        document.getElementById('viewDueDate').textContent = formatDueDateDisplay(assignment.dueDate);
+        document.getElementById('viewPoints').textContent = assignment.points ?? '-';
         document.getElementById('viewAssignmentDescription').textContent = assignment.description || '';
         document.getElementById('viewAssignmentSections').textContent = Array.isArray(assignment.sections) ? assignment.sections.join(', ') : '';
         const statusBadgeElement = document.getElementById('viewStatus');
@@ -1075,19 +1084,44 @@ document.addEventListener('DOMContentLoaded', function() {
         currentEditId = assignment.id;
         document.getElementById('editAssignmentTitle').value = assignment.title || '';
         document.getElementById('editSubject').value = assignment.subject || '';
-        document.getElementById('editDueDate').value = assignment.dueDate || '';
+        document.getElementById('editDueDate').value = normalizeDateTime(assignment.dueDate);
         document.getElementById('editAssignmentDescription').value = assignment.description || '';
-        document.getElementById('editAssignmentStatus').value = assignment.status ? assignment.status.toLowerCase() : 'draft';
-
-        const selected = new Set(Array.isArray(assignment.sections) ? assignment.sections : []);
-        document.querySelectorAll('.assignment-section-option[data-section-group="edit"]').forEach(box => {
-            if (!box.value) {
-                box.checked = false;
-                return;
+        const editPointsInput = document.getElementById('editPoints');
+        if (editPointsInput) {
+            editPointsInput.value = assignment.points ?? '';
+        }
+        const statusSelect = document.getElementById('editAssignmentStatus');
+        const normalizedStatus = assignment.status ? assignment.status.toLowerCase() : 'draft';
+        if (statusSelect) {
+            const republishOption = document.getElementById('republishOption');
+            const existingPublished = statusSelect.querySelector('#publishedStatusOption');
+            if (existingPublished) {
+                existingPublished.remove();
             }
-            box.checked = selected.has(box.value);
-        });
-        updateSectionToggleText('edit', Array.from(selected));
+
+            if (normalizedStatus === 'published') {
+                if (republishOption) {
+                    republishOption.hidden = true;
+                    republishOption.disabled = true;
+                }
+                const publishedOption = document.createElement('option');
+                publishedOption.id = 'publishedStatusOption';
+                publishedOption.value = 'published';
+                publishedOption.textContent = 'Published';
+                statusSelect.appendChild(publishedOption);
+            } else if (republishOption) {
+                republishOption.hidden = false;
+                republishOption.disabled = false;
+            }
+
+            statusSelect.value = normalizedStatus;
+        }
+
+        const selectedSections = Array.isArray(assignment.sections) ? assignment.sections : [];
+        const editSectionSelect = document.getElementById('editAssignmentSection');
+        if (editSectionSelect) {
+            editSectionSelect.value = selectedSections[0] || '';
+        }
 
         const editFileInput = document.getElementById('editAssignmentFile');
         if (editFileInput) {
@@ -1095,6 +1129,74 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         const modal = getModalInstance(editModalElement);
         if (modal) modal.show();
+    }
+
+    async function publishAssignment(assignment) {
+        if (!assignment) return;
+        const confirmed = confirm(`Publish assignment "${assignment.title || ''}" now?`);
+        if (!confirmed) return;
+
+        const formData = new FormData();
+        formData.append('title', assignment.title || '');
+        formData.append('subject', assignment.subject || '');
+        formData.append('description', assignment.description || '');
+        formData.append('dueDate', assignment.dueDate || '');
+        formData.append('status', 'Published');
+        if (assignment.points != null) {
+            formData.append('points', assignment.points);
+        }
+        const sections = Array.isArray(assignment.sections) ? assignment.sections : [];
+        sections.forEach(section => formData.append('sections', section));
+
+        await fetchProfessorJson(`/professor/api/assignments/${assignment.id}`, {
+            method: 'PUT',
+            body: formData
+        });
+
+        await loadAssignments();
+    }
+
+    async function expirePastDueAssignments(list) {
+        const candidates = (list || []).filter(assignment => {
+            if (!assignment || assignment.id == null) return false;
+            const status = (assignment.status || '').toLowerCase();
+            if (status === 'expired') return false;
+            return isExpired(assignment);
+        });
+
+        for (const assignment of candidates) {
+            const id = String(assignment.id);
+            if (expiringIds.has(id)) continue;
+            expiringIds.add(id);
+            try {
+                const formData = new FormData();
+                formData.append('title', assignment.title || '');
+                formData.append('subject', assignment.subject || '');
+                formData.append('description', assignment.description || '');
+                formData.append('dueDate', assignment.dueDate || '');
+                formData.append('status', 'Expired');
+                if (assignment.points != null) {
+                    formData.append('points', assignment.points);
+                }
+                const sections = Array.isArray(assignment.sections) ? assignment.sections : [];
+                sections.forEach(section => formData.append('sections', section));
+
+                await fetchProfessorJson(`/professor/api/assignments/${assignment.id}`, {
+                    method: 'PUT',
+                    body: formData
+                });
+            } catch (error) {
+                console.warn('Failed to auto-expire assignment', assignment.id, error);
+            } finally {
+                expiringIds.delete(id);
+            }
+        }
+
+        if (candidates.length > 0) {
+            const refreshed = await fetchProfessorJson('/professor/api/assignments');
+            assignmentsList = Array.isArray(refreshed) ? refreshed : [];
+            renderAssignments(assignmentsList);
+        }
     }
 
     document.addEventListener('click', function(event) {
@@ -1105,6 +1207,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (button.dataset.action === 'view') {
             openViewModal(assignment);
+        } else if (button.dataset.action === 'publish') {
+            publishAssignment(assignment).catch(err => alert(err.message || 'Unable to publish assignment.'));
         } else if (button.dataset.action === 'edit') {
             openEditModal(assignment);
         } else if (button.dataset.action === 'delete') {
@@ -1133,9 +1237,25 @@ document.addEventListener('DOMContentLoaded', function() {
             const subject = document.getElementById('editSubject').value.trim();
             const dueDate = document.getElementById('editDueDate').value;
             const description = document.getElementById('editAssignmentDescription').value.trim();
-            const status = document.getElementById('editAssignmentStatus').value;
+            const rawStatus = document.getElementById('editAssignmentStatus').value;
+            const status = rawStatus === 'republish' ? 'Published' : rawStatus;
+            const pointsRaw = document.getElementById('editPoints').value.trim();
+            const points = pointsRaw === '' ? null : Number(pointsRaw);
             const attachmentFile = document.getElementById('editAssignmentFile').files[0];
             const sections = collectSelectedSections('edit');
+
+            if (!title || !subject || !description || !dueDate || sections.length === 0) {
+                alert('Please fill in all required fields, including at least one section.');
+                return;
+            }
+            if (pointsRaw !== '' && (Number.isNaN(points) || points < 0 || points > 100)) {
+                alert('Points must be a number between 0 and 100.');
+                return;
+            }
+            if (rawStatus === 'republish' && isExpired({ dueDate })) {
+                alert('Please update the due date before republishing an expired assignment.');
+                return;
+            }
 
             const formData = new FormData();
             formData.append('title', title);
@@ -1143,6 +1263,9 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('description', description);
             formData.append('dueDate', dueDate);
             formData.append('status', status);
+            if (points != null) {
+                formData.append('points', points);
+            }
             sections.forEach(section => formData.append('sections', section));
             if (attachmentFile) {
                 formData.append('attachment', attachmentFile);
@@ -1167,11 +1290,17 @@ document.addEventListener('DOMContentLoaded', function() {
             const description = document.getElementById('assignmentDescription').value.trim();
             const dueDate = document.getElementById('dueDate').value;
             const status = 'DRAFT';
+            const pointsRaw = document.getElementById('points').value.trim();
+            const points = pointsRaw === '' ? null : Number(pointsRaw);
             const attachmentFile = document.getElementById('assignmentFile').files[0];
             const sections = collectSelectedSections('create');
 
             if (!title || !subject || !description || !dueDate || sections.length === 0) {
                 alert('Please fill in all required fields, including at least one section.');
+                return;
+            }
+            if (pointsRaw !== '' && (Number.isNaN(points) || points < 0 || points > 100)) {
+                alert('Points must be a number between 0 and 100.');
                 return;
             }
 
@@ -1181,6 +1310,9 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('description', description);
             formData.append('dueDate', dueDate);
             formData.append('status', status);
+            if (points != null) {
+                formData.append('points', points);
+            }
             sections.forEach(section => formData.append('sections', section));
             if (attachmentFile) {
                 formData.append('attachment', attachmentFile);
@@ -1195,11 +1327,12 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('assignmentSubject').value = '';
             document.getElementById('assignmentDescription').value = '';
             document.getElementById('dueDate').value = '';
+            document.getElementById('points').value = '';
             document.getElementById('assignmentFile').value = '';
-            document.querySelectorAll('.assignment-section-option[data-section-group="create"]').forEach(box => {
-                box.checked = false;
-            });
-            updateSectionToggleText('create', []);
+            const sectionSelect = document.getElementById('assignmentSection');
+            if (sectionSelect) {
+                sectionSelect.value = '';
+            }
 
             const modal = getModalInstance(createModalElement);
             if (modal) modal.hide();
@@ -1208,8 +1341,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (refreshButton) {
-        refreshButton.addEventListener('click', async function() {
-            await loadAssignments();
+        refreshButton.addEventListener('click', function() {
+            refreshAssignments();
         });
     }
 
@@ -1238,14 +1371,50 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    bindSectionDropdown('create');
-    bindSectionDropdown('edit');
-    updateSectionToggleText('create', []);
-    updateSectionToggleText('edit', []);
+    if (subjectFilter) {
+        subjectFilter.addEventListener('change', function() {
+            renderAssignments(assignmentsList);
+        });
+    }
 
-    loadAssignments().catch(err => console.error(err));
+    if (sectionFilter) {
+        sectionFilter.addEventListener('change', function() {
+            renderAssignments(assignmentsList);
+        });
+    }
+
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function() {
+            renderAssignments(assignmentsList);
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            renderAssignments(assignmentsList);
+        });
+    }
+
+    refreshAssignments();
+    setInterval(() => {
+        refreshAssignments();
+    }, 30000);
 });
 </script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const photo = document.getElementById('navbarProfilePhoto');
+    if (!photo) return;
+    fetch('/professor/api/profile', { cache: 'no-store' })
+        .then(response => response.ok ? response.json() : null)
+        .then(profile => {
+            if (profile && profile.photoUrl) {
+                photo.src = `${profile.photoUrl}?t=${Date.now()}`;
+            }
+        })
+        .catch(() => {});
+});
+    </script>
 </body>
 
 </html>

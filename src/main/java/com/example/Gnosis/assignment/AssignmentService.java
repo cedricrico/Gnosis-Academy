@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.Gnosis.activity.ProfessorActivityService;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -20,6 +22,7 @@ import java.util.UUID;
 @Service
 public class AssignmentService {
 	private final AssignmentRepository assignmentRepository;
+	private final ProfessorActivityService activityService;
 	private final Path attachmentRoot = Paths.get("uploads", "assignments");
 	private static final Set<String> ALLOWED_EXTENSIONS = Set.of("pdf", "doc", "docx", "ppt", "pptx");
 	private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
@@ -30,8 +33,9 @@ public class AssignmentService {
 			"application/vnd.openxmlformats-officedocument.presentationml.presentation"
 	);
 
-	public AssignmentService(AssignmentRepository assignmentRepository) {
+	public AssignmentService(AssignmentRepository assignmentRepository, ProfessorActivityService activityService) {
 		this.assignmentRepository = assignmentRepository;
+		this.activityService = activityService;
 	}
 
 	@Transactional(readOnly = true)
@@ -55,7 +59,11 @@ public class AssignmentService {
 		if (attachment != null && !attachment.isEmpty()) {
 			storeAttachment(saved, attachment);
 			saved = assignmentRepository.save(saved);
+			activityService.record(professorId, "UPLOADED", "ASSIGNMENT", String.valueOf(saved.getId()),
+					saved.getTitle(), "Uploaded assignment attachment.");
 		}
+		activityService.record(professorId, "CREATED", "ASSIGNMENT", String.valueOf(saved.getId()),
+				saved.getTitle(), "Created assignment.");
 		return toResponse(saved);
 	}
 
@@ -76,8 +84,13 @@ public class AssignmentService {
 		if (attachment != null && !attachment.isEmpty()) {
 			deleteExistingAttachment(assignment);
 			storeAttachment(assignment, attachment);
+			activityService.record(professorId, "UPLOADED", "ASSIGNMENT", String.valueOf(assignment.getId()),
+					assignment.getTitle(), "Uploaded assignment attachment.");
 		}
-		return toResponse(assignmentRepository.save(assignment));
+		Assignment saved = assignmentRepository.save(assignment);
+		activityService.record(professorId, "UPDATED", "ASSIGNMENT", String.valueOf(saved.getId()),
+				saved.getTitle(), "Updated assignment.");
+		return toResponse(saved);
 	}
 
 	@Transactional(readOnly = true)
@@ -97,8 +110,11 @@ public class AssignmentService {
 		if (!assignment.getProfessorId().equals(professorId)) {
 			throw new IllegalArgumentException("Unauthorized assignment delete.");
 		}
+		String title = assignment.getTitle();
 		deleteExistingAttachment(assignment);
 		assignmentRepository.delete(assignment);
+		activityService.record(professorId, "DELETED", "ASSIGNMENT", String.valueOf(id),
+				title != null ? title : "Assignment", "Deleted assignment.");
 	}
 
 	private void applyRequest(
@@ -115,6 +131,12 @@ public class AssignmentService {
 			throw new IllegalArgumentException("At least one section is required.");
 		}
 		String status = requireText(request.getStatus(), "Status is required.");
+		Integer points = request.getPoints();
+		if (points != null) {
+			if (points < 0 || points > 100) {
+				throw new IllegalArgumentException("Points must be between 0 and 100.");
+			}
+		}
 
 		assignment.setTitle(title);
 		assignment.setDescription(description);
@@ -122,6 +144,7 @@ public class AssignmentService {
 		assignment.setSectionsCsv(String.join(", ", sections));
 		assignment.setStatus(status.toUpperCase());
 		assignment.setDueDate(trimToNull(request.getDueDate()));
+		assignment.setPoints(points);
 		assignment.setProfessorId(professorId);
 		assignment.setProfessorName(professorName);
 	}
@@ -135,6 +158,7 @@ public class AssignmentService {
 		response.setSections(splitSections(assignment.getSectionsCsv()));
 		response.setStatus(assignment.getStatus());
 		response.setDueDate(assignment.getDueDate());
+		response.setPoints(assignment.getPoints());
 		response.setProfessorId(assignment.getProfessorId());
 		response.setProfessorName(assignment.getProfessorName());
 		response.setAttachmentName(assignment.getAttachmentName());

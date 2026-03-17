@@ -1,4 +1,4 @@
-package com.example.Gnosis.assignment;
+package com.example.Gnosis.lesson;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,8 +13,8 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 
 @Entity
-@Table(name = "assignments")
-public class Assignment {
+@Table(name = "lessons")
+public class Lesson {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -29,16 +29,14 @@ public class Assignment {
 	@Column(nullable = false, length = 200)
 	private String subject;
 
-	@Column(nullable = false, length = 512)
-	private String sectionsCsv;
+	@Column(nullable = false, length = 128)
+	private String section;
 
 	@Column(nullable = false, length = 32)
-	private String status;
+	private String week;
 
-	@Column(length = 32)
-	private String dueDate;
-
-	private Integer points;
+	@Column(nullable = false, length = 32)
+	private String type;
 
 	@Column(nullable = false, length = 32)
 	private String professorId;
@@ -63,7 +61,7 @@ public class Assignment {
 	@Column(nullable = false)
 	private Instant updatedAt;
 
-	protected Assignment() {
+	protected Lesson() {
 	}
 
 	public Long getId() {
@@ -94,36 +92,28 @@ public class Assignment {
 		this.subject = subject;
 	}
 
-	public String getSectionsCsv() {
-		return sectionsCsv;
+	public String getSection() {
+		return section;
 	}
 
-	public void setSectionsCsv(String sectionsCsv) {
-		this.sectionsCsv = sectionsCsv;
+	public void setSection(String section) {
+		this.section = section;
 	}
 
-	public String getStatus() {
-		return status;
+	public String getWeek() {
+		return week;
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
+	public void setWeek(String week) {
+		this.week = week;
 	}
 
-	public String getDueDate() {
-		return dueDate;
+	public String getType() {
+		return type;
 	}
 
-	public void setDueDate(String dueDate) {
-		this.dueDate = dueDate;
-	}
-
-	public Integer getPoints() {
-		return points;
-	}
-
-	public void setPoints(Integer points) {
-		this.points = points;
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	public String getProfessorId() {

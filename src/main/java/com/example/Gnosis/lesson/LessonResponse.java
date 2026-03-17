@@ -1,16 +1,15 @@
-package com.example.Gnosis.assignment;
+package com.example.Gnosis.lesson;
 
 import java.time.Instant;
 
-public class AssignmentResponse {
+public class LessonResponse {
 	private Long id;
 	private String title;
 	private String description;
 	private String subject;
-	private java.util.List<String> sections;
-	private String status;
-	private String dueDate;
-	private Integer points;
+	private String section;
+	private String week;
+	private String type;
 	private String professorId;
 	private String professorName;
 	private String attachmentName;
@@ -50,36 +49,28 @@ public class AssignmentResponse {
 		this.subject = subject;
 	}
 
-	public java.util.List<String> getSections() {
-		return sections;
+	public String getSection() {
+		return section;
 	}
 
-	public void setSections(java.util.List<String> sections) {
-		this.sections = sections;
+	public void setSection(String section) {
+		this.section = section;
 	}
 
-	public String getStatus() {
-		return status;
+	public String getWeek() {
+		return week;
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
+	public void setWeek(String week) {
+		this.week = week;
 	}
 
-	public String getDueDate() {
-		return dueDate;
+	public String getType() {
+		return type;
 	}
 
-	public void setDueDate(String dueDate) {
-		this.dueDate = dueDate;
-	}
-
-	public Integer getPoints() {
-		return points;
-	}
-
-	public void setPoints(Integer points) {
-		this.points = points;
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	public String getProfessorId() {

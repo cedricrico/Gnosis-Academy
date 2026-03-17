@@ -4,6 +4,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title>Instructor Dashboard</title>
     <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
     <style>
@@ -270,8 +272,17 @@ table.table tbody tr td .btn-group {
 }/* Mobile sidebar toggle */
 
 .sidebar {
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
+
+/* Smooth collapse animation for sidebar */
+.sidebar.collapsing {
+  height: auto;
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
 
 @media (max-width: 767.98px) {
   .sidebar {
@@ -281,6 +292,9 @@ table.table tbody tr td .btn-group {
     bottom: 0;
     z-index: 1040;
     transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
     overflow-y: auto;
     background-color: #f8f9fa;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
@@ -291,14 +305,19 @@ table.table tbody tr td .btn-group {
 @media (max-width: 767.98px) {
   .sidebar.show {
     transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 }
 
 /* Hide sidebar by default on mobile */
-
 @media (max-width: 767.98px) {
   .sidebar:not(.show) {
-    display: none;
+    transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 }
 
@@ -519,10 +538,10 @@ body {
             </div>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">
-                    <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" id="navbarProfile"><svg class="bi bi-person-circle me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"></path>
-                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"></path>
-                        </svg><span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${professorFullName}">Instructor User</span><span class="text-muted small fw-semibold">ID: <span th:text="${professorId}">I2024001</span></span></span></button>
+                    <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" id="navbarProfile">
+                        <img id="navbarProfilePhoto" src="https://via.placeholder.com/32" alt="Profile photo" width="32" height="32" class="rounded-circle me-2">
+                        <span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${professorFullName}">Instructor User</span><span class="text-muted small fw-semibold">ID: <span th:text="${professorId}">I2024001</span></span></span>
+                    </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarProfile">
                         <li><a class="dropdown-item" href="/professor/profile"><svg class="bi bi-person me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"></path>
@@ -582,7 +601,7 @@ body {
                 <div class="d-flex justify-content-between align-items-center flex-wrap flex-md-nowrap pt-3 mb-3 pb-2 border-bottom">
                     <h1 class="h2">Dashboard</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
-                        <div class="btn-group me-2" role="group"><button class="btn btn-outline-secondary btn-sm" type="button"><svg class="bi bi-calendar" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                        <div class="btn-group me-2" role="group"><button class="btn btn-outline-secondary btn-sm" type="button" id="dashboardClock"><svg class="bi bi-calendar" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"></path>
                                 </svg> Today </button></div>
                     </div>
@@ -655,25 +674,8 @@ body {
                                 <h5 class="mb-0 card-title">Recent Activity</h5>
                             </div>
                             <div class="card-body">
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item">
-                                        <div class="d-flex w-100 justify-content-between">
-                                            <h6 class="mb-1">New Assignment Posted</h6><small class="text-muted">3 days ago</small>
-                                        </div>
-                                        <p class="mb-1">Mathematics 101 - Problem Set #3</p><small class="text-muted">Posted in Section A</small>
-                                    </li>
-                                    <li class="list-group-item">
-                                        <div class="d-flex w-100 justify-content-between">
-                                            <h6 class="mb-1">Quiz Created</h6><small class="text-muted">1 week ago</small>
-                                        </div>
-                                        <p class="mb-1">Physics 201 - Thermodynamics Quiz</p><small class="text-muted">For Section B</small>
-                                    </li>
-                                    <li class="list-group-item">
-                                        <div class="d-flex w-100 justify-content-between">
-                                            <h6 class="mb-1">Announcement Published</h6><small class="text-muted">2 weeks ago</small>
-                                        </div>
-                                        <p class="mb-1">Final Exam Schedule Released</p><small class="text-muted">All Sections</small>
-                                    </li>
+                                <ul id="recentActivityList" class="list-group list-group-flush">
+                                    <li class="list-group-item text-muted">Loading recent activity...</li>
                                 </ul>
                             </div>
                         </div>
@@ -2483,9 +2485,485 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(initializeActionButtons, 100);
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.__genericRefreshBound) return;
+    const refreshButton = document.querySelector('[id^="refresh"]')
+        || document.querySelector('.btn-toolbar .btn-outline-success.btn-sm');
+    if (!refreshButton) return;
+    if (refreshButton.dataset.refreshBound === 'true') return;
+    refreshButton.dataset.refreshBound = 'true';
+    window.__genericRefreshBound = true;
+
+    const refreshIcon = refreshButton.querySelector('svg');
+
+    function ensurePulseStyle() {
+        if (document.getElementById('refreshPulseStyle')) return;
+        const style = document.createElement('style');
+        style.id = 'refreshPulseStyle';
+        style.textContent = '@keyframes refreshPulse { 0% { opacity: 0.6; } 100% { opacity: 1; } } body.page-refreshing .container-fluid { animation: refreshPulse 0.35s ease-in-out; }';
+        document.head.appendChild(style);
+    }
+
+    refreshButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        ensurePulseStyle();
+        document.body.classList.add('page-refreshing');
+        if (refreshIcon) {
+            refreshIcon.classList.add('spin-animation');
+        }
+        setTimeout(function() {
+            window.location.reload();
+        }, 150);
+    });
+});
+</script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const photo = document.getElementById('navbarProfilePhoto');
+    if (!photo) return;
+    fetch('/professor/api/profile', { cache: 'no-store' })
+        .then(response => response.ok ? response.json() : null)
+        .then(profile => {
+            if (profile && profile.photoUrl) {
+                photo.src = `${profile.photoUrl}?t=${Date.now()}`;
+            }
+        })
+        .catch(() => {});
+});
+    </script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.__recentActivityBound) return;
+    window.__recentActivityBound = true;
+
+    const list = document.getElementById('recentActivityList');
+    if (!list) return;
+    const limit = 8;
+
+    function formatEntity(entityType) {
+        if (!entityType) return 'Activity';
+        const words = String(entityType).toLowerCase().split('_');
+        return words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    }
+
+    function formatAction(action) {
+        if (!action) return 'Updated';
+        const text = String(action).toLowerCase();
+        return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    function formatTime(iso) {
+        if (!iso) return 'Just now';
+        const date = new Date(iso);
+        if (Number.isNaN(date.getTime())) return 'Just now';
+        const diffMs = Date.now() - date.getTime();
+        if (diffMs <= 0) return 'Just now';
+        const sec = Math.floor(diffMs / 1000);
+        if (sec < 60) return 'Just now';
+        const min = Math.floor(sec / 60);
+        if (min < 60) return `${min} min${min === 1 ? '' : 's'} ago`;
+        const hr = Math.floor(min / 60);
+        if (hr < 24) return `${hr} hr${hr === 1 ? '' : 's'} ago`;
+        const day = Math.floor(hr / 24);
+        if (day < 7) return `${day} day${day === 1 ? '' : 's'} ago`;
+        const week = Math.floor(day / 7);
+        if (week < 4) return `${week} week${week === 1 ? '' : 's'} ago`;
+        return date.toLocaleDateString();
+    }
+
+    function getEntityConfig(entityType) {
+        const type = String(entityType || '').toLowerCase();
+        if (type === 'assignment') {
+            return {
+                viewUrl: '/professor/assignments',
+                deleteUrl: id => `/professor/api/assignments/${id}`
+            };
+        }
+        if (type === 'lesson') {
+            return {
+                viewUrl: '/professor/lessons',
+                deleteUrl: id => `/professor/api/lessons/${id}`
+            };
+        }
+        if (type === 'quiz') {
+            return {
+                viewUrl: '/professor/quiz',
+                deleteUrl: id => `/professor/api/quizzes/${id}`
+            };
+        }
+        if (type === 'announcement') {
+            return {
+                viewUrl: '/professor/announcements',
+                deleteUrl: id => `/professor/api/announcements/${id}`
+            };
+        }
+        return null;
+    }
+
+    function renderActivities(items) {
+        if (!document.getElementById('activityActionStyles')) {
+            const style = document.createElement('style');
+            style.id = 'activityActionStyles';
+            style.textContent = `
+                .activity-action-btn { width: 96px; }
+                .activity-action-view { background-color: rgba(13, 110, 253, 0.12); }
+                .activity-action-delete { background-color: rgba(220, 53, 69, 0.12); }
+                .activity-actions-toggle {
+                    width: 110px;
+                    border-radius: 999px;
+                    background: #f1f3f5;
+                    color: #2f3a44;
+                    border: 1px solid #e2e6ea;
+                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+                }
+                .activity-actions-toggle:hover {
+                    background: #e9ecef;
+                }
+                .activity-actions-menu {
+                    padding: 0.5rem;
+                    border-radius: 12px;
+                    background: #ffffff;
+                    border: 1px solid #e9ecef;
+                    box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
+                }
+                .activity-time {
+                    font-size: 0.78rem;
+                    line-height: 1;
+                }
+                .activity-action-view, .activity-action-delete {
+                    border-radius: 10px;
+                }
+                .activity-item-removing {
+                    transition: transform 220ms ease, opacity 220ms ease, max-height 220ms ease, margin 220ms ease, padding 220ms ease;
+                    transform: translateX(24px);
+                    opacity: 0;
+                    max-height: 0 !important;
+                    margin-top: 0 !important;
+                    margin-bottom: 0 !important;
+                    padding-top: 0 !important;
+                    padding-bottom: 0 !important;
+                    overflow: hidden;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        list.innerHTML = '';
+        if (!items.length) {
+            const emptyItem = document.createElement('li');
+            emptyItem.className = 'list-group-item text-muted';
+            emptyItem.textContent = 'No recent activity yet.';
+            list.appendChild(emptyItem);
+            return;
+        }
+
+        items.forEach(item => {
+            const config = getEntityConfig(item.entityType);
+            const canAct = Boolean(config && item.entityId);
+            const title = item.title || `${formatAction(item.action)} ${formatEntity(item.entityType)}`;
+            const details = item.details || '';
+            const metaParts = [];
+            if (item.entityType) metaParts.push(formatEntity(item.entityType));
+            if (item.entityId) metaParts.push(`ID ${item.entityId}`);
+            const meta = metaParts.join(' • ');
+
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            const layout = document.createElement('div');
+            layout.className = 'd-flex justify-content-between align-items-center';
+            const content = document.createElement('div');
+            content.className = 'flex-grow-1';
+
+            const header = document.createElement('div');
+            header.className = 'd-flex w-100 justify-content-between';
+
+            const h6 = document.createElement('h6');
+            h6.className = 'mb-1';
+            h6.textContent = title;
+
+            const time = document.createElement('small');
+            time.className = 'text-muted activity-time';
+            time.textContent = formatTime(item.createdAt);
+
+            header.appendChild(h6);
+
+            const p = document.createElement('p');
+            p.className = 'mb-1';
+            p.textContent = details || meta || formatAction(item.action);
+
+            const small = document.createElement('small');
+            small.className = 'text-muted';
+            small.textContent = details ? (meta || formatAction(item.action)) : formatAction(item.action);
+
+            content.appendChild(header);
+            content.appendChild(p);
+            content.appendChild(small);
+
+            const actions = document.createElement('div');
+            actions.className = 'activity-actions ms-3 d-flex flex-column align-items-end gap-2 justify-content-center';
+
+            const actionsToggle = document.createElement('button');
+            actionsToggle.type = 'button';
+            actionsToggle.className = 'btn btn-sm activity-action-btn activity-actions-toggle';
+            actionsToggle.textContent = 'Actions';
+            actionsToggle.dataset.action = 'toggle-actions';
+
+            const actionsHeader = document.createElement('div');
+            actionsHeader.className = 'd-flex align-items-center justify-content-end gap-2 w-100';
+
+            const actionsMenu = document.createElement('div');
+            actionsMenu.className = 'activity-actions-menu d-none d-flex flex-column align-items-end gap-2';
+
+            const viewButton = document.createElement('button');
+            viewButton.type = 'button';
+            viewButton.className = 'btn btn-sm btn-outline-primary activity-action-btn activity-action-view';
+            viewButton.textContent = 'View';
+            viewButton.disabled = !canAct;
+            if (canAct) {
+                viewButton.dataset.action = 'view';
+                viewButton.dataset.entityId = item.entityId;
+                viewButton.dataset.entityType = item.entityType || '';
+                viewButton.dataset.title = title;
+                viewButton.dataset.details = details;
+                viewButton.dataset.actionLabel = formatAction(item.action);
+                viewButton.dataset.createdAt = item.createdAt || '';
+                viewButton.dataset.activityId = item.id || '';
+            }
+
+            const deleteButton = document.createElement('button');
+            deleteButton.type = 'button';
+            deleteButton.className = 'btn btn-sm btn-outline-danger activity-action-btn activity-action-delete';
+            deleteButton.textContent = 'Delete';
+            deleteButton.disabled = !canAct;
+            if (canAct) {
+                deleteButton.dataset.action = 'delete';
+                deleteButton.dataset.deleteUrl = config.deleteUrl(item.entityId);
+                deleteButton.dataset.entityTitle = title;
+                deleteButton.dataset.activityId = item.id || '';
+            }
+
+            actions.appendChild(viewButton);
+            actions.appendChild(deleteButton);
+
+            actionsMenu.appendChild(viewButton);
+            actionsMenu.appendChild(deleteButton);
+
+            actionsHeader.appendChild(time);
+            actionsHeader.appendChild(actionsToggle);
+
+            actions.appendChild(actionsHeader);
+            actions.appendChild(actionsMenu);
+
+            layout.appendChild(content);
+            layout.appendChild(actions);
+            li.appendChild(layout);
+            list.appendChild(li);
+        });
+    }
+
+    list.addEventListener('click', function(event) {
+        const button = event.target.closest('button[data-action]');
+        if (!button) return;
+        const action = button.dataset.action;
+        if (action === 'toggle-actions') {
+            const menu = button.closest('.activity-actions')?.querySelector('.activity-actions-menu');
+            if (menu) {
+                menu.classList.toggle('d-none');
+            }
+            return;
+        }
+        if (action === 'view') {
+            const modal = ensureActivityModal();
+            document.getElementById('activityModalTitle').textContent = button.dataset.title || 'Activity Details';
+            document.getElementById('activityModalAction').textContent = button.dataset.actionLabel || 'Updated';
+            document.getElementById('activityModalEntity').textContent = formatEntity(button.dataset.entityType || '');
+            document.getElementById('activityModalId').textContent = button.dataset.entityId || '-';
+            document.getElementById('activityModalDetails').textContent = button.dataset.details || '-';
+            document.getElementById('activityModalTime').textContent = formatTime(button.dataset.createdAt || '');
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            return;
+        }
+        if (action === 'delete') {
+            const activityId = button.dataset.activityId;
+            if (!activityId) {
+                return;
+            }
+            const entityTitle = button.dataset.entityTitle || 'this activity';
+            if (!confirm(`Delete ${entityTitle}? This removes the activity log only.`)) {
+                return;
+            }
+            button.disabled = true;
+            const item = button.closest('li');
+            animateRemoval(item, () => {
+                deleteActivityLog(activityId)
+                    .catch(() => {
+                        button.disabled = false;
+                    });
+            });
+        }
+    });
+
+    function loadRecentActivity() {
+        fetch(`/professor/api/activity?limit=${limit}`, { cache: 'no-store' })
+            .then(response => response.ok ? response.json() : Promise.reject())
+            .then(items => renderActivities(Array.isArray(items) ? items : []))
+            .catch(() => {
+                list.innerHTML = '';
+                const errorItem = document.createElement('li');
+                errorItem.className = 'list-group-item text-muted';
+                errorItem.textContent = 'Unable to load recent activity.';
+                list.appendChild(errorItem);
+            });
+    }
+
+    function getCsrfHeaders() {
+        const token = document.querySelector('meta[name=\"_csrf\"]')?.getAttribute('content');
+        const header = document.querySelector('meta[name=\"_csrf_header\"]')?.getAttribute('content');
+        if (!token || !header) return {};
+        return { [header]: token };
+    }
+
+    function ensureActivityModal() {
+        let modal = document.getElementById('activityDetailModal');
+        if (modal) return modal;
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = `
+            <div class="modal fade" id="activityDetailModal" tabindex="-1" aria-labelledby="activityDetailModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="activityDetailModalLabel">Activity Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Title:</div>
+                                <div class="col-sm-8" id="activityModalTitle"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Action:</div>
+                                <div class="col-sm-8" id="activityModalAction"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Entity:</div>
+                                <div class="col-sm-8" id="activityModalEntity"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Entity ID:</div>
+                                <div class="col-sm-8" id="activityModalId"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Details:</div>
+                                <div class="col-sm-8" id="activityModalDetails"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold">Time:</div>
+                                <div class="col-sm-8" id="activityModalTime"></div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        modal = wrapper.firstElementChild;
+        document.body.appendChild(modal);
+        return modal;
+    }
+
+    function deleteActivityLog(activityId) {
+        return fetch(`/professor/api/activity/${activityId}`, {
+            method: 'DELETE',
+            headers: getCsrfHeaders(),
+            credentials: 'same-origin'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Delete activity failed');
+                }
+            })
+            .then(() => loadRecentActivity());
+    }
+
+    function animateRemoval(item, onDone) {
+        if (!item) {
+            if (typeof onDone === 'function') onDone();
+            return;
+        }
+        const height = item.scrollHeight;
+        item.style.maxHeight = `${height}px`;
+        item.offsetHeight;
+        item.classList.add('activity-item-removing');
+        setTimeout(() => {
+            if (typeof onDone === 'function') onDone();
+        }, 240);
+    }
+
+    loadRecentActivity();
+    setInterval(loadRecentActivity, 30000);
+});
+    </script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.__dashboardClockBound) return;
+    window.__dashboardClockBound = true;
+
+    const clockButton = document.getElementById('dashboardClock');
+    if (!clockButton) return;
+
+    const originalText = clockButton.textContent;
+    const calendarIcon = clockButton.querySelector('svg');
+    const textNode = document.createElement('span');
+    textNode.className = 'ms-1';
+    if (calendarIcon) {
+        clockButton.textContent = '';
+        clockButton.appendChild(calendarIcon);
+        clockButton.appendChild(textNode);
+    } else {
+        textNode.className = '';
+        clockButton.textContent = '';
+        clockButton.appendChild(textNode);
+    }
+
+    function updateClock() {
+        const now = new Date();
+        const dateText = now.toLocaleDateString(undefined, {
+            weekday: 'short',
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric'
+        });
+        const timeText = now.toLocaleTimeString(undefined, {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        textNode.textContent = `${dateText} ${timeText}`;
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+});
+    </script>
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

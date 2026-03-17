@@ -10,4 +10,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	boolean existsByStudentId(String studentId);
 
 	List<User> findByCourseIgnoreCaseAndSectionNameIgnoreCaseOrderByLastNameAscFirstNameAsc(String course, String sectionName);
+	List<User> findBySectionNameIgnoreCaseOrderByLastNameAscFirstNameAsc(String sectionName);
+	List<User> findByCourseIgnoreCaseContainingOrderByLastNameAscFirstNameAsc(String course);
 }

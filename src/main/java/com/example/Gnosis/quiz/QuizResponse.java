@@ -1,20 +1,22 @@
-package com.example.Gnosis.assignment;
+package com.example.Gnosis.quiz;
 
 import java.time.Instant;
 
-public class AssignmentResponse {
+public class QuizResponse {
 	private Long id;
 	private String title;
-	private String description;
+	private String code;
 	private String subject;
-	private java.util.List<String> sections;
+	private String section;
+	private Integer durationMinutes;
+	private Integer questionCount;
+	private Integer attempts;
 	private String status;
 	private String dueDate;
-	private Integer points;
+	private String description;
+	private String questionsJson;
 	private String professorId;
 	private String professorName;
-	private String attachmentName;
-	private String attachmentUrl;
 	private Instant createdAt;
 	private Instant updatedAt;
 
@@ -34,12 +36,12 @@ public class AssignmentResponse {
 		this.title = title;
 	}
 
-	public String getDescription() {
-		return description;
+	public String getCode() {
+		return code;
 	}
 
-	public void setDescription(String description) {
-		this.description = description;
+	public void setCode(String code) {
+		this.code = code;
 	}
 
 	public String getSubject() {
@@ -50,12 +52,36 @@ public class AssignmentResponse {
 		this.subject = subject;
 	}
 
-	public java.util.List<String> getSections() {
-		return sections;
+	public String getSection() {
+		return section;
 	}
 
-	public void setSections(java.util.List<String> sections) {
-		this.sections = sections;
+	public void setSection(String section) {
+		this.section = section;
+	}
+
+	public Integer getDurationMinutes() {
+		return durationMinutes;
+	}
+
+	public void setDurationMinutes(Integer durationMinutes) {
+		this.durationMinutes = durationMinutes;
+	}
+
+	public Integer getQuestionCount() {
+		return questionCount;
+	}
+
+	public void setQuestionCount(Integer questionCount) {
+		this.questionCount = questionCount;
+	}
+
+	public Integer getAttempts() {
+		return attempts;
+	}
+
+	public void setAttempts(Integer attempts) {
+		this.attempts = attempts;
 	}
 
 	public String getStatus() {
@@ -74,12 +100,20 @@ public class AssignmentResponse {
 		this.dueDate = dueDate;
 	}
 
-	public Integer getPoints() {
-		return points;
+	public String getDescription() {
+		return description;
 	}
 
-	public void setPoints(Integer points) {
-		this.points = points;
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getQuestionsJson() {
+		return questionsJson;
+	}
+
+	public void setQuestionsJson(String questionsJson) {
+		this.questionsJson = questionsJson;
 	}
 
 	public String getProfessorId() {
@@ -96,22 +130,6 @@ public class AssignmentResponse {
 
 	public void setProfessorName(String professorName) {
 		this.professorName = professorName;
-	}
-
-	public String getAttachmentName() {
-		return attachmentName;
-	}
-
-	public void setAttachmentName(String attachmentName) {
-		this.attachmentName = attachmentName;
-	}
-
-	public String getAttachmentUrl() {
-		return attachmentUrl;
-	}
-
-	public void setAttachmentUrl(String attachmentUrl) {
-		this.attachmentUrl = attachmentUrl;
 	}
 
 	public Instant getCreatedAt() {

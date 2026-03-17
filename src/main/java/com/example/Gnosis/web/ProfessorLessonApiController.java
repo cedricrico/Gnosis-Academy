@@ -1,8 +1,8 @@
 package com.example.Gnosis.web;
 
-import com.example.Gnosis.assignment.AssignmentRequest;
-import com.example.Gnosis.assignment.AssignmentResponse;
-import com.example.Gnosis.assignment.AssignmentService;
+import com.example.Gnosis.lesson.LessonRequest;
+import com.example.Gnosis.lesson.LessonResponse;
+import com.example.Gnosis.lesson.LessonService;
 import com.example.Gnosis.schoolclass.SchoolClassDto;
 import com.example.Gnosis.schoolclass.SchoolClassService;
 import org.springframework.core.io.FileSystemResource;
@@ -19,18 +19,18 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 @RestController
-@RequestMapping("/professor/api/assignments")
-public class ProfessorAssignmentApiController {
-	private final AssignmentService assignmentService;
+@RequestMapping("/professor/api/lessons")
+public class ProfessorLessonApiController {
+	private final LessonService lessonService;
 	private final SchoolClassService schoolClassService;
 
-	public ProfessorAssignmentApiController(AssignmentService assignmentService, SchoolClassService schoolClassService) {
-		this.assignmentService = assignmentService;
+	public ProfessorLessonApiController(LessonService lessonService, SchoolClassService schoolClassService) {
+		this.lessonService = lessonService;
 		this.schoolClassService = schoolClassService;
 	}
 
 	@GetMapping("/meta")
-	public AssignmentMetaResponse meta(Authentication authentication) {
+	public LessonMetaResponse meta(Authentication authentication) {
 		ProfessorIdentity professor = resolveProfessor(authentication);
 		List<SchoolClassDto> classes = schoolClassService.findForProfessor(professor.id(), professor.name());
 		LinkedHashSet<String> sections = new LinkedHashSet<>();
@@ -55,75 +55,71 @@ public class ProfessorAssignmentApiController {
 			}
 		}
 
-		return new AssignmentMetaResponse(new ArrayList<>(sections), new ArrayList<>(subjects));
+		return new LessonMetaResponse(new ArrayList<>(sections), new ArrayList<>(subjects));
 	}
 
 	@GetMapping
-	public List<AssignmentResponse> list(Authentication authentication) {
+	public List<LessonResponse> list(Authentication authentication) {
 		ProfessorIdentity professor = resolveProfessor(authentication);
-		return assignmentService.listForProfessor(professor.id())
+		return lessonService.listForProfessor(professor.id())
 				.stream()
 				.peek(response -> {
 					if (response.getAttachmentName() != null && !response.getAttachmentName().isBlank()) {
-						response.setAttachmentUrl("/professor/api/assignments/" + response.getId() + "/attachment");
+						response.setAttachmentUrl("/professor/api/lessons/" + response.getId() + "/attachment");
 					}
 				})
 				.toList();
 	}
 
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<AssignmentResponse> create(
+	public ResponseEntity<LessonResponse> create(
 			Authentication authentication,
 			@RequestParam String title,
 			@RequestParam String subject,
-			@RequestParam(name = "sections", required = false) List<String> sections,
+			@RequestParam(name = "section", required = false) String section,
+			@RequestParam String week,
 			@RequestParam String description,
-			@RequestParam String dueDate,
-			@RequestParam(name = "points", required = false) Integer points,
-			@RequestParam String status,
+			@RequestParam String type,
 			@RequestPart(name = "attachment", required = false) MultipartFile attachment
 	) {
-		AssignmentRequest request = new AssignmentRequest();
+		LessonRequest request = new LessonRequest();
 		request.setTitle(title);
 		request.setSubject(subject);
-		request.setSections(sections);
+		request.setSection(section);
+		request.setWeek(week);
 		request.setDescription(description);
-		request.setDueDate(dueDate);
-		request.setPoints(points);
-		request.setStatus(status);
+		request.setType(type);
 		ProfessorIdentity professor = resolveProfessor(authentication);
-		AssignmentResponse created = assignmentService.create(professor.id(), professor.name(), request, attachment);
+		LessonResponse created = lessonService.create(professor.id(), professor.name(), request, attachment);
 		if (created.getAttachmentName() != null && !created.getAttachmentName().isBlank()) {
-			created.setAttachmentUrl("/professor/api/assignments/" + created.getId() + "/attachment");
+			created.setAttachmentUrl("/professor/api/lessons/" + created.getId() + "/attachment");
 		}
 		return ResponseEntity.ok(created);
 	}
 
 	@PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<AssignmentResponse> update(
+	public ResponseEntity<LessonResponse> update(
 			@PathVariable Long id,
 			Authentication authentication,
 			@RequestParam String title,
 			@RequestParam String subject,
-			@RequestParam(name = "sections", required = false) List<String> sections,
+			@RequestParam(name = "section", required = false) String section,
+			@RequestParam String week,
 			@RequestParam String description,
-			@RequestParam String dueDate,
-			@RequestParam(name = "points", required = false) Integer points,
-			@RequestParam String status,
+			@RequestParam String type,
 			@RequestPart(name = "attachment", required = false) MultipartFile attachment
 	) {
-		AssignmentRequest request = new AssignmentRequest();
+		LessonRequest request = new LessonRequest();
 		request.setTitle(title);
 		request.setSubject(subject);
-		request.setSections(sections);
+		request.setSection(section);
+		request.setWeek(week);
 		request.setDescription(description);
-		request.setDueDate(dueDate);
-		request.setPoints(points);
-		request.setStatus(status);
+		request.setType(type);
 		ProfessorIdentity professor = resolveProfessor(authentication);
-		AssignmentResponse updated = assignmentService.update(id, professor.id(), professor.name(), request, attachment);
+		LessonResponse updated = lessonService.update(id, professor.id(), professor.name(), request, attachment);
 		if (updated.getAttachmentName() != null && !updated.getAttachmentName().isBlank()) {
-			updated.setAttachmentUrl("/professor/api/assignments/" + updated.getId() + "/attachment");
+			updated.setAttachmentUrl("/professor/api/lessons/" + updated.getId() + "/attachment");
 		}
 		return ResponseEntity.ok(updated);
 	}
@@ -134,7 +130,7 @@ public class ProfessorAssignmentApiController {
 			Authentication authentication
 	) {
 		ProfessorIdentity professor = resolveProfessor(authentication);
-		assignmentService.delete(id, professor.id());
+		lessonService.delete(id, professor.id());
 		return ResponseEntity.noContent().build();
 	}
 
@@ -144,21 +140,21 @@ public class ProfessorAssignmentApiController {
 			Authentication authentication
 	) {
 		ProfessorIdentity professor = resolveProfessor(authentication);
-		com.example.Gnosis.assignment.Assignment assignment = assignmentService.getForProfessor(id, professor.id());
-		if (assignment.getAttachmentPath() == null || assignment.getAttachmentPath().isBlank()) {
+		com.example.Gnosis.lesson.Lesson lesson = lessonService.getForProfessor(id, professor.id());
+		if (lesson.getAttachmentPath() == null || lesson.getAttachmentPath().isBlank()) {
 			return ResponseEntity.notFound().build();
 		}
-		Resource resource = new FileSystemResource(assignment.getAttachmentPath());
+		Resource resource = new FileSystemResource(lesson.getAttachmentPath());
 		if (!resource.exists()) {
 			return ResponseEntity.notFound().build();
 		}
-		String contentType = assignment.getAttachmentContentType() != null
-				? assignment.getAttachmentContentType()
+		String contentType = lesson.getAttachmentContentType() != null
+				? lesson.getAttachmentContentType()
 				: MediaType.APPLICATION_OCTET_STREAM_VALUE;
 		return ResponseEntity.ok()
 				.contentType(MediaType.parseMediaType(contentType))
 				.header(HttpHeaders.CONTENT_DISPOSITION,
-						"attachment; filename=\"" + assignment.getAttachmentName() + "\"")
+						"attachment; filename=\"" + lesson.getAttachmentName() + "\"")
 				.body(resource);
 	}
 
@@ -171,7 +167,7 @@ public class ProfessorAssignmentApiController {
 	}
 
 	private record ProfessorIdentity(String id, String name) {}
-	private record AssignmentMetaResponse(List<String> sections, List<String> subjects) {}
+	private record LessonMetaResponse(List<String> sections, List<String> subjects) {}
 
 	private static String safeTrim(String value) {
 		if (value == null) {

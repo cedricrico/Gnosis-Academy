@@ -272,8 +272,17 @@ table.table tbody tr td .btn-group {
 }/* Mobile sidebar toggle */
 
 .sidebar {
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
+
+/* Smooth collapse animation for sidebar */
+.sidebar.collapsing {
+  height: auto;
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
 
 @media (max-width: 767.98px) {
   .sidebar {
@@ -283,6 +292,9 @@ table.table tbody tr td .btn-group {
     bottom: 0;
     z-index: 1040;
     transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
     overflow-y: auto;
     background-color: #f8f9fa;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
@@ -293,14 +305,19 @@ table.table tbody tr td .btn-group {
 @media (max-width: 767.98px) {
   .sidebar.show {
     transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 }
 
 /* Hide sidebar by default on mobile */
-
 @media (max-width: 767.98px) {
   .sidebar:not(.show) {
-    display: none;
+    transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 }
 
@@ -521,10 +538,10 @@ body {
             </div>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">
-                    <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" id="navbarProfile"><svg class="bi bi-person-circle me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"></path>
-                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"></path>
-                        </svg><span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${professorFullName}">Instructor User</span><span class="text-muted small fw-semibold">ID: <span th:text="${professorId}">I2024001</span></span></span></button>
+                    <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" id="navbarProfile">
+                        <img id="navbarProfilePhoto" src="https://via.placeholder.com/32" alt="Profile photo" width="32" height="32" class="rounded-circle me-2">
+                        <span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${professorFullName}">Instructor User</span><span class="text-muted small fw-semibold">ID: <span th:text="${professorId}">I2024001</span></span></span>
+                    </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarProfile">
                         <li><a class="dropdown-item" href="/professor/profile"><svg class="bi bi-person me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"></path>
@@ -599,115 +616,23 @@ body {
                     </div>
                 </div>
                 <div class="card mb-4">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4"><label class="form-label" for="announcementSubjectFilter">Filter by Subject</label><select class="form-select" id="announcementSubjectFilter">
-                                    <option value="" selected="">All Subjects</option>
-                                    <option value="MATH101 - Calculus I">MATH101 - Calculus I</option>
-                                    <option value="PHYS101 - General Physics I">PHYS101 - General Physics I</option>
-                                    <option value="CHEM101 - General Chemistry I">CHEM101 - General Chemistry I</option>
-                                    <option value="All Sections">All Sections</option>
-                                </select></div>
-                            <div class="col-md-4"><label class="form-label" for="announcementStatusFilter">Filter by Status</label><select class="form-select" id="announcementStatusFilter">
-                                    <option value="" selected="">All Statuses</option>
-                                    <option value="Published">Published</option>
-                                    <option value="Draft">Draft</option>
-                                    <option value="Archived">Archived</option>
-                                </select></div>
-                            <div class="col-md-4"><label class="form-label" for="announcementSearch">Search</label><input type="text" class="form-control" id="announcementSearch" placeholder="Search announcements..."></div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4"><label class="form-label" for="announcementSectionFilter">Filter by Section</label><select class="form-select" id="announcementSectionFilter">
+                                        <option value="" selected="">All Sections</option>
+                                        <option th:each="section : ${professorAnnouncementTargets}" th:if="${section != 'All Sections'}" th:value="${section}" th:text="${section}">Section A</option>
+                                    </select></div>
+                                <div class="col-md-4"><label class="form-label" for="announcementStatusFilter">Filter by Status</label><select class="form-select" id="announcementStatusFilter">
+                                        <option value="" selected="">All Statuses</option>
+                                        <option value="Published">Published</option>
+                                        <option value="Draft">Draft</option>
+                                        <option value="Archived">Archived</option>
+                                    </select></div>
+                                <div class="col-md-4"><label class="form-label" for="announcementSearch">Search</label><input type="text" class="form-control" id="announcementSearch" placeholder="Search announcements..."></div>
+                            </div>
                         </div>
-                    </div>
                 </div>
-                <div class="row g-4">
-                    <div class="col-12 announcement-card" data-subject="All Sections" data-status="Published">
-                        <div class="card">
-                            <div class="card-header text-white bg-primary">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0">Final Exam Schedule</h5><span class="badge text-dark bg-light">Published</span>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <p class="card-text">Dear students, please take note of the final exam schedule for this semester. Exams will be held from December 10-15, 2023. Please check the detailed schedule attached to this announcement.</p><small class="text-muted">Posted on Oct 5, 2023 | For: All Sections</small>
-                            </div>
-                            <div class="card-footer">
-                                <div class="btn-group" role="group"><button class="btn btn-outline-primary btn-sm" type="button"><svg class="bi bi-eye me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
-                                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
-                                        </svg> View</button><button class="btn btn-outline-warning btn-sm" type="button"><svg class="bi bi-pencil me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"></path>
-                                        </svg> Edit</button><button class="btn btn-outline-danger btn-sm" type="button"><svg class="bi bi-archive me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5zm13-3H1v2h14zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"></path>
-                                        </svg> Archive</button></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 announcement-card" data-subject="All Sections" data-status="Published">
-                        <div class="card">
-                            <div class="card-header text-white bg-success">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0">Class Suspension Notice</h5><span class="badge text-dark bg-light">Published</span>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <p class="card-text">Due to the upcoming typhoon, classes for October 6, 2023 are suspended. Online consultations will be available via our virtual classroom platform from 10AM-12PM.</p><small class="text-muted">Posted on Oct 4, 2023 | For: All Sections</small>
-                            </div>
-                            <div class="card-footer">
-                                <div class="btn-group" role="group"><button class="btn btn-outline-primary btn-sm" type="button"><svg class="bi bi-eye me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
-                                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
-                                        </svg> View</button><button class="btn btn-outline-warning btn-sm" type="button"><svg class="bi bi-pencil me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"></path>
-                                        </svg> Edit</button><button class="btn btn-outline-danger btn-sm" type="button"><svg class="bi bi-archive me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5zm13-3H1v2h14zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"></path>
-                                        </svg> Archive</button></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 announcement-card" data-subject="MATH101 - Calculus I" data-status="Published">
-                        <div class="card">
-                            <div class="card-header text-white bg-info">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0">Midterm Assessment Results</h5><span class="badge text-dark bg-light">Published</span>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <p class="card-text">The results for the midterm assessments are now available in the grade book. Students who scored below 70% are encouraged to attend remedial sessions next week.</p><small class="text-muted">Posted on Sep 30, 2023 | For: MATH101 Section A</small>
-                            </div>
-                            <div class="card-footer">
-                                <div class="btn-group" role="group"><button class="btn btn-outline-primary btn-sm" type="button"><svg class="bi bi-eye me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
-                                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
-                                        </svg> View</button><button class="btn btn-outline-warning btn-sm" type="button"><svg class="bi bi-pencil me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"></path>
-                                        </svg> Edit</button><button class="btn btn-outline-danger btn-sm" type="button"><svg class="bi bi-archive me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5zm13-3H1v2h14zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"></path>
-                                        </svg> Archive</button></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 announcement-card" data-subject="PHYS101 - General Physics I" data-status="Draft">
-                        <div class="card">
-                            <div class="card-header text-dark bg-warning">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0">Upcoming Project Deadline</h5><span class="badge text-dark bg-light">Draft</span>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <p class="card-text">Reminder: The group research projects are due on November 15, 2023. Please ensure all submissions follow the guidelines provided in the course syllabus.</p><small class="text-muted">Posted on Sep 25, 2023 | For: PHYS101 Sections A &amp; B</small>
-                            </div>
-                            <div class="card-footer">
-                                <div class="btn-group" role="group"><button class="btn btn-outline-primary btn-sm" type="button"><svg class="bi bi-eye me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"></path>
-                                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
-                                        </svg> View</button><button class="btn btn-outline-warning btn-sm" type="button"><svg class="bi bi-pencil me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"></path>
-                                        </svg> Edit</button><button class="btn btn-outline-danger btn-sm" type="button"><svg class="bi bi-archive me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5zm13-3H1v2h14zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"></path>
-                                        </svg> Archive</button></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <div class="row g-4" id="announcementsContainer"></div>
             </div>
         </div>
     </div>
@@ -754,8 +679,8 @@ body {
                 <div class="modal-body">
                     <form id="announcementForm">
                         <div class="mb-3"><label class="form-label" for="announcementTitle">Title*</label><input class="form-control" type="text" id="announcementTitle" placeholder="Enter announcement title" required=""></div>
-                        <div class="mb-3"><label class="form-label" for="announcementSubject">Subject*</label><select class="form-select" id="announcementSubject" required="">
-                                <option value="" selected="">Select Subject</option>
+                        <div class="mb-3"><label class="form-label" for="announcementSubject">Sections</label><select class="form-select" id="announcementSubject" required="">
+                                <option value="" selected="">Select Section</option>
                                 <option th:each="target : ${professorAnnouncementTargets}" th:value="${target}" th:text="${target}">All Sections</option>
                             </select></div>
                         <div class="mb-3"><label class="form-label" for="announcementContent">Message / Content*</label><textarea class="form-control" id="announcementContent" placeholder="Enter announcement content" required="" rows="5"></textarea></div>
@@ -766,7 +691,7 @@ body {
                             </select></div>
                     </form>
                 </div>
-                <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary" type="button" id="postAnnouncementBtn"><svg class="bi bi-plus-circle me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary" type="submit" form="announcementForm" id="postAnnouncementBtn"><svg class="bi bi-plus-circle me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                             <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
                         </svg> Post Announcement </button></div>
@@ -781,27 +706,27 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Announcements filtering script loaded');
     
     // Get filter elements
-    const subjectFilter = document.getElementById('announcementSubjectFilter');
+    const sectionFilter = document.getElementById('announcementSectionFilter');
     const statusFilter = document.getElementById('announcementStatusFilter');
     const searchInput = document.getElementById('announcementSearch');
     
-    console.log('Found elements:', { subjectFilter, statusFilter, searchInput });
+    console.log('Found elements:', { sectionFilter, statusFilter, searchInput });
     
     // Add event listeners for real-time filtering
-    if (subjectFilter) {
-        subjectFilter.addEventListener('change', function() {
-            console.log('Subject filter changed:', this.value);
-            filterAnnouncements();
-        });
-    }
-    
     if (statusFilter) {
         statusFilter.addEventListener('change', function() {
             console.log('Status filter changed:', this.value);
             filterAnnouncements();
         });
     }
-    
+
+    if (sectionFilter) {
+        sectionFilter.addEventListener('change', function() {
+            console.log('Section filter changed:', this.value);
+            filterAnnouncements();
+        });
+    }
+
     if (searchInput) {
         searchInput.addEventListener('input', function() {
             console.log('Search input:', this.value);
@@ -812,19 +737,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // Make filterAnnouncements function globally available for refresh functionality
     window.filterAnnouncements = function() {
         const announcementCards = document.querySelectorAll('.announcement-card');
-        const selectedSubject = subjectFilter ? subjectFilter.value : '';
+        const selectedSection = sectionFilter ? sectionFilter.value : '';
         const selectedStatus = statusFilter ? statusFilter.value : '';
         const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
         
         announcementCards.forEach(card => {
-            const cardSubject = card.getAttribute('data-subject');
             const cardStatus = card.getAttribute('data-status');
+            const cardSection = card.getAttribute('data-section') || '';
             const cardTitle = card.querySelector('.card-header h5').textContent.toLowerCase();
             const cardContent = card.querySelector('.card-body p').textContent.toLowerCase();
             const cardSubjectText = card.querySelector('.card-body small').textContent.toLowerCase();
+            const inferredSection = cardSection || (() => {
+                const match = cardSubjectText.match(/section(?:s)?\s+([a-z0-9\s&,-]+)/i);
+                return match ? match[1].trim() : '';
+            })();
             
-            // Check subject filter
-            const subjectMatch = !selectedSubject || selectedSubject === '' || cardSubject === selectedSubject;
+            // Check section filter
+            const sectionMatch = !selectedSection || selectedSection === '' || selectedSection === 'All Sections'
+                || inferredSection.toLowerCase().includes(selectedSection.toLowerCase());
             
             // Check status filter
             const statusMatch = !selectedStatus || selectedStatus === '' || cardStatus === selectedStatus;
@@ -836,7 +766,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 cardSubjectText.includes(searchTerm);
             
             // Hide or show the entire column card based on all filters
-            if (subjectMatch && statusMatch && searchMatch) {
+            if (sectionMatch && statusMatch && searchMatch) {
                 card.style.display = 'block';
             } else {
                 card.style.display = 'none';
@@ -1302,7 +1232,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
 
-    const announcementsContainer = document.querySelector('.row.g-4');
+    const announcementsContainer = document.getElementById('announcementsContainer');
+    const postForm = document.getElementById('announcementForm');
     const postButton = document.getElementById('postAnnouncementBtn');
     const saveButton = document.getElementById('saveAnnouncementBtn');
     const refreshButton = document.getElementById('refreshAnnouncementsBtn');
@@ -1382,6 +1313,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const cardWrapper = document.createElement('div');
         cardWrapper.className = 'col-12 announcement-card';
         cardWrapper.dataset.subject = announcement.subject || '';
+        cardWrapper.dataset.section = announcement.subject || 'All Sections';
         cardWrapper.dataset.status = statusLabel;
         cardWrapper.dataset.id = announcement.id;
 
@@ -1524,7 +1456,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    if (postButton) {
+    if (postForm) {
+        postForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const title = document.getElementById('announcementTitle').value.trim();
+            const subject = document.getElementById('announcementSubject').value.trim();
+            const content = document.getElementById('announcementContent').value.trim();
+            const postedOn = document.getElementById('announcementDate').value;
+            const status = document.getElementById('announcementStatus').value;
+
+            if (!title || !subject || !content || !postedOn) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            await fetchProfessorJson('/professor/api/announcements', {
+                method: 'POST',
+                body: JSON.stringify({ title, subject, content, status, postedOn })
+            });
+
+            document.getElementById('announcementForm').reset();
+            const modal = getModalInstance(postModalElement);
+            if (modal) modal.hide();
+            await loadAnnouncements();
+        });
+    } else if (postButton) {
         postButton.addEventListener('click', async function() {
             const title = document.getElementById('announcementTitle').value.trim();
             const subject = document.getElementById('announcementSubject').value.trim();
@@ -2478,9 +2434,69 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(initializeActionButtons, 100);
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.__genericRefreshBound) return;
+    const refreshButton = document.querySelector('[id^="refresh"]')
+        || document.querySelector('.btn-toolbar .btn-outline-success.btn-sm');
+    if (!refreshButton) return;
+    if (refreshButton.dataset.refreshBound === 'true') return;
+    refreshButton.dataset.refreshBound = 'true';
+    window.__genericRefreshBound = true;
+
+    const refreshIcon = refreshButton.querySelector('svg');
+
+    function ensurePulseStyle() {
+        if (document.getElementById('refreshPulseStyle')) return;
+        const style = document.createElement('style');
+        style.id = 'refreshPulseStyle';
+        style.textContent = '@keyframes refreshPulse { 0% { opacity: 0.6; } 100% { opacity: 1; } } body.page-refreshing .container-fluid { animation: refreshPulse 0.35s ease-in-out; }';
+        document.head.appendChild(style);
+    }
+
+    refreshButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        ensurePulseStyle();
+        document.body.classList.add('page-refreshing');
+        if (refreshIcon) {
+            refreshIcon.classList.add('spin-animation');
+        }
+        setTimeout(function() {
+            window.location.reload();
+        }, 150);
+    });
+});
+</script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const photo = document.getElementById('navbarProfilePhoto');
+    if (!photo) return;
+    fetch('/professor/api/profile', { cache: 'no-store' })
+        .then(response => response.ok ? response.json() : null)
+        .then(profile => {
+            if (profile && profile.photoUrl) {
+                photo.src = `${profile.photoUrl}?t=${Date.now()}`;
+            }
+        })
+        .catch(() => {});
+});
+    </script>
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

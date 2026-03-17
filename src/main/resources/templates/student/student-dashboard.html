@@ -482,34 +482,25 @@ body {
                 <div class="row">
                     <div class="col-12">
                         <h3 class="mb-4">Announcements</h3>
-                        <div class="row">
-                            <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="row" th:if="${studentAnnouncements != null and !studentAnnouncements.isEmpty()}">
+                            <div class="col-md-6 col-lg-4 mb-4" th:each="announcement : ${studentAnnouncements}">
                                 <div class="card h-100">
                                     <div class="card-body">
-                                        <h5 class="card-title">Welcome to the LMS</h5>
-                                        <h6 class="text-muted mb-2 card-subtitle">March 12, 2026</h6>
-                                        <p class="card-text">Welcome to our Learning Management System. We're excited to have you on board for this semester.</p>
+                                        <h5 class="card-title" th:text="${announcement.title}">Announcement Title</h5>
+                                        <h6 class="text-muted mb-2 card-subtitle">
+                                            <span th:text="${announcement.postedOn}">March 12, 2026</span>
+                                        </h6>
+                                        <p class="card-text" th:text="${announcement.content}">Announcement content.</p>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <span class="badge bg-primary" th:text="${announcement.subject}">Section</span>
+                                            <span class="badge bg-secondary" th:text="${announcement.professorName}">Instructor</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-6 col-lg-4 mb-4">
-                                <div class="card h-100">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Midterm exams next week</h5>
-                                        <h6 class="text-muted mb-2 card-subtitle">March 10, 2026</h6>
-                                        <p class="card-text">Midterm examinations will be conducted next week. Please check your schedule and prepare accordingly.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 col-lg-4 mb-4">
-                                <div class="card h-100">
-                                    <div class="card-body">
-                                        <h5 class="card-title">New lesson uploaded by professor</h5>
-                                        <h6 class="text-muted mb-2 card-subtitle">March 8, 2026</h6>
-                                        <p class="card-text">Professor Johnson has uploaded a new lesson on Advanced Calculus. Make sure to review it before the next class.</p>
-                                    </div>
-                                </div>
-                            </div>
+                        </div>
+                        <div class="text-muted" th:if="${studentAnnouncements == null or studentAnnouncements.isEmpty()}">
+                            No announcements yet.
                         </div>
                     </div>
                 </div>
