@@ -166,8 +166,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Handle Archive button click
-    function handleArchiveAnnouncement(card) {
-        if (confirm('Are you sure you want to archive this announcement? This action cannot be undone.')) {
+    async function handleArchiveAnnouncement(card) {
+        if (await window.confirmAsync('Are you sure you want to archive this announcement? This action cannot be undone.')) {
             // Add archived class and update badge
             card.classList.add('border-warning');
             const badge = card.querySelector('.badge');

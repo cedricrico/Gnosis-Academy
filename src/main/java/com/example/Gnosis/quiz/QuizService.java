@@ -26,6 +26,21 @@ public class QuizService {
 				.toList();
 	}
 
+	@Transactional(readOnly = true)
+	public List<QuizResponse> listForStudentSection(String studentSection, java.util.Set<String> allowedSubjects) {
+		java.util.Set<String> normalizedSubjects = normalizeSubjects(allowedSubjects);
+		if (normalizedSubjects.isEmpty()) {
+			return java.util.List.of();
+		}
+		return quizRepository.findAllByOrderByCreatedAtDesc()
+				.stream()
+				.filter(quiz -> isSectionAllowed(quiz.getSection(), studentSection))
+				.filter(quiz -> subjectAllowed(quiz.getSubject(), normalizedSubjects))
+				.filter(QuizService::statusAllowedForStudent)
+				.map(this::toResponse)
+				.toList();
+	}
+
 	@Transactional
 	public QuizResponse create(String professorId, String professorName, QuizRequest request) {
 		Quiz quiz = new Quiz();
@@ -118,6 +133,52 @@ public class QuizService {
 		response.setCreatedAt(quiz.getCreatedAt());
 		response.setUpdatedAt(quiz.getUpdatedAt());
 		return response;
+	}
+
+	private static boolean isSectionAllowed(String quizSection, String studentSection) {
+		if (quizSection == null || quizSection.isBlank()) {
+			return false;
+		}
+		String normalized = quizSection.trim();
+		if ("All Sections".equalsIgnoreCase(normalized)) {
+			return true;
+		}
+		if (studentSection == null || studentSection.isBlank()) {
+			return false;
+		}
+		return normalized.equalsIgnoreCase(studentSection.trim());
+	}
+
+	private static boolean subjectAllowed(String subject, java.util.Set<String> allowedSubjects) {
+		if (subject == null || allowedSubjects == null || allowedSubjects.isEmpty()) {
+			return false;
+		}
+		String normalized = subject.trim().toLowerCase();
+		if (normalized.isEmpty()) {
+			return false;
+		}
+		return allowedSubjects.contains(normalized);
+	}
+
+	private static boolean statusAllowedForStudent(Quiz quiz) {
+		if (quiz == null) {
+			return false;
+		}
+		String status = quiz.getStatus();
+		if (status == null) {
+			return true;
+		}
+		return !"draft".equalsIgnoreCase(status.trim());
+	}
+
+	private static java.util.Set<String> normalizeSubjects(java.util.Set<String> allowedSubjects) {
+		if (allowedSubjects == null || allowedSubjects.isEmpty()) {
+			return java.util.Set.of();
+		}
+		return allowedSubjects.stream()
+				.map(subject -> subject == null ? "" : subject.trim().toLowerCase())
+				.filter(subject -> !subject.isBlank())
+				.collect(java.util.stream.Collectors.toSet());
 	}
 
 	private static String requireText(String value, String message) {

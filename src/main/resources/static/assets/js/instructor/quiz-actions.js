@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Event delegation for table actions - attach to tbody for dynamic content
-    quizTableBody.addEventListener('click', function(e) {
+    quizTableBody.addEventListener('click', async function(e) {
         const target = e.target;
         
         // Find the closest button element
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Handle Delete button (trash icon)
         else if (button.classList.contains('btn-outline-danger')) {
             e.preventDefault();
-            deleteQuiz(row);
+            await deleteQuiz(row);
         }
     });
     
@@ -183,10 +183,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Delete Quiz Functionality
-    function deleteQuiz(row) {
+    async function deleteQuiz(row) {
         const quizTitle = row.querySelector('td:nth-child(2)').textContent;
         
-        if (confirm(`Are you sure you want to delete the quiz "${quizTitle}"? This action cannot be undone.`)) {
+        if (await window.confirmAsync(`Are you sure you want to delete the quiz "${quizTitle}"? This action cannot be undone.`)) {
             row.remove();
             // Optionally update row numbers
             updateRowNumbers();

@@ -46,6 +46,21 @@ public class AssignmentService {
 				.toList();
 	}
 
+	@Transactional(readOnly = true)
+	public List<AssignmentResponse> listForStudentSection(String studentSection, Set<String> allowedSubjects) {
+		Set<String> normalizedSubjects = normalizeSubjects(allowedSubjects);
+		if (normalizedSubjects.isEmpty()) {
+			return List.of();
+		}
+		return assignmentRepository.findAllByOrderByCreatedAtDesc()
+				.stream()
+				.filter(assignment -> isSectionAllowed(assignment.getSectionsCsv(), studentSection))
+				.filter(assignment -> subjectAllowed(assignment.getSubject(), normalizedSubjects))
+				.filter(AssignmentService::statusAllowedForStudent)
+				.map(this::toResponse)
+				.toList();
+	}
+
 	@Transactional
 	public AssignmentResponse create(
 			String professorId,
@@ -98,6 +113,22 @@ public class AssignmentService {
 		Assignment assignment = assignmentRepository.findById(id)
 				.orElseThrow(() -> new NoSuchElementException("Assignment not found."));
 		if (!assignment.getProfessorId().equals(professorId)) {
+			throw new IllegalArgumentException("Unauthorized assignment access.");
+		}
+		return assignment;
+	}
+
+	@Transactional(readOnly = true)
+	public Assignment getForStudent(Long id, String studentSection, Set<String> allowedSubjects) {
+		Assignment assignment = assignmentRepository.findById(id)
+				.orElseThrow(() -> new NoSuchElementException("Assignment not found."));
+		if (!isSectionAllowed(assignment.getSectionsCsv(), studentSection)) {
+			throw new IllegalArgumentException("Unauthorized assignment access.");
+		}
+		if (!subjectAllowed(assignment.getSubject(), normalizeSubjects(allowedSubjects))) {
+			throw new IllegalArgumentException("Unauthorized assignment access.");
+		}
+		if (!statusAllowedForStudent(assignment)) {
 			throw new IllegalArgumentException("Unauthorized assignment access.");
 		}
 		return assignment;
@@ -162,6 +193,7 @@ public class AssignmentService {
 		response.setProfessorId(assignment.getProfessorId());
 		response.setProfessorName(assignment.getProfessorName());
 		response.setAttachmentName(assignment.getAttachmentName());
+		response.setAttachmentContentType(assignment.getAttachmentContentType());
 		response.setCreatedAt(assignment.getCreatedAt());
 		response.setUpdatedAt(assignment.getUpdatedAt());
 		return response;
@@ -232,6 +264,54 @@ public class AssignmentService {
 			throw new IllegalArgumentException(message);
 		}
 		return trimmed;
+	}
+
+	private static boolean isSectionAllowed(String sectionsCsv, String studentSection) {
+		List<String> sections = splitSections(sectionsCsv);
+		if (sections.isEmpty()) {
+			return false;
+		}
+		for (String section : sections) {
+			if ("All Sections".equalsIgnoreCase(section)) {
+				return true;
+			}
+			if (studentSection != null && section.equalsIgnoreCase(studentSection.trim())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static boolean subjectAllowed(String subject, Set<String> allowedSubjects) {
+		if (subject == null || allowedSubjects == null || allowedSubjects.isEmpty()) {
+			return false;
+		}
+		String normalized = subject.trim().toLowerCase();
+		if (normalized.isEmpty()) {
+			return false;
+		}
+		return allowedSubjects.contains(normalized);
+	}
+
+	private static boolean statusAllowedForStudent(Assignment assignment) {
+		if (assignment == null) {
+			return false;
+		}
+		String status = assignment.getStatus();
+		if (status == null) {
+			return true;
+		}
+		return !"draft".equalsIgnoreCase(status.trim());
+	}
+
+	private static Set<String> normalizeSubjects(Set<String> allowedSubjects) {
+		if (allowedSubjects == null || allowedSubjects.isEmpty()) {
+			return java.util.Set.of();
+		}
+		return allowedSubjects.stream()
+				.map(subject -> subject == null ? "" : subject.trim().toLowerCase())
+				.filter(subject -> !subject.isBlank())
+				.collect(java.util.stream.Collectors.toSet());
 	}
 
 	private static String trimToNull(String value) {

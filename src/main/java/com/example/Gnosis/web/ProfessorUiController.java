@@ -163,6 +163,11 @@ public class ProfessorUiController {
 		return "professor/assignments";
 	}
 
+	@GetMapping("/assignment-submissions")
+	public String assignmentSubmissions() {
+		return "professor/assignment-submissions";
+	}
+
 	@GetMapping("/lessons")
 	public String lessons() {
 		return "professor/lessons";

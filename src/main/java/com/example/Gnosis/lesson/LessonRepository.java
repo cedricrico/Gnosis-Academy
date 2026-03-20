@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
 	List<Lesson> findByProfessorIdOrderByCreatedAtDesc(String professorId);
+	List<Lesson> findBySectionInOrderByCreatedAtDesc(List<String> sections);
 }

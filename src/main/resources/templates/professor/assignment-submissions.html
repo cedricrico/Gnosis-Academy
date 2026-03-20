@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Assignment Submissions</title>
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+    <style>
+        body {
+            padding-top: 70px;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem 0;
+        }
+        .navbar-brand {
+            font-size: 1.4rem;
+            padding: 0.5rem 0;
+        }
+        .navbar-nav .nav-link {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            margin: 0 2px;
+            transition: all 0.2s ease;
+        }
+        .navbar-nav .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        .navbar-nav .dropdown-toggle {
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        .navbar-nav .dropdown-menu {
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            min-width: 220px;
+        }
+        .sidebar {
+            min-height: calc(100vh - 70px);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            padding: 1rem 0;
+        }
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+        @media (max-width: 767.98px) {
+            .sidebar {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                bottom: 0;
+                z-index: 1040;
+                transform: translateX(-100%);
+                overflow-y: auto;
+                background-color: #f8f9fa;
+                width: 250px;
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+        }
+        .sidebar .nav-link {
+            padding: 0.75rem 1rem;
+            color: #495057;
+            border-radius: 8px;
+            margin: 0.25rem 0.5rem;
+            transition: all 0.2s ease;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #e9ecef;
+            color: #0d6efd;
+        }
+        .sidebar .nav-link.active {
+            background-color: #0d6efd;
+            color: white;
+            box-shadow: 0 2px 5px rgba(13, 110, 253, 0.3);
+        }
+        .card {
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+        }
+        .table th {
+            background-color: #f8f9fa;
+        }
+        @media (max-width: 576px) {
+            #submissionPreviewFrame {
+                min-height: 70vh !important;
+            }
+            #submissionPreviewImage {
+                max-height: 70vh !important;
+            }
+            .modal-body {
+                padding: 0.75rem !important;
+            }
+            .modal-content .btn-close {
+                margin: 0.5rem !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg bg-white shadow-sm navbar-light fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="/professor/dashboard">
+                <span class="d-flex justify-content-center align-items-center me-2">
+                    <img src="/assets/img/Logo.jpg" alt="Logo" width="32" height="32">
+                </span>
+                Gnosis Academy
+            </a>
+            <button class="btn btn-primary d-md-none me-2" id="sidebarToggle" type="button" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle sidebar">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"></path>
+                </svg>
+            </button>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" id="navbarProfile">
+                        <span class="d-inline-flex flex-column align-items-start ms-1">
+                            <span th:text="${professorFullName}">Instructor User</span>
+                            <span class="text-muted small fw-semibold">ID: <span th:text="${professorId}">I2024001</span></span>
+                        </span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarProfile">
+                        <li><a class="dropdown-item" href="/professor/profile">Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form action="/professor/logout" method="post" class="m-0 p-0">
+                                <button class="dropdown-item text-danger" type="submit">Logout</button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 bg-light d-md-block sidebar collapse" id="sidebarMenu">
+                <div class="position-sticky pt-3">
+                    <h4 class="text-center mb-4">Gnosis Portal</h4>
+                    <ul class="nav flex-column">
+                        <li class="nav-item"><a class="nav-link" href="/professor/dashboard"><svg class="bi bi-speedometer2 me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 4a.5.5 0 0 1 .5.5V6a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4M3.732 5.732a.5.5 0 0 1 .707 0l.915.914a.5.5 0 1 1-.708.708l-.914-.915a.5.5 0 0 1 0-.707zM2 10a.5.5 0 0 1 .5-.5h1.586a.5.5 0 0 1 0 1H2.5A.5.5 0 0 1 2 10m9.5 0a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 1 0 1H12a.5.5 0 0 1-.5-.5m.754-4.246a.389.389 0 0 0-.527-.02L7.547 9.31a.91.91 0 1 0 1.302 1.258l3.434-4.297a.389.389 0 0 0-.029-.518z"></path>
+                                    <path fill-rule="evenodd" d="M0 10a8 8 0 1 1 15.547 2.661c-.442 1.253-1.845 1.602-2.932 1.25C11.309 13.488 9.475 13 8 13c-1.474 0-3.31.488-4.615.911-1.087.352-2.49.003-2.932-1.25A7.988 7.988 0 0 1 0 10m8-7a7 7 0 0 0-6.603 9.329c.203.575.923.876 1.68.63C4.397 12.533 6.358 12 8 12s3.604.532 4.923.96c.757.245 1.477-.056 1.68-.631A7 7 0 0 0 8 3"></path>
+                                </svg> Dashboard </a></li>
+                        <li class="nav-item"><a class="nav-link" href="/professor/sections"><svg class="bi bi-collection me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M2.5 3.5a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1zm2-2a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1zM0 13a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 16 13V6a1.5 1.5 0 0 0-1.5-1.5h-13A1.5 1.5 0 0 0 0 6zm1.5.5A.5.5 0 0 1 1 13V6a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5z"></path>
+                                </svg> Sections </a></li>
+                        <li class="nav-item"><a class="nav-link" href="/professor/announcements"><svg class="bi bi-megaphone me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M13 2.5a1.5 1.5 0 0 1 3 0v11a1.5 1.5 0 0 1-3 0v-.214c-2.162-1.241-4.49-1.843-6.912-2.083l.405 2.712A1 1 0 0 1 5.51 15.1h-.548a1 1 0 0 1-.916-.599l-1.85-3.49a68.14 68.14 0 0 0-.202-.003A2.014 2.014 0 0 1 0 9V7a2.02 2.02 0 0 1 1.992-2.013 74.663 74.663 0 0 0 2.483-.075c3.043-.154 6.148-.849 8.525-2.199zm1 0v11a.5.5 0 0 0 1 0v-11a.5.5 0 0 0-1 0m-1 1.35c-2.344 1.205-5.209 1.842-8 2.033v4.233c.18.01.359.022.537.036 2.568.189 5.093.744 7.463 1.993V3.85zm-9 6.215v-4.13a95.09 95.09 0 0 1-1.992.052A1.02 1.02 0 0 0 1 7v2c0 .55.448 1.002 1.006 1.009A60.49 60.49 0 0 1 4 10.065m-.657.975 1.609 3.037.01.024h.548l-.002-.014-.443-2.966a68.019 68.019 0 0 0-1.722-.082z"></path>
+                                </svg> Announcements </a></li>
+                        <li class="nav-item"><a class="nav-link" href="/professor/assignments"><svg class="bi bi-journal-bookmark me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M6 8V1h1v6.117L8.743 6.07a.5.5 0 0 1 .514 0L11 7.117V1h1v7a.5.5 0 0 1-.757.429L9 7.083 6.757 8.43A.5.5 0 0 1 6 8"></path>
+                                    <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2"></path>
+                                    <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z"></path>
+                                </svg> Assignments </a></li>
+                        <li class="nav-item"><a class="nav-link active" href="/professor/assignment-submissions"><svg class="bi bi-folder-check me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M9.828 3a.5.5 0 0 1 .354.146l1.672 1.672A.5.5 0 0 1 12 5v7.5A1.5 1.5 0 0 1 10.5 14h-7A1.5 1.5 0 0 1 2 12.5v-9A1.5 1.5 0 0 1 3.5 2H6a.5.5 0 0 1 .354.146L7.5 3h2.328z"></path>
+                                    <path d="M10.97 8.03a.75.75 0 0 1 1.07 1.05l-2.5 2.5a.75.75 0 0 1-1.08-.02L7.3 10.4a.75.75 0 0 1 1.06-1.06l.66.66 1.95-1.97z"></path>
+                                </svg> Submissions </a></li>
+                        <li class="nav-item"><a class="nav-link" href="/professor/lessons"><svg class="bi bi-file-earmark-text me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"></path>
+                                    <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"></path>
+                                </svg> Lessons </a></li>
+                        <li class="nav-item"><a class="nav-link" href="/professor/quiz"><svg class="bi bi-question-circle me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                    <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.146c0-.523.273-.718.593-.89.844-.449 1.472-.98 1.472-2.114 0-1.37-1.14-2.132-2.53-2.132-1.434 0-2.568.665-2.727 2.08"></path>
+                                    <path d="M7.5 12.5a1 1 0 1 1 2 0 1 1 0 0 1-2 0"></path>
+                                </svg> Quiz </a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap pt-3 mb-3 pb-2 border-bottom">
+                    <h1 class="h2">Assignment Submissions</h1>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-4">
+                                <label class="form-label" for="submissionSubjectFilter">Filter by Subject</label>
+                                <select class="form-select" id="submissionSubjectFilter">
+                                    <option value="">All Subjects</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label" for="submissionSectionFilter">Filter by Section</label>
+                                <select class="form-select" id="submissionSectionFilter">
+                                    <option value="">All Sections</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label class="form-label" for="submissionDateFrom">From</label>
+                                <input class="form-control" type="date" id="submissionDateFrom">
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label class="form-label" for="submissionDateTo">To</label>
+                                <input class="form-control" type="date" id="submissionDateTo">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive d-none" id="submissionTableWrapper">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Submitted At</th>
+                                        <th>Assignment</th>
+                                        <th>Subject</th>
+                                        <th>Student</th>
+                                        <th>Course</th>
+                                        <th>Section</th>
+                                        <th>File</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="submissionTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div class="text-muted text-center py-3" id="submissionSelectState">Apply a filter to view submissions.</div>
+                        <div class="text-muted text-center py-3 d-none" id="submissionEmptyState">No submissions yet.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" role="dialog" tabindex="-1" id="submissionPreviewModal" aria-labelledby="submissionPreviewLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen modal-dialog-scrollable" role="document">
+                <div class="modal-content bg-transparent border-0">
+                    <div class="modal-body bg-transparent p-2">
+                        <button class="btn-close bg-light position-absolute end-0 m-3" aria-label="Close" data-bs-dismiss="modal" type="button"></button>
+                        <div class="text-muted mb-3" id="submissionPreviewMeta"></div>
+                        <img class="img-fluid d-none w-100" id="submissionPreviewImage" style="max-height: 85vh; object-fit: contain;" alt="Submission preview">
+                        <iframe class="w-100 border-0 d-none" id="submissionPreviewFrame" style="min-height: 92vh;" title="Submission preview"></iframe>
+                        <div class="text-muted d-none" id="submissionPreviewFallback">Preview not available for this file type.</div>
+                    </div>
+                </div>
+        </div>
+    </div>
+
+    <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebarMenu');
+
+    if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function(event) {
+            const isClickInsideSidebar = sidebar.contains(event.target);
+            const isClickOnToggle = sidebarToggle.contains(event.target);
+
+            if (!isClickInsideSidebar && !isClickOnToggle && sidebar.classList.contains('show')) {
+                sidebar.classList.remove('show');
+            }
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const tableBody = document.getElementById('submissionTableBody');
+    const tableWrapper = document.getElementById('submissionTableWrapper');
+    const emptyState = document.getElementById('submissionEmptyState');
+    const selectState = document.getElementById('submissionSelectState');
+    const subjectFilter = document.getElementById('submissionSubjectFilter');
+    const sectionFilter = document.getElementById('submissionSectionFilter');
+    const dateFromInput = document.getElementById('submissionDateFrom');
+    const dateToInput = document.getElementById('submissionDateTo');
+    const previewModalEl = document.getElementById('submissionPreviewModal');
+    const previewMeta = document.getElementById('submissionPreviewMeta');
+    const previewImage = document.getElementById('submissionPreviewImage');
+    const previewFrame = document.getElementById('submissionPreviewFrame');
+    const previewFallback = document.getElementById('submissionPreviewFallback');
+    const previewModal = previewModalEl ? new bootstrap.Modal(previewModalEl) : null;
+    let submissions = [];
+
+    function formatDate(value) {
+        if (!value) {
+            return '';
+        }
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+            return value;
+        }
+        return date.toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+        });
+    }
+
+    function clearTable() {
+        while (tableBody.firstChild) {
+            tableBody.removeChild(tableBody.firstChild);
+        }
+    }
+
+    function renderEmpty() {
+        if (emptyState) {
+            emptyState.classList.remove('d-none');
+        }
+    }
+
+    function hideEmpty() {
+        if (emptyState) {
+            emptyState.classList.add('d-none');
+        }
+    }
+
+    function showSelectState() {
+        if (tableWrapper) {
+            tableWrapper.classList.add('d-none');
+        }
+        if (selectState) {
+            selectState.classList.remove('d-none');
+        }
+    }
+
+    function hideSelectState() {
+        if (selectState) {
+            selectState.classList.add('d-none');
+        }
+        if (tableWrapper) {
+            tableWrapper.classList.remove('d-none');
+        }
+    }
+
+    function addRow(submission) {
+        const row = document.createElement('tr');
+
+        const submittedAt = document.createElement('td');
+        submittedAt.textContent = formatDate(submission.submittedAt);
+
+        const assignment = document.createElement('td');
+        assignment.textContent = submission.assignmentTitle || '-';
+
+        const subject = document.createElement('td');
+        subject.textContent = submission.assignmentSubject || '-';
+
+        const student = document.createElement('td');
+        student.textContent = submission.studentName ? `${submission.studentName} (${submission.studentId || ''})` : submission.studentId || '-';
+
+        const course = document.createElement('td');
+        course.textContent = submission.studentCourse || '-';
+
+        const section = document.createElement('td');
+        section.textContent = submission.studentSection || '-';
+
+        const file = document.createElement('td');
+        file.textContent = submission.filename || '-';
+
+        const action = document.createElement('td');
+        if (submission.downloadUrl) {
+            const link = document.createElement('a');
+            link.className = 'btn btn-sm btn-outline-primary';
+            link.href = submission.downloadUrl;
+            link.textContent = 'Download';
+            action.appendChild(link);
+        } else {
+            action.textContent = '-';
+        }
+
+        if (submission.downloadUrl) {
+            const previewBtn = document.createElement('button');
+            previewBtn.type = 'button';
+            previewBtn.className = 'btn btn-sm btn-outline-secondary ms-2';
+            previewBtn.textContent = 'Preview';
+            previewBtn.setAttribute('data-preview-url', submission.downloadUrl.replace('/download', '/preview'));
+            previewBtn.setAttribute('data-filename', submission.filename || '');
+            previewBtn.setAttribute('data-content-type', submission.contentType || '');
+            previewBtn.setAttribute('data-assignment', submission.assignmentTitle || '');
+            previewBtn.setAttribute('data-student', submission.studentName || submission.studentId || '');
+            action.appendChild(previewBtn);
+        }
+
+        row.appendChild(submittedAt);
+        row.appendChild(assignment);
+        row.appendChild(subject);
+        row.appendChild(student);
+        row.appendChild(course);
+        row.appendChild(section);
+        row.appendChild(file);
+        row.appendChild(action);
+
+        tableBody.appendChild(row);
+    }
+
+    function resetPreview() {
+        if (previewImage) {
+            previewImage.classList.add('d-none');
+            previewImage.removeAttribute('src');
+        }
+        if (previewFrame) {
+            previewFrame.classList.add('d-none');
+            previewFrame.removeAttribute('src');
+        }
+        if (previewFallback) {
+            previewFallback.classList.add('d-none');
+        }
+    }
+
+    function isPreviewable(contentType, filename) {
+        if (contentType) {
+            const lowered = contentType.toLowerCase();
+            return lowered === 'application/pdf' || lowered.startsWith('image/');
+        }
+        if (!filename) return false;
+        const lowered = filename.toLowerCase();
+        return lowered.endsWith('.pdf') || lowered.endsWith('.png') || lowered.endsWith('.jpg') || lowered.endsWith('.jpeg');
+    }
+
+    function showPreview(meta, previewUrl, contentType, filename) {
+        resetPreview();
+        if (previewMeta) {
+            previewMeta.textContent = meta;
+        }
+        if (!isPreviewable(contentType, filename)) {
+            if (previewFallback) {
+                previewFallback.classList.remove('d-none');
+            }
+            return;
+        }
+        const loweredType = contentType ? contentType.toLowerCase() : '';
+        if (loweredType.startsWith('image/') || /\.(png|jpg|jpeg)$/i.test(filename || '')) {
+            if (previewImage) {
+                previewImage.src = previewUrl;
+                previewImage.classList.remove('d-none');
+            }
+        } else {
+            if (previewFrame) {
+                previewFrame.src = previewUrl;
+                previewFrame.classList.remove('d-none');
+            }
+        }
+    }
+
+    function resetSelectOptions(select, options, placeholder) {
+        if (!select) return;
+        while (select.firstChild) {
+            select.removeChild(select.firstChild);
+        }
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = placeholder;
+        select.appendChild(defaultOption);
+        options.forEach(optionValue => {
+            const option = document.createElement('option');
+            option.value = optionValue;
+            option.textContent = optionValue;
+            select.appendChild(option);
+        });
+    }
+
+    function buildFilterOptions(list) {
+        const subjects = new Set();
+        const sections = new Set();
+        list.forEach(item => {
+            if (item.assignmentSubject) subjects.add(item.assignmentSubject);
+            if (item.studentSection) sections.add(item.studentSection);
+        });
+        resetSelectOptions(subjectFilter, Array.from(subjects).sort(), 'All Subjects');
+        resetSelectOptions(sectionFilter, Array.from(sections).sort(), 'All Sections');
+    }
+
+    function parseDateValue(value, endOfDay) {
+        if (!value) return null;
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return null;
+        if (endOfDay) {
+            date.setHours(23, 59, 59, 999);
+        }
+        return date;
+    }
+
+    function applyFilters(list) {
+        const selectedSubject = subjectFilter ? subjectFilter.value.trim() : '';
+        const selectedSection = sectionFilter ? sectionFilter.value.trim() : '';
+        const fromDate = parseDateValue(dateFromInput ? dateFromInput.value : '', false);
+        const toDate = parseDateValue(dateToInput ? dateToInput.value : '', true);
+
+        return list.filter(item => {
+            if (selectedSubject && item.assignmentSubject !== selectedSubject) {
+                return false;
+            }
+            if (selectedSection && item.studentSection !== selectedSection) {
+                return false;
+            }
+            if (fromDate || toDate) {
+                const submittedAt = item.submittedAt ? new Date(item.submittedAt) : null;
+                if (!submittedAt || Number.isNaN(submittedAt.getTime())) {
+                    return false;
+                }
+                if (fromDate && submittedAt < fromDate) return false;
+                if (toDate && submittedAt > toDate) return false;
+            }
+            return true;
+        });
+    }
+
+    function hasActiveFilters() {
+        if (subjectFilter && subjectFilter.value.trim()) return true;
+        if (sectionFilter && sectionFilter.value.trim()) return true;
+        if (dateFromInput && dateFromInput.value) return true;
+        if (dateToInput && dateToInput.value) return true;
+        return false;
+    }
+
+    function renderTable(list) {
+        clearTable();
+        if (!hasActiveFilters()) {
+            hideEmpty();
+            showSelectState();
+            return;
+        }
+        hideSelectState();
+        if (!Array.isArray(list) || list.length === 0) {
+            renderEmpty();
+            return;
+        }
+        hideEmpty();
+        list.forEach(addRow);
+    }
+
+    function renderAll() {
+        const filtered = applyFilters(submissions);
+        renderTable(filtered);
+    }
+
+    async function loadSubmissions() {
+        try {
+            const response = await fetch('/professor/api/assignment-submissions', {
+                headers: { 'Accept': 'application/json' }
+            });
+            if (!response.ok) {
+                throw new Error('Unable to load submissions.');
+            }
+            const data = await response.json();
+            submissions = Array.isArray(data) ? data : [];
+            buildFilterOptions(submissions);
+            renderAll();
+        } catch (error) {
+            clearTable();
+            renderEmpty();
+        }
+    }
+
+    window.refreshPageData = loadSubmissions;
+
+    if (subjectFilter) {
+        subjectFilter.addEventListener('change', renderAll);
+    }
+    if (sectionFilter) {
+        sectionFilter.addEventListener('change', renderAll);
+    }
+    if (dateFromInput) {
+        dateFromInput.addEventListener('change', renderAll);
+    }
+    if (dateToInput) {
+        dateToInput.addEventListener('change', renderAll);
+    }
+
+    if (tableBody) {
+        tableBody.addEventListener('click', function(event) {
+            const previewBtn = event.target.closest('button[data-preview-url]');
+            if (!previewBtn) return;
+            const previewUrl = previewBtn.getAttribute('data-preview-url');
+            const filename = previewBtn.getAttribute('data-filename') || '';
+            const contentType = previewBtn.getAttribute('data-content-type') || '';
+            const assignment = previewBtn.getAttribute('data-assignment') || 'Assignment';
+            const student = previewBtn.getAttribute('data-student') || '';
+            const meta = `${assignment}${student ? ' • ' + student : ''}`;
+            showPreview(meta, previewUrl, contentType, filename);
+            if (previewModal) {
+                previewModal.show();
+            }
+        });
+    }
+
+    loadSubmissions();
+});
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        window.alert = function(message) {
+            let text = '';
+            if (message && typeof message === 'object') {
+                if (message.message) {
+                    text = String(message.message);
+                } else if (message.error) {
+                    text = String(message.error);
+                } else {
+                    try {
+                        text = JSON.stringify(message);
+                    } catch (e) {
+                        text = String(message);
+                    }
+                }
+            } else {
+                text = String(message);
+            }
+            if (window.Swal) {
+                const lower = text.toLowerCase();
+                let icon = 'info';
+                if (/(success|successfully|updated|created|uploaded|posted|saved|published)/.test(lower)) {
+                    icon = 'success';
+                } else if (/(unable|failed|error|not found|unauthorized|invalid|exceeded)/.test(lower)) {
+                    icon = 'error';
+                } else if (/(please|required|select|must|need to)/.test(lower)) {
+                    icon = 'warning';
+                }
+                Swal.fire({ icon, text });
+            } else {
+                console.log(text);
+            }
+        };
+    </script>
+    <script src="/assets/js/global-swal.js"></script>
+</body>
+
+</html>

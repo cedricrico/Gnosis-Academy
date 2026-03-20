@@ -1202,7 +1202,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const confirmed = confirm(`Publish quiz "${quizData.title}" now?`);
+        const confirmed = await window.confirmAsync(`Publish quiz "${quizData.title}" now?`);
         if (!confirmed) return;
 
         if (window.fetchProfessorJson && quizData.id) {
@@ -1275,7 +1275,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function deleteQuiz(row) {
         const quizTitle = row.querySelector('td:nth-child(2)').textContent;
         
-        if (confirm(`Are you sure you want to delete the quiz "${quizTitle}"? This action cannot be undone.`)) {
+        if (await window.confirmAsync(`Are you sure you want to delete the quiz "${quizTitle}"? This action cannot be undone.`)) {
             const id = resolveQuizId(row);
             if (!id) {
                 alert('Unable to find the quiz id. Please refresh the page and try again.');
@@ -1659,8 +1659,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const quizTableBody = document.querySelector('table.table tbody');
-    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
-    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
     const quizStore = window.quizStore || { list: [], cache: new Map() };
     window.quizStore = quizStore;
 
@@ -1672,7 +1672,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (csrfToken && csrfHeader && !headers.has(csrfHeader)) {
             headers.set(csrfHeader, csrfToken);
         }
-        const response = await fetch(url, { ...options, headers });
+        const response = await fetch(url, { credentials: 'same-origin', ...options, headers });
         const contentType = response.headers.get('content-type') || '';
         const text = await response.text();
         if (!response.ok) {
@@ -1756,6 +1756,7 @@ document.addEventListener('DOMContentLoaded', function() {
         renderQuizzes(quizStore.list);
     }
     window.loadQuizzes = loadQuizzes;
+    window.refreshPageData = loadQuizzes;
 
     const quizSubjectFilter = document.getElementById('quizSubjectFilter');
     const quizSectionFilter = document.getElementById('quizSectionFilter');
@@ -2441,6 +2442,42 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(() => {});
 });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        window.alert = function(message) {
+            let text = '';
+            if (message && typeof message === 'object') {
+                if (message.message) {
+                    text = String(message.message);
+                } else if (message.error) {
+                    text = String(message.error);
+                } else {
+                    try {
+                        text = JSON.stringify(message);
+                    } catch (e) {
+                        text = String(message);
+                    }
+                }
+            } else {
+                text = String(message);
+            }
+            if (window.Swal) {
+                const lower = text.toLowerCase();
+                let icon = 'info';
+                if (/(success|successfully|updated|created|uploaded|posted|saved|published)/.test(lower)) {
+                    icon = 'success';
+                } else if (/(unable|failed|error|not found|unauthorized|invalid|exceeded)/.test(lower)) {
+                    icon = 'error';
+                } else if (/(please|required|select|must|need to)/.test(lower)) {
+                    icon = 'warning';
+                }
+                Swal.fire({ icon, text });
+            } else {
+                console.log(text);
+            }
+        };
+    </script>
+    <script src="/assets/js/global-swal.js"></script>
 </body>
 
 </html>

@@ -256,12 +256,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Delete button
         const deleteBtn = card.querySelector('.delete-btn');
-        deleteBtn.addEventListener('click', function(e) {
+        deleteBtn.addEventListener('click', async function(e) {
             e.preventDefault();
             const lessonCard = this.closest('.lesson-card');
             const lessonTitle = lessonCard.querySelector('.lesson-title').textContent;
             
-            if (confirm(`Are you sure you want to delete "${lessonTitle}"?`)) {
+            if (await window.confirmAsync(`Are you sure you want to delete "${lessonTitle}"?`)) {
                 lessonCard.closest('.col').remove();
             }
         });
@@ -377,12 +377,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Delete button functionality
     document.querySelectorAll('.delete-btn').forEach(button => {
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', async function(e) {
             e.preventDefault();
             const lessonCard = this.closest('.lesson-card');
             const lessonTitle = lessonCard.querySelector('.lesson-title').textContent;
             
-            if (confirm(`Are you sure you want to delete "${lessonTitle}"?`)) {
+            if (await window.confirmAsync(`Are you sure you want to delete "${lessonTitle}"?`)) {
                 lessonCard.remove();
             }
         });

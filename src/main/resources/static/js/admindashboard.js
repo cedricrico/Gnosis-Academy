@@ -454,7 +454,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Add event listeners for existing add-slot buttons
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', async function(e) {
         if (e.target && e.target.classList.contains('add-slot-btn')) {
             const container = e.target.closest('.schedule-section').querySelector('.schedule-slots');
             addScheduleSlot(container);
@@ -882,10 +882,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         hideLoading();
                     }
                 };
-            } else if (window.confirm('Delete this instructor?')) {
-                fetchAdminJson(`/api/admin/professors/${encodeURIComponent(employeeId)}`, {
+            } else if (await window.confirmAsync('Delete this instructor?')) {
+                await fetchAdminJson(`/api/admin/professors/${encodeURIComponent(employeeId)}`, {
                     method: 'DELETE'
-                }).then(() => loadInstructorsFromDb());
+                });
+                await loadInstructorsFromDb();
             }
             return;
         }
@@ -1304,7 +1305,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Add event listeners to delete buttons
         document.querySelectorAll(".delete-student").forEach(button => {
-            button.addEventListener("click", function(e) {
+            button.addEventListener("click", async function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 const studentId = this.getAttribute("data-id");
@@ -1330,10 +1331,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             hideLoading();
                         }
                     };
-                } else if (window.confirm("Delete this student?")) {
-                    fetchAdminJson(`/api/admin/students/${encodeURIComponent(studentId)}`, {
+                } else if (await window.confirmAsync("Delete this student?")) {
+                    await fetchAdminJson(`/api/admin/students/${encodeURIComponent(studentId)}`, {
                         method: 'DELETE'
-                    }).then(() => loadStudentsFromDb());
+                    });
+                    await loadStudentsFromDb();
                 }
             });
         });

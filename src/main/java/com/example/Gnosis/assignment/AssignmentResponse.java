@@ -15,6 +15,7 @@ public class AssignmentResponse {
 	private String professorName;
 	private String attachmentName;
 	private String attachmentUrl;
+	private String attachmentContentType;
 	private Instant createdAt;
 	private Instant updatedAt;
 
@@ -112,6 +113,14 @@ public class AssignmentResponse {
 
 	public void setAttachmentUrl(String attachmentUrl) {
 		this.attachmentUrl = attachmentUrl;
+	}
+
+	public String getAttachmentContentType() {
+		return attachmentContentType;
+	}
+
+	public void setAttachmentContentType(String attachmentContentType) {
+		this.attachmentContentType = attachmentContentType;
 	}
 
 	public Instant getCreatedAt() {

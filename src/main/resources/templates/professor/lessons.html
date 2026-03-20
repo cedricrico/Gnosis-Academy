@@ -1043,6 +1043,8 @@ document.addEventListener('DOMContentLoaded', function() {
         renderLessons(lessonsList);
     }
 
+    window.refreshPageData = loadLessons;
+
     async function refreshLessons() {
         const refreshIcon = refreshButton ? refreshButton.querySelector('.refresh-icon') : null;
         document.body.classList.add('page-refreshing');
@@ -1128,7 +1130,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', async function(event) {
         const button = event.target.closest('button[data-action]');
         if (!button) return;
         const id = button.dataset.id;
@@ -1139,7 +1141,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (button.dataset.action === 'edit') {
             openEditModal(lesson);
         } else if (button.dataset.action === 'delete') {
-            const confirmed = confirm(`Delete lesson "${lesson?.title || ''}"?`);
+            const confirmed = await window.confirmAsync(`Delete lesson "${lesson?.title || ''}"?`);
             if (!confirmed) return;
             fetchProfessorJson(`/professor/api/lessons/${id}`, { method: 'DELETE' })
                 .then(() => loadLessons())
@@ -1307,5 +1309,41 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(() => {});
 });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        window.alert = function(message) {
+            let text = '';
+            if (message && typeof message === 'object') {
+                if (message.message) {
+                    text = String(message.message);
+                } else if (message.error) {
+                    text = String(message.error);
+                } else {
+                    try {
+                        text = JSON.stringify(message);
+                    } catch (e) {
+                        text = String(message);
+                    }
+                }
+            } else {
+                text = String(message);
+            }
+            if (window.Swal) {
+                const lower = text.toLowerCase();
+                let icon = 'info';
+                if (/(success|successfully|updated|created|uploaded|posted|saved|published)/.test(lower)) {
+                    icon = 'success';
+                } else if (/(unable|failed|error|not found|unauthorized|invalid|exceeded)/.test(lower)) {
+                    icon = 'error';
+                } else if (/(please|required|select|must|need to)/.test(lower)) {
+                    icon = 'warning';
+                }
+                Swal.fire({ icon, text });
+            } else {
+                console.log(text);
+            }
+        };
+    </script>
+    <script src="/assets/js/global-swal.js"></script>
 </body>
 </html>

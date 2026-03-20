@@ -78,6 +78,7 @@ public class SecurityConfig {
 						.logoutSuccessUrl("/admin-login?logout")
 						.permitAll()
 				);
+		http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
 
 		return http.build();
 	}
@@ -140,6 +141,7 @@ public class SecurityConfig {
 						.logoutSuccessUrl("/Professor-login?logout")
 						.permitAll()
 				);
+		http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
 
 		return http.build();
 	}
@@ -208,8 +210,12 @@ public class SecurityConfig {
 				);
 
 		// H2 console needs these relaxed settings (dev only).
-		http.csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/logout"));
-		http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
+		http.csrf(csrf -> csrf.ignoringRequestMatchers(
+				"/h2-console/**",
+				"/logout",
+				"/student/api/assignments/**"
+		));
+		http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
 
 		return http.build();
 	}

@@ -990,12 +990,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Delete button
         const deleteBtn = card.querySelector('.delete-btn');
-        deleteBtn.addEventListener('click', function(e) {
+        deleteBtn.addEventListener('click', async function(e) {
             e.preventDefault();
             const lessonCard = this.closest('.lesson-card');
             const lessonTitle = lessonCard.querySelector('.lesson-title').textContent;
             
-            if (confirm(`Are you sure you want to delete "${lessonTitle}"?`)) {
+            if (await window.confirmAsync(`Are you sure you want to delete "${lessonTitle}"?`)) {
                 lessonCard.closest('.col').remove();
             }
         });
@@ -1111,12 +1111,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Delete button functionality
     document.querySelectorAll('.delete-btn').forEach(button => {
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', async function(e) {
             e.preventDefault();
             const lessonCard = this.closest('.lesson-card');
             const lessonTitle = lessonCard.querySelector('.lesson-title').textContent;
             
-            if (confirm(`Are you sure you want to delete "${lessonTitle}"?`)) {
+            if (await window.confirmAsync(`Are you sure you want to delete "${lessonTitle}"?`)) {
                 lessonCard.remove();
             }
         });
@@ -1338,8 +1338,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Handle Archive button click
-    function handleArchiveAnnouncement(card) {
-        if (confirm('Are you sure you want to archive this announcement? This action cannot be undone.')) {
+    async function handleArchiveAnnouncement(card) {
+        if (await window.confirmAsync('Are you sure you want to archive this announcement? This action cannot be undone.')) {
             // Add archived class and update badge
             card.classList.add('border-warning');
             const badge = card.querySelector('.badge');
@@ -1997,7 +1997,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Event delegation for table actions - attach to tbody for dynamic content
-    quizTableBody.addEventListener('click', function(e) {
+    quizTableBody.addEventListener('click', async function(e) {
         const target = e.target;
         
         // Find the closest button element
@@ -2036,7 +2036,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Handle Delete button (trash icon)
         else if (button.classList.contains('btn-outline-danger')) {
             e.preventDefault();
-            deleteQuiz(row);
+            await deleteQuiz(row);
         }
     });
     
@@ -2162,10 +2162,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Delete Quiz Functionality
-    function deleteQuiz(row) {
+    async function deleteQuiz(row) {
         const quizTitle = row.querySelector('td:nth-child(2)').textContent;
         
-        if (confirm(`Are you sure you want to delete the quiz "${quizTitle}"? This action cannot be undone.`)) {
+        if (await window.confirmAsync(`Are you sure you want to delete the quiz "${quizTitle}"? This action cannot be undone.`)) {
             row.remove();
             // Optionally update row numbers
             updateRowNumbers();
@@ -2467,6 +2467,42 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(() => {});
 });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        window.alert = function(message) {
+            let text = '';
+            if (message && typeof message === 'object') {
+                if (message.message) {
+                    text = String(message.message);
+                } else if (message.error) {
+                    text = String(message.error);
+                } else {
+                    try {
+                        text = JSON.stringify(message);
+                    } catch (e) {
+                        text = String(message);
+                    }
+                }
+            } else {
+                text = String(message);
+            }
+            if (window.Swal) {
+                const lower = text.toLowerCase();
+                let icon = 'info';
+                if (/(success|successfully|updated|created|uploaded|posted|saved|published)/.test(lower)) {
+                    icon = 'success';
+                } else if (/(unable|failed|error|not found|unauthorized|invalid|exceeded)/.test(lower)) {
+                    icon = 'error';
+                } else if (/(please|required|select|must|need to)/.test(lower)) {
+                    icon = 'warning';
+                }
+                Swal.fire({ icon, text });
+            } else {
+                console.log(text);
+            }
+        };
+    </script>
+    <script src="/assets/js/global-swal.js"></script>
 </body>
 
 </html>

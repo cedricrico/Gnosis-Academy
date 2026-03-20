@@ -541,27 +541,9 @@ body {
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            <tr data-subject="Computer Science">
-                                                <td>Introduction to Programming</td>
-                                                <td>Computer Science</td>
-                                                <td>March 20, 2026</td>
-                                                <td><span class="badge bg-warning">Pending</span></td>
-                                                <td><button class="btn btn-primary btn-sm start-quiz-btn" data-bs-toggle="modal" data-bs-target="#startQuizModal">Start Quiz</button></td>
-                                            </tr>
-                                            <tr data-subject="Computer Science">
-                                                <td>Database Fundamentals</td>
-                                                <td>Computer Science</td>
-                                                <td>March 25, 2026</td>
-                                                <td><span class="badge bg-warning">Pending</span></td>
-                                                <td><button class="btn btn-primary btn-sm start-quiz-btn" data-bs-toggle="modal" data-bs-target="#startQuizModal">Start Quiz</button></td>
-                                            </tr>
-                                            <tr data-subject="Computer Science">
-                                                <td>Web Development Basics</td>
-                                                <td>Computer Science</td>
-                                                <td>March 18, 2026</td>
-                                                <td><span class="badge bg-success">Completed</span></td>
-                                                <td><button class="btn btn-success btn-sm" data-bs-target="#webDevelopmentBasicsResultsModal" data-bs-toggle="modal">View Results</button></td>
+                                        <tbody id="quizTableBody">
+                                            <tr id="quizEmptyRow">
+                                                <td colspan="5" class="text-center text-muted">No quizzes available.</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -662,52 +644,118 @@ document.addEventListener('DOMContentLoaded', function() {
     const quizListCard = document.getElementById('quizListCard');
     const backToSubjectsBtn = document.getElementById('backToSubjectsBtn');
     const selectedSubjectLabel = document.getElementById('selectedSubjectLabel');
-    const quizRows = Array.from(document.querySelectorAll('table.table tbody tr[data-subject]'));
+    const quizTableBody = document.getElementById('quizTableBody');
     const startQuizModal = document.getElementById('startQuizModal');
     const startQuizTitle = document.getElementById('startQuizTitle');
     const startQuizSubject = document.getElementById('startQuizSubject');
     const startQuizDue = document.getElementById('startQuizDue');
     const confirmStartQuizBtn = document.getElementById('confirmStartQuizBtn');
 
-    if (!subjectTilesContainer || quizRows.length === 0) {
+    if (!subjectTilesContainer || !quizTableBody) {
         return;
     }
 
-    const subjectCounts = quizRows.reduce((acc, row) => {
-        const subject = row.dataset.subject;
-        acc[subject] = (acc[subject] || 0) + 1;
-        return acc;
-    }, {});
+    let quizzesCache = [];
+    let currentSubject = null;
 
-    const subjects = Object.keys(subjectCounts).sort();
+    function normalizeText(value) {
+        return String(value ?? '').trim();
+    }
 
-    subjects.forEach(subject => {
-        const col = document.createElement('div');
-        col.className = 'col-12 col-sm-6 col-lg-4';
+    function formatStatus(statusRaw) {
+        const normalized = normalizeText(statusRaw).toLowerCase();
+        if (!normalized || normalized === 'published') {
+            return { label: 'Pending', className: 'bg-warning' };
+        }
+        if (normalized === 'archived') {
+            return { label: 'Archived', className: 'bg-secondary' };
+        }
+        const label = normalized.charAt(0).toUpperCase() + normalized.slice(1);
+        return { label, className: 'bg-info' };
+    }
 
-        const tile = document.createElement('button');
-        tile.type = 'button';
-        tile.className = 'subject-tile text-start w-100';
-        tile.setAttribute('data-subject', subject);
+    function renderSubjectTiles(quizzes) {
+        subjectTilesContainer.innerHTML = '';
+        const subjectCounts = quizzes.reduce((acc, quiz) => {
+            const subject = normalizeText(quiz.subject) || 'Uncategorized';
+            acc[subject] = (acc[subject] || 0) + 1;
+            return acc;
+        }, {});
 
-        const title = document.createElement('div');
-        title.className = 'subject-title';
-        title.textContent = subject;
+        const subjects = Object.keys(subjectCounts).sort((a, b) => a.localeCompare(b));
+        if (subjects.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'text-muted';
+            empty.textContent = 'No quizzes available.';
+            subjectTilesContainer.appendChild(empty);
+            return;
+        }
 
-        const meta = document.createElement('div');
-        meta.className = 'subject-meta';
-        meta.textContent = `${subjectCounts[subject]} quiz${subjectCounts[subject] === 1 ? '' : 'zes'}`;
+        subjects.forEach(subject => {
+            const col = document.createElement('div');
+            col.className = 'col-12 col-sm-6 col-lg-4';
 
-        tile.appendChild(title);
-        tile.appendChild(meta);
-        col.appendChild(tile);
-        subjectTilesContainer.appendChild(col);
-    });
+            const tile = document.createElement('button');
+            tile.type = 'button';
+            tile.className = 'subject-tile text-start w-100';
+            tile.setAttribute('data-subject', subject);
+
+            const title = document.createElement('div');
+            title.className = 'subject-title';
+            title.textContent = subject;
+
+            const meta = document.createElement('div');
+            meta.className = 'subject-meta';
+            meta.textContent = `${subjectCounts[subject]} quiz${subjectCounts[subject] === 1 ? '' : 'zes'}`;
+
+            tile.appendChild(title);
+            tile.appendChild(meta);
+            col.appendChild(tile);
+            subjectTilesContainer.appendChild(col);
+        });
+    }
+
+    function renderQuizRows(subject) {
+        quizTableBody.innerHTML = '';
+        const filtered = quizzesCache.filter(quiz => {
+            const quizSubject = normalizeText(quiz.subject) || 'Uncategorized';
+            return quizSubject === subject;
+        });
+
+        if (filtered.length === 0) {
+            const row = document.createElement('tr');
+            row.innerHTML = '<td colspan="5" class="text-center text-muted">No quizzes available for this subject.</td>';
+            quizTableBody.appendChild(row);
+            return;
+        }
+
+        filtered.forEach(quiz => {
+            const status = formatStatus(quiz.status);
+            const row = document.createElement('tr');
+            row.dataset.subject = normalizeText(quiz.subject) || 'Uncategorized';
+            row.innerHTML = `
+                <td>${normalizeText(quiz.title) || 'Untitled quiz'}</td>
+                <td>${normalizeText(quiz.subject) || '-'}</td>
+                <td>${normalizeText(quiz.dueDate) || 'No due date'}</td>
+                <td><span class="badge ${status.className}">${status.label}</span></td>
+                <td>
+                    <button class="btn btn-primary btn-sm start-quiz-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#startQuizModal"
+                        data-quiz-title="${normalizeText(quiz.title)}"
+                        data-quiz-subject="${normalizeText(quiz.subject)}"
+                        data-quiz-due="${normalizeText(quiz.dueDate)}">
+                        Start Quiz
+                    </button>
+                </td>
+            `;
+            quizTableBody.appendChild(row);
+        });
+    }
 
     function showQuizzesForSubject(subject) {
-        quizRows.forEach(row => {
-            row.style.display = row.dataset.subject === subject ? '' : 'none';
-        });
+        currentSubject = subject;
+        renderQuizRows(subject);
         if (selectedSubjectLabel) {
             selectedSubjectLabel.textContent = subject;
         }
@@ -738,19 +786,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    document.querySelectorAll('.start-quiz-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const row = this.closest('tr');
-            if (!row) {
-                return;
-            }
-            const cells = row.querySelectorAll('td');
-            if (cells.length >= 3) {
-                startQuizTitle.textContent = cells[0].textContent.trim();
-                startQuizSubject.textContent = cells[1].textContent.trim();
-                startQuizDue.textContent = cells[2].textContent.trim();
-            }
-        });
+    quizTableBody.addEventListener('click', function(event) {
+        const button = event.target.closest('.start-quiz-btn');
+        if (!button) {
+            return;
+        }
+        const title = button.getAttribute('data-quiz-title') || '';
+        const subject = button.getAttribute('data-quiz-subject') || '';
+        const due = button.getAttribute('data-quiz-due') || '';
+        if (startQuizTitle) startQuizTitle.textContent = title;
+        if (startQuizSubject) startQuizSubject.textContent = subject;
+        if (startQuizDue) startQuizDue.textContent = due || 'No due date';
     });
 
     if (confirmStartQuizBtn && startQuizModal) {
@@ -758,14 +804,32 @@ document.addEventListener('DOMContentLoaded', function() {
             const title = startQuizTitle ? startQuizTitle.textContent.trim() : '';
             const subject = startQuizSubject ? startQuizSubject.textContent.trim() : '';
             const due = startQuizDue ? startQuizDue.textContent.trim() : '';
-            const params = new URLSearchParams({
-                title,
-                subject,
-                due
-            });
+            const params = new URLSearchParams({ title, subject, due });
             window.location.href = `/student/quiz/start?${params.toString()}`;
         });
     }
+
+    async function loadQuizzes() {
+        try {
+            const response = await fetch('/student/api/quizzes', { cache: 'no-store' });
+            if (!response.ok) {
+                throw new Error('Unable to load quizzes.');
+            }
+            const data = await response.json();
+            quizzesCache = Array.isArray(data) ? data : [];
+            renderSubjectTiles(quizzesCache);
+            if (currentSubject && quizzesCache.length > 0) {
+                showQuizzesForSubject(currentSubject);
+            }
+        } catch (error) {
+            quizzesCache = [];
+            renderSubjectTiles([]);
+            quizTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Unable to load quizzes.</td></tr>';
+        }
+    }
+
+    window.refreshPageData = loadQuizzes;
+    loadQuizzes();
 });
 
 // Inlined from /assets/js/student/student-assignments.js
@@ -901,7 +965,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeStatusBadges();
 });
 </script>
+    <script src="/assets/js/global-swal.js"></script>
 </body>
 
 </html>
-

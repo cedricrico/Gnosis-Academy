@@ -92,7 +92,7 @@ public class SchoolClassService {
 		}
 
 		return findAll().stream()
-				.filter(schoolClass -> equalsIgnoreCase(trimToNull(schoolClass.getCourseName()), courseNormalized)
+				.filter(schoolClass -> courseMatches(schoolClass, courseNormalized)
 						&& equalsIgnoreCase(trimToNull(schoolClass.getSectionName()), sectionNormalized))
 				.toList();
 	}
@@ -333,5 +333,13 @@ public class SchoolClassService {
 			return false;
 		}
 		return left.equalsIgnoreCase(right);
+	}
+
+	private static boolean courseMatches(SchoolClassDto schoolClass, String courseNormalized) {
+		if (schoolClass == null || courseNormalized == null) {
+			return false;
+		}
+		return equalsIgnoreCase(trimToNull(schoolClass.getCourseName()), courseNormalized)
+				|| equalsIgnoreCase(trimToNull(schoolClass.getCourseCode()), courseNormalized);
 	}
 }

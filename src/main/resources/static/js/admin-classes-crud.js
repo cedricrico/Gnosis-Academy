@@ -829,7 +829,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (action === 'delete') {
-            const confirmed = window.confirm(`Delete class ${classItem.courseName} - ${classItem.sectionName}?`);
+            const confirmed = await window.confirmAsync(`Delete class ${classItem.courseName} - ${classItem.sectionName}?`);
             if (!confirmed) {
                 return;
             }

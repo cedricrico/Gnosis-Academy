@@ -444,6 +444,21 @@ body {
   }
 }
 
+@media (max-width: 576px) {
+  #assignmentPreviewFrame {
+    min-height: 70vh !important;
+  }
+  #assignmentPreviewImage {
+    max-height: 70vh !important;
+  }
+  .modal-body {
+    padding: 0.75rem !important;
+  }
+  .modal-content .btn-close {
+    margin: 0.5rem !important;
+  }
+}
+
 </style>
     <link rel="stylesheet" href="/assets/css/student-admin-parity.css">
 </head>
@@ -541,43 +556,7 @@ body {
                                                 <th>Status</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            <tr data-subject="Database Systems">
-                                                <td>Database ER Diagram</td>
-                                                <td>Database Systems</td>
-                                                <td>March 20, 2026</td>
-                                                <td><button class="btn btn-primary btn-sm view-assignment-btn" data-assignment-id="1"> View Assignment </button></td>
-                                                <td><span class="badge bg-success">Uploaded</span></td>
-                                            </tr>
-                                            <tr data-subject="Computer Science">
-                                                <td>Programming Project 1</td>
-                                                <td>Computer Science</td>
-                                                <td>March 25, 2026</td>
-                                                <td><button class="btn btn-primary btn-sm view-assignment-btn" data-assignment-id="2"> View Assignment </button></td>
-                                                <td><span class="badge bg-secondary">Not Submitted</span></td>
-                                            </tr>
-                                            <tr data-subject="Computer Science">
-                                                <td>Web App Prototype</td>
-                                                <td>Computer Science</td>
-                                                <td>April 1, 2026</td>
-                                                <td><button class="btn btn-primary btn-sm view-assignment-btn" data-assignment-id="3"> View Assignment </button></td>
-                                                <td><span class="badge bg-secondary">Not Submitted</span></td>
-                                            </tr>
-                                            <tr data-subject="Mathematics">
-                                                <td>Mathematics Problem Set</td>
-                                                <td>Mathematics</td>
-                                                <td>March 18, 2026</td>
-                                                <td><button class="btn btn-primary btn-sm view-assignment-btn" data-assignment-id="4"> View Assignment </button></td>
-                                                <td><span class="badge bg-success">Uploaded</span></td>
-                                            </tr>
-                                            <tr data-subject="English">
-                                                <td>English Essay</td>
-                                                <td>English</td>
-                                                <td>March 15, 2026</td>
-                                                <td><button class="btn btn-primary btn-sm view-assignment-btn" data-assignment-id="5"> View Assignment </button></td>
-                                                <td><span class="badge bg-success">Uploaded</span></td>
-                                            </tr>
-                                        </tbody>
+                                        <tbody id="assignmentTableBody"></tbody>
                                     </table>
                                 </div>
                             </div>
@@ -608,7 +587,7 @@ body {
                         <div class="form-text"><span>Accepted file types: PDF, DOCX, JPG, JPEG, PNG</span></div>
                     </div>
                 </div>
-                <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button><button class="btn btn-success" id="submitAssignmentBtn" type="button">Submit Assignment</button></div>
+                <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button><a class="btn btn-outline-primary d-none" id="assignmentDownloadBtn" href="#" target="_blank" rel="noopener">Download Attachment</a><button class="btn btn-outline-secondary d-none" id="assignmentPreviewBtn" type="button">Preview</button><button class="btn btn-success" id="submitAssignmentBtn" type="button">Submit Assignment</button></div>
             </div>
         </div>
     </div><script>
@@ -643,47 +622,165 @@ document.addEventListener('DOMContentLoaded', function() {
     const assignmentListCard = document.getElementById('assignmentListCard');
     const backToSubjectsBtn = document.getElementById('backToAssignmentSubjectsBtn');
     const selectedSubjectLabel = document.getElementById('selectedAssignmentSubjectLabel');
-    const assignmentRows = Array.from(document.querySelectorAll('table.table tbody tr[data-subject]'));
+    const assignmentTableBody = document.getElementById('assignmentTableBody');
+    const modalElement = document.getElementById('assignmentModal');
+    const submitBtn = document.getElementById('submitAssignmentBtn');
+    const fileInput = document.getElementById('assignmentFile');
+    const downloadBtn = document.getElementById('assignmentDownloadBtn');
+    const previewBtn = document.getElementById('assignmentPreviewBtn');
 
-    if (!subjectTilesContainer || assignmentRows.length === 0) {
+    if (!subjectTilesContainer || !assignmentTableBody) {
         return;
     }
 
-    const subjectCounts = assignmentRows.reduce((acc, row) => {
-        const subject = row.dataset.subject;
-        acc[subject] = (acc[subject] || 0) + 1;
-        return acc;
-    }, {});
+    const modal = modalElement ? new bootstrap.Modal(modalElement) : null;
+    const assignmentsCache = new Map();
+    let assignmentsList = [];
+    let currentSubject = null;
+    let currentAssignmentId = null;
+    let currentPreviewUrl = '';
+    let currentPreviewType = '';
+    let currentPreviewFilename = '';
 
-    const subjects = Object.keys(subjectCounts).sort();
+    function formatDate(value) {
+        if (!value) {
+            return 'No due date';
+        }
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+            return value;
+        }
+        return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
 
-    subjects.forEach(subject => {
+    function formatStatusLabel(status) {
+        if (!status) {
+            return 'Assigned';
+        }
+        return status.replace(/_/g, ' ').toUpperCase();
+    }
+
+    function statusBadgeClass(status) {
+        const normalized = (status || '').toUpperCase();
+        if (['OPEN', 'ACTIVE', 'PUBLISHED'].includes(normalized)) {
+            return 'bg-success';
+        }
+        if (['CLOSED', 'INACTIVE', 'ARCHIVED'].includes(normalized)) {
+            return 'bg-secondary';
+        }
+        return 'bg-info';
+    }
+
+    function clearContainer(container) {
+        while (container.firstChild) {
+            container.removeChild(container.firstChild);
+        }
+    }
+
+    function renderEmptyState(container, message) {
+        clearContainer(container);
         const col = document.createElement('div');
-        col.className = 'col-12 col-sm-6 col-lg-4';
+        col.className = 'col-12';
+        const text = document.createElement('div');
+        text.className = 'text-muted text-center py-4';
+        text.textContent = message;
+        col.appendChild(text);
+        container.appendChild(col);
+    }
 
-        const tile = document.createElement('button');
-        tile.type = 'button';
-        tile.className = 'subject-tile text-start w-100';
-        tile.setAttribute('data-subject', subject);
+    function renderTable(subject) {
+        clearContainer(assignmentTableBody);
+        const filtered = assignmentsList.filter(assignment => (assignment.subject || 'General') === subject);
+        if (!filtered.length) {
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 5;
+            cell.className = 'text-center text-muted py-4';
+            cell.textContent = 'No assignments available for this subject.';
+            row.appendChild(cell);
+            assignmentTableBody.appendChild(row);
+            return;
+        }
 
-        const title = document.createElement('div');
-        title.className = 'subject-title';
-        title.textContent = subject;
+        filtered.forEach(assignment => {
+            assignmentsCache.set(String(assignment.id), assignment);
+            const row = document.createElement('tr');
+            row.dataset.subject = assignment.subject || 'General';
 
-        const meta = document.createElement('div');
-        meta.className = 'subject-meta';
-        meta.textContent = `${subjectCounts[subject]} assignment${subjectCounts[subject] === 1 ? '' : 's'}`;
+            const titleCell = document.createElement('td');
+            titleCell.textContent = assignment.title || 'Assignment';
 
-        tile.appendChild(title);
-        tile.appendChild(meta);
-        col.appendChild(tile);
-        subjectTilesContainer.appendChild(col);
-    });
+            const subjectCell = document.createElement('td');
+            subjectCell.textContent = assignment.subject || 'General';
+
+            const dueCell = document.createElement('td');
+            dueCell.textContent = formatDate(assignment.dueDate);
+
+            const actionCell = document.createElement('td');
+            const actionButton = document.createElement('button');
+            actionButton.className = 'btn btn-primary btn-sm view-assignment-btn';
+            actionButton.type = 'button';
+            actionButton.textContent = 'View Assignment';
+            actionButton.setAttribute('data-assignment-id', assignment.id);
+            actionCell.appendChild(actionButton);
+
+            const statusCell = document.createElement('td');
+            const badge = document.createElement('span');
+            badge.className = `badge ${statusBadgeClass(assignment.status)}`;
+            badge.textContent = formatStatusLabel(assignment.status);
+            statusCell.appendChild(badge);
+
+            row.appendChild(titleCell);
+            row.appendChild(subjectCell);
+            row.appendChild(dueCell);
+            row.appendChild(actionCell);
+            row.appendChild(statusCell);
+            assignmentTableBody.appendChild(row);
+        });
+    }
+
+    function renderSubjectTiles() {
+        clearContainer(subjectTilesContainer);
+        if (!assignmentsList.length) {
+            renderEmptyState(subjectTilesContainer, 'No assignments available.');
+            return;
+        }
+
+        const subjectCounts = assignmentsList.reduce((acc, assignment) => {
+            const subject = assignment.subject || 'General';
+            acc[subject] = (acc[subject] || 0) + 1;
+            return acc;
+        }, {});
+
+        const subjects = Object.keys(subjectCounts).sort();
+
+        subjects.forEach(subject => {
+            const col = document.createElement('div');
+            col.className = 'col-12 col-sm-6 col-lg-4';
+
+            const tile = document.createElement('button');
+            tile.type = 'button';
+            tile.className = 'subject-tile text-start w-100';
+            tile.setAttribute('data-subject', subject);
+
+            const title = document.createElement('div');
+            title.className = 'subject-title';
+            title.textContent = subject;
+
+            const meta = document.createElement('div');
+            meta.className = 'subject-meta';
+            meta.textContent = `${subjectCounts[subject]} assignment${subjectCounts[subject] === 1 ? '' : 's'}`;
+
+            tile.appendChild(title);
+            tile.appendChild(meta);
+            col.appendChild(tile);
+            subjectTilesContainer.appendChild(col);
+        });
+    }
 
     function showAssignmentsForSubject(subject) {
-        assignmentRows.forEach(row => {
-            row.style.display = row.dataset.subject === subject ? '' : 'none';
-        });
+        currentSubject = subject;
+        renderTable(subject);
         if (selectedSubjectLabel) {
             selectedSubjectLabel.textContent = subject;
         }
@@ -711,143 +808,187 @@ document.addEventListener('DOMContentLoaded', function() {
             if (subjectChooserCard) {
                 subjectChooserCard.classList.remove('d-none');
             }
+            currentSubject = null;
         });
     }
-});
 
-// Inlined from /assets/js/student/student-assignments.js
-// Assignment data - in a real application, this would come from a database
-const assignments = {
-    1: {
-        title: "Database ER Diagram",
-        subject: "Database Systems",
-        dueDate: "March 20, 2026",
-        description: "Create an Entity-Relationship diagram for a university database system. The diagram should include entities for Students, Courses, Instructors, and Departments with appropriate relationships and attributes.",
-        status: "uploaded"
-    },
-    2: {
-        title: "Programming Project 1",
-        subject: "Computer Science",
-        dueDate: "March 25, 2026",
-        description: "Develop a console-based application for managing student records. The application should allow adding, editing, deleting, and searching student information.",
-        status: "not_submitted"
-    },
-    3: {
-        title: "Web App Prototype",
-        subject: "Computer Science",
-        dueDate: "April 1, 2026",
-        description: "Create a responsive web application prototype for an online bookstore. Include features for browsing books, user registration, and shopping cart functionality.",
-        status: "not_submitted"
-    },
-    4: {
-        title: "Mathematics Problem Set",
-        subject: "Mathematics",
-        dueDate: "March 18, 2026",
-        description: "Solve the following calculus problems: 1) Find the derivative of f(x) = 3x^4 - 2x^3 + 5x - 7, 2) Calculate the definite integral from 0 to 2 of (x^2 + 3x) dx, 3) Solve the differential equation dy/dx = 2x.",
-        status: "uploaded"
-    },
-    5: {
-        title: "English Essay",
-        subject: "English",
-        dueDate: "March 15, 2026",
-        description: "Write a 1000-word essay on the impact of social media on modern communication. Include arguments for both positive and negative effects, supported by credible sources.",
-        status: "uploaded"
+    assignmentTableBody.addEventListener('click', function(event) {
+        const button = event.target.closest('.view-assignment-btn');
+        if (!button) {
+            return;
+        }
+        const assignmentId = button.getAttribute('data-assignment-id');
+        const assignment = assignmentsCache.get(String(assignmentId));
+        if (!assignment) {
+            return;
+        }
+
+        currentAssignmentId = assignment.id;
+        document.getElementById('assignmentTitle').textContent = assignment.title || 'Assignment';
+        document.getElementById('assignmentSubject').textContent = assignment.subject || 'General';
+        document.getElementById('assignmentDueDate').textContent = formatDate(assignment.dueDate);
+        document.getElementById('assignmentDescription').textContent = assignment.description || '';
+
+        if (fileInput) {
+            fileInput.value = '';
+        }
+        if (downloadBtn) {
+            if (assignment.attachmentUrl) {
+                downloadBtn.href = assignment.attachmentUrl;
+                downloadBtn.classList.remove('d-none');
+            } else {
+                downloadBtn.href = '#';
+                downloadBtn.classList.add('d-none');
+            }
+        }
+        if (previewBtn) {
+            if (assignment.attachmentUrl && isPreviewable(assignment.attachmentContentType, assignment.attachmentName)) {
+                currentPreviewUrl = assignment.attachmentUrl.replace('/attachment', '/preview');
+                currentPreviewType = assignment.attachmentContentType || '';
+                currentPreviewFilename = assignment.attachmentName || '';
+                previewBtn.classList.remove('d-none');
+            } else {
+                currentPreviewUrl = '';
+                currentPreviewType = '';
+                currentPreviewFilename = '';
+                previewBtn.classList.add('d-none');
+            }
+        }
+        if (modal) {
+            modal.show();
+        }
+    });
+
+    if (previewBtn) {
+        previewBtn.addEventListener('click', function() {
+            if (!currentPreviewUrl) {
+                alert('Preview not available for this file.');
+                return;
+            }
+            showPreviewModal(currentPreviewUrl, currentPreviewType, currentPreviewFilename);
+        });
     }
-};
 
-// Store current assignment ID being viewed
-let currentAssignmentId = null;
-
-// Initialize modal functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = new bootstrap.Modal(document.getElementById('assignmentModal'));
-    const viewButtons = document.querySelectorAll('.view-assignment-btn');
-    const submitBtn = document.getElementById('submitAssignmentBtn');
-    const fileInput = document.getElementById('assignmentFile');
-    
-    // Add click event to all View Assignment buttons
-    viewButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            currentAssignmentId = this.getAttribute('data-assignment-id');
-            const assignment = assignments[currentAssignmentId];
-            
-            if (assignment) {
-                // Populate modal with assignment data
-                document.getElementById('assignmentTitle').textContent = assignment.title;
-                document.getElementById('assignmentSubject').textContent = assignment.subject;
-                document.getElementById('assignmentDueDate').textContent = assignment.dueDate;
-                document.getElementById('assignmentDescription').textContent = assignment.description;
-                
-                // Reset file input
+    if (submitBtn) {
+        submitBtn.addEventListener('click', async function() {
+            if (!currentAssignmentId) {
+                alert('Please select an assignment first.');
+                return;
+            }
+            if (!fileInput || !fileInput.files.length) {
+                alert('Please select a file to upload.');
+                return;
+            }
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            try {
+                const response = await fetch(`/student/api/assignments/${currentAssignmentId}/submissions`, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Unable to submit assignment.');
+                }
+                alert('Assignment submitted successfully.');
+                if (modal) {
+                    modal.hide();
+                }
                 fileInput.value = '';
-                
-                // Show modal
-                modal.show();
+            } catch (error) {
+                alert(error.message || 'Unable to submit assignment.');
             }
         });
-    });
-    
-    // Handle assignment submission
-    submitBtn.addEventListener('click', function() {
-        if (!fileInput.files.length) {
-            alert('Please select a file to upload.');
-            return;
-        }
-        
-        const file = fileInput.files[0];
-        const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/jpg', 'image/png'];
-        
-        if (!allowedTypes.includes(file.type)) {
-            alert('Invalid file type. Please upload a PDF, DOCX, JPG, or PNG file.');
-            return;
-        }
-        
-        // Update assignment status
-        if (currentAssignmentId && assignments[currentAssignmentId]) {
-            assignments[currentAssignmentId].status = "uploaded";
-            
-            // Update the status badge in the table
-            updateAssignmentStatus(currentAssignmentId, "uploaded");
-        }
-        
-        // In a real application, you would upload the file to a server here
-        alert('Assignment submitted successfully!');
-        modal.hide();
-    });
-    
-    // Function to update assignment status in the table
-    function updateAssignmentStatus(assignmentId, status) {
-        // Find the table row for this assignment
-        const button = document.querySelector(`.view-assignment-btn[data-assignment-id="${assignmentId}"]`);
-        if (!button) return;
-        
-        const row = button.closest('tr');
-        if (!row) return;
-        
-        // Get the status cell (last cell in the row)
-        const statusCell = row.cells[4]; // Index 4 is the Status column
-        
-        if (status === "uploaded") {
-            statusCell.innerHTML = '<span class="badge bg-success">Uploaded</span>';
-        } else {
-            statusCell.innerHTML = '<span class="badge bg-secondary">Not Submitted</span>';
-        }
     }
-    
-    // Initialize status badges on page load
-    function initializeStatusBadges() {
-        for (const assignmentId in assignments) {
-            const assignment = assignments[assignmentId];
-            if (assignment) {
-                updateAssignmentStatus(assignmentId, assignment.status);
+
+    async function loadAssignments() {
+        try {
+            const response = await fetch('/student/api/assignments', {
+                headers: { 'Accept': 'application/json' }
+            });
+            if (!response.ok) {
+                throw new Error('Unable to load assignments.');
             }
+            const data = await response.json();
+            assignmentsList = Array.isArray(data) ? data : [];
+            renderSubjectTiles();
+            if (currentSubject) {
+                showAssignmentsForSubject(currentSubject);
+            }
+        } catch (error) {
+            renderEmptyState(subjectTilesContainer, error.message || 'Unable to load assignments.');
         }
     }
-    
-    // Call initialization function
-    initializeStatusBadges();
+
+    window.refreshPageData = loadAssignments;
+    loadAssignments();
 });
+function isPreviewable(contentType, filename) {
+    if (contentType) {
+        const lowered = contentType.toLowerCase();
+        return lowered === 'application/pdf' || lowered.startsWith('image/');
+    }
+    if (!filename) return false;
+    const lowered = filename.toLowerCase();
+    return lowered.endsWith('.pdf') || lowered.endsWith('.png') || lowered.endsWith('.jpg') || lowered.endsWith('.jpeg');
+}
+
+function showPreviewModal(url, contentType, filename) {
+    let modal = document.getElementById('assignmentPreviewModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = 'assignmentPreviewModal';
+        modal.tabIndex = -1;
+        modal.innerHTML = `
+            <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
+                <div class="modal-content bg-transparent border-0">
+                    <div class="modal-body bg-transparent p-2">
+                        <button class="btn-close bg-light position-absolute end-0 m-3" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <img class="img-fluid d-none w-100" id="assignmentPreviewImage" style="max-height: 85vh; object-fit: contain;" alt="Assignment preview">
+                        <iframe class="w-100 border-0 d-none" id="assignmentPreviewFrame" style="min-height: 92vh;" title="Assignment preview"></iframe>
+                        <div class="text-muted d-none" id="assignmentPreviewFallback">Preview not available for this file type.</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    const image = modal.querySelector('#assignmentPreviewImage');
+    const frame = modal.querySelector('#assignmentPreviewFrame');
+    const fallback = modal.querySelector('#assignmentPreviewFallback');
+
+    if (image) {
+        image.classList.add('d-none');
+        image.removeAttribute('src');
+    }
+    if (frame) {
+        frame.classList.add('d-none');
+        frame.removeAttribute('src');
+    }
+    if (fallback) {
+        fallback.classList.add('d-none');
+    }
+
+    if (!isPreviewable(contentType, filename)) {
+        if (fallback) fallback.classList.remove('d-none');
+    } else if (contentType && contentType.toLowerCase().startsWith('image/') || /\.(png|jpg|jpeg)$/i.test(filename || '')) {
+        if (image) {
+            image.src = url;
+            image.classList.remove('d-none');
+        }
+    } else {
+        if (frame) {
+            frame.src = url;
+            frame.classList.remove('d-none');
+        }
+    }
+
+    const bsModal = bootstrap.Modal.getOrCreateInstance(modal);
+    bsModal.show();
+}
 </script>
+    <script src="/assets/js/global-swal.js"></script>
 </body>
 
 </html>

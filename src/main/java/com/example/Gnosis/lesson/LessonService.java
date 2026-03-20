@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -41,6 +42,24 @@ public class LessonService {
 	public List<LessonResponse> listForProfessor(String professorId) {
 		return lessonRepository.findByProfessorIdOrderByCreatedAtDesc(professorId)
 				.stream()
+				.map(this::toResponse)
+				.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public List<LessonResponse> listForStudentSection(String section, Set<String> allowedSubjects) {
+		Set<String> normalizedSubjects = normalizeSubjects(allowedSubjects);
+		if (normalizedSubjects.isEmpty()) {
+			return List.of();
+		}
+		List<String> sections = new ArrayList<>();
+		sections.add("All Sections");
+		if (section != null && !section.equalsIgnoreCase("All Sections")) {
+			sections.add(section);
+		}
+		return lessonRepository.findBySectionInOrderByCreatedAtDesc(sections)
+				.stream()
+				.filter(lesson -> subjectAllowed(lesson.getSubject(), normalizedSubjects))
 				.map(this::toResponse)
 				.toList();
 	}
@@ -97,6 +116,19 @@ public class LessonService {
 		Lesson lesson = lessonRepository.findById(id)
 				.orElseThrow(() -> new NoSuchElementException("Lesson not found."));
 		if (!lesson.getProfessorId().equals(professorId)) {
+			throw new IllegalArgumentException("Unauthorized lesson access.");
+		}
+		return lesson;
+	}
+
+	@Transactional(readOnly = true)
+	public Lesson getForStudent(Long id, String studentSection, Set<String> allowedSubjects) {
+		Lesson lesson = lessonRepository.findById(id)
+				.orElseThrow(() -> new NoSuchElementException("Lesson not found."));
+		if (!isSectionAllowed(lesson.getSection(), studentSection)) {
+			throw new IllegalArgumentException("Unauthorized lesson access.");
+		}
+		if (!subjectAllowed(lesson.getSubject(), normalizeSubjects(allowedSubjects))) {
 			throw new IllegalArgumentException("Unauthorized lesson access.");
 		}
 		return lesson;
@@ -224,6 +256,40 @@ public class LessonService {
 			throw new IllegalArgumentException(message);
 		}
 		return trimmed;
+	}
+
+	private static boolean isSectionAllowed(String lessonSection, String studentSection) {
+		if (lessonSection == null) {
+			return false;
+		}
+		if ("All Sections".equalsIgnoreCase(lessonSection)) {
+			return true;
+		}
+		if (studentSection == null) {
+			return false;
+		}
+		return lessonSection.equalsIgnoreCase(studentSection.trim());
+	}
+
+	private static boolean subjectAllowed(String subject, Set<String> allowedSubjects) {
+		if (subject == null || allowedSubjects == null || allowedSubjects.isEmpty()) {
+			return false;
+		}
+		String normalized = subject.trim().toLowerCase();
+		if (normalized.isEmpty()) {
+			return false;
+		}
+		return allowedSubjects.contains(normalized);
+	}
+
+	private static Set<String> normalizeSubjects(Set<String> allowedSubjects) {
+		if (allowedSubjects == null || allowedSubjects.isEmpty()) {
+			return java.util.Set.of();
+		}
+		return allowedSubjects.stream()
+				.map(subject -> subject == null ? "" : subject.trim().toLowerCase())
+				.filter(subject -> !subject.isBlank())
+				.collect(java.util.stream.Collectors.toSet());
 	}
 
 	private static String trimToNull(String value) {

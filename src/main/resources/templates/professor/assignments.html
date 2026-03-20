@@ -608,6 +608,10 @@ body {
                                     <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2"></path>
                                     <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z"></path>
                                 </svg> Assignments </a></li>
+                        <li class="nav-item"><a class="nav-link" href="/professor/assignment-submissions"><svg class="bi bi-folder-check me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M9.828 3a.5.5 0 0 1 .354.146l1.672 1.672A.5.5 0 0 1 12 5v7.5A1.5 1.5 0 0 1 10.5 14h-7A1.5 1.5 0 0 1 2 12.5v-9A1.5 1.5 0 0 1 3.5 2H6a.5.5 0 0 1 .354.146L7.5 3h2.328z"></path>
+                                    <path d="M10.97 8.03a.75.75 0 0 1 1.07 1.05l-2.5 2.5a.75.75 0 0 1-1.08-.02L7.3 10.4a.75.75 0 0 1 1.06-1.06l.66.66 1.95-1.97z"></path>
+                                </svg> Submissions </a></li>
                         <li class="nav-item"><a class="nav-link" href="/professor/lessons"><svg class="bi bi-file-earmark-text me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"></path>
                                     <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"></path>
@@ -1133,7 +1137,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function publishAssignment(assignment) {
         if (!assignment) return;
-        const confirmed = confirm(`Publish assignment "${assignment.title || ''}" now?`);
+        const confirmed = await window.confirmAsync(`Publish assignment "${assignment.title || ''}" now?`);
         if (!confirmed) return;
 
         const formData = new FormData();
@@ -1415,6 +1419,42 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(() => {});
 });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        window.alert = function(message) {
+            let text = '';
+            if (message && typeof message === 'object') {
+                if (message.message) {
+                    text = String(message.message);
+                } else if (message.error) {
+                    text = String(message.error);
+                } else {
+                    try {
+                        text = JSON.stringify(message);
+                    } catch (e) {
+                        text = String(message);
+                    }
+                }
+            } else {
+                text = String(message);
+            }
+            if (window.Swal) {
+                const lower = text.toLowerCase();
+                let icon = 'info';
+                if (/(success|successfully|updated|created|uploaded|posted|saved|published)/.test(lower)) {
+                    icon = 'success';
+                } else if (/(unable|failed|error|not found|unauthorized|invalid|exceeded)/.test(lower)) {
+                    icon = 'error';
+                } else if (/(please|required|select|must|need to)/.test(lower)) {
+                    icon = 'warning';
+                }
+                Swal.fire({ icon, text });
+            } else {
+                console.log(text);
+            }
+        };
+    </script>
+    <script src="/assets/js/global-swal.js"></script>
 </body>
 
 </html>
