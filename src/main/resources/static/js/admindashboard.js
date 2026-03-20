@@ -1619,6 +1619,10 @@ document.addEventListener('DOMContentLoaded', function() {
             showToast("error", "Full name must be at least 2 letters and contain letters only");
             return;
         }
+        if (password.length < 8) {
+            showToast("error", "Password must be at least 8 characters long.");
+            return;
+        }
 
         showLoading();
         try {
