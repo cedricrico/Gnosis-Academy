@@ -12,6 +12,7 @@ import java.time.format.DateTimeParseException;
 
 @Service
 public class QuizService {
+	private static final int MAX_ALLOWED_QUIZ_ATTEMPTS = 3;
 	private final QuizRepository quizRepository;
 	private final ProfessorActivityService activityService;
 
@@ -65,6 +66,23 @@ public class QuizService {
 		return quiz;
 	}
 
+	@Transactional(readOnly = true)
+	public Quiz getEntityForStudentByCode(String code, String studentSection, java.util.Set<String> allowedSubjects) {
+		String normalizedCode = trimToNull(code);
+		if (normalizedCode == null) {
+			throw new IllegalArgumentException("Quiz code is required.");
+		}
+		java.util.Set<String> normalizedSubjects = normalizeSubjects(allowedSubjects);
+		return quizRepository.findByCodeIgnoreCaseOrderByCreatedAtDesc(normalizedCode)
+				.stream()
+				.filter(quiz -> isSectionAllowed(quiz.getSection(), studentSection))
+				.filter(quiz -> normalizedSubjects.isEmpty() || subjectAllowed(quiz.getSubject(), normalizedSubjects))
+				.filter(QuizService::statusAllowedForStudent)
+				.filter(quiz -> !isExpired(quiz))
+				.findFirst()
+				.orElseThrow(() -> new IllegalArgumentException("Quiz code not found or unavailable for your class."));
+	}
+
 	@Transactional
 	public QuizResponse create(String professorId, String professorName, QuizRequest request) {
 		Quiz quiz = new Quiz();
@@ -115,6 +133,10 @@ public class QuizService {
 		if (questionCount == null || questionCount < 1) {
 			throw new IllegalArgumentException("At least one question is required.");
 		}
+		Integer attempts = request.getAttempts();
+		if (attempts != null && (attempts < 1 || attempts > MAX_ALLOWED_QUIZ_ATTEMPTS)) {
+			throw new IllegalArgumentException("Allowed attempts must be between 1 and 3.");
+		}
 
 		quiz.setTitle(title);
 		quiz.setCode(code);
@@ -122,7 +144,7 @@ public class QuizService {
 		quiz.setSection(trimToNull(request.getSection()));
 		quiz.setDurationMinutes(durationMinutes);
 		quiz.setQuestionCount(questionCount);
-		quiz.setAttempts(request.getAttempts());
+		quiz.setAttempts(attempts);
 		quiz.setDescription(trimToNull(request.getDescription()));
 		quiz.setDueDate(trimToNull(request.getDueDate()));
 		String questionsJson = trimToNull(request.getQuestionsJson());

@@ -109,6 +109,7 @@ public class AssignmentService {
 					assignment.getTitle(), "Uploaded assignment attachment.");
 		}
 		Assignment saved = assignmentRepository.save(assignment);
+		syncSubmissionPoints(saved);
 		activityService.record(professorId, "UPDATED", "ASSIGNMENT", String.valueOf(saved.getId()),
 				saved.getTitle(), "Updated assignment.");
 		return toResponse(saved);
@@ -204,6 +205,24 @@ public class AssignmentService {
 		response.setCreatedAt(assignment.getCreatedAt());
 		response.setUpdatedAt(assignment.getUpdatedAt());
 		return response;
+	}
+
+	private void syncSubmissionPoints(Assignment assignment) {
+		List<AssignmentSubmission> submissions = submissionRepository.findByAssignmentId(assignment.getId());
+		if (submissions.isEmpty()) {
+			return;
+		}
+		Integer points = assignment.getPoints();
+		boolean changed = false;
+		for (AssignmentSubmission submission : submissions) {
+			if (!java.util.Objects.equals(submission.getAssignmentPoints(), points)) {
+				submission.setAssignmentPoints(points);
+				changed = true;
+			}
+		}
+		if (changed) {
+			submissionRepository.saveAll(submissions);
+		}
 	}
 
 	private void storeAttachment(Assignment assignment, MultipartFile attachment) {

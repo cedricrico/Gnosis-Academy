@@ -1,11 +1,14 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html data-bs-theme="light" lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title>Student Profile</title>
     <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/student-notifications.css">
     <style>
 /* styles.css
    Combined stylesheet for instructor + student dashboards.
@@ -390,7 +393,10 @@ main {
 
 body {
   padding-top: 70px;
-  background-color: #f8f9fa;
+  background:
+    radial-gradient(circle at top left, rgba(13, 110, 253, 0.12), transparent 26%),
+    radial-gradient(circle at top right, rgba(25, 135, 84, 0.1), transparent 24%),
+    linear-gradient(180deg, #f6f8fc 0%, #eef3f8 100%);
 }
 
 /* Container adjustments */
@@ -398,6 +404,218 @@ body {
 .container-fluid {
   padding-left: 1.5rem;
   padding-right: 1.5rem;
+}
+
+.profile-page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-bottom: 3rem;
+}
+
+.profile-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  padding: 2rem;
+  margin-bottom: 1.75rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f2f7ff 55%, #eef5f0 100%);
+  box-shadow: 0 20px 45px rgba(31, 52, 86, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+}
+
+.profile-hero::after {
+  content: "";
+  position: absolute;
+  top: -80px;
+  right: -50px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(13, 110, 253, 0.12), transparent 68%);
+  pointer-events: none;
+}
+
+.profile-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(13, 110, 253, 0.08);
+  color: #0d4fb8;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.profile-title {
+  margin: 1rem 0 0.5rem;
+  font-size: clamp(2rem, 3vw, 2.6rem);
+  font-weight: 700;
+  color: #1d2a3a;
+}
+
+.profile-subtitle {
+  max-width: 680px;
+  margin: 0;
+  color: #607083;
+  font-size: 1rem;
+}
+
+.profile-card {
+  border: 1px solid rgba(111, 132, 159, 0.16);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 36px rgba(24, 39, 75, 0.08);
+}
+
+.profile-card:hover {
+  transform: translateY(-2px);
+}
+
+.profile-card .card-body {
+  padding: 1.75rem;
+}
+
+.profile-summary {
+  margin-bottom: 1.75rem;
+}
+
+.profile-summary-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) 1fr;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.profile-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.25rem;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #f9fbff 0%, #f2f6fb 100%);
+}
+
+.profile-photo {
+  width: 124px;
+  height: 124px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 14px 28px rgba(31, 52, 86, 0.16);
+}
+
+.profile-name {
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #213247;
+}
+
+.profile-id-label {
+  color: #6b7b8f;
+  font-size: 0.95rem;
+}
+
+.profile-photo-button {
+  margin-top: 1rem;
+  border-radius: 999px;
+  padding-inline: 1rem;
+}
+
+.profile-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.profile-meta-item {
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(111, 132, 159, 0.14);
+}
+
+.profile-meta-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #708195;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.profile-meta-value {
+  color: #233548;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.profile-section-title {
+  margin-bottom: 0.3rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1f2f44;
+}
+
+.profile-section-copy {
+  margin-bottom: 1.25rem;
+  color: #6a7a8c;
+  font-size: 0.95rem;
+}
+
+.profile-label {
+  margin-bottom: 0.45rem;
+  color: #31455c;
+  font-weight: 600;
+}
+
+.profile-input,
+.profile-input:focus {
+  border-radius: 14px;
+}
+
+.profile-input {
+  min-height: 48px;
+  border: 1px solid rgba(113, 130, 154, 0.22);
+  background-color: #fbfcfe;
+}
+
+.profile-input:focus {
+  border-color: rgba(13, 110, 253, 0.55);
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.12);
+  background-color: #ffffff;
+}
+
+.profile-action-button {
+  min-height: 48px;
+  border-radius: 14px;
+  font-weight: 600;
+}
+
+.profile-password-toggle {
+  border-radius: 0 14px 14px 0;
+}
+
+.profile-inline-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 14px;
+  background: rgba(25, 135, 84, 0.08);
+  color: #245c43;
+  font-size: 0.9rem;
+}
+
+.profile-danger-button {
+  border-radius: 14px;
 }
 
 /* Mobile view improvements */
@@ -415,17 +633,53 @@ body {
   }
 }
 
+@media (max-width: 991.98px) {
+  .profile-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .profile-hero {
+    padding: 1.5rem;
+    border-radius: 22px;
+  }
+
+  .profile-card .card-body {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .profile-meta-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 </style>
     <link rel="stylesheet" href="/assets/css/student-admin-parity.css">
 </head>
 
 <body>
     <nav class="navbar navbar-expand-lg bg-white shadow-sm navbar-light">
-        <div class="container-fluid"><a class="navbar-brand fw-bold d-flex align-items-center" href="/student/dashboard"><span class="d-flex justify-content-center align-items-center me-2"><img src="/assets/img/Logo.jpg" alt="Logo" width="32" height="32"></span>Gnosis Academy</a><div class="d-flex align-items-center ms-auto"><div class="dropdown">
-                        <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" id="navbarProfile"><svg class="bi bi-person-circle me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"></path>
-                                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"></path>
-                            </svg><span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${studentFullName}">Student User</span><span class="text-muted small fw-semibold">ID: <span th:text="${studentId}">S2024001</span></span></span></button>
+        <div class="container-fluid"><a class="navbar-brand fw-bold d-flex align-items-center" href="/student/dashboard"><span class="d-flex justify-content-center align-items-center me-2"><img src="/assets/img/Logo.jpg" alt="Logo" width="32" height="32"></span>Gnosis Academy</a><div class="d-flex align-items-center ms-auto student-navbar-actions"><div class="dropdown notification-dropdown">
+                        <button class="btn btn-light notification-bell-btn" type="button" data-bs-toggle="dropdown" id="navbarNotifications" th:attr="data-student-id=${studentId}" aria-label="Notifications">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 16a2 2 0 0 0 1.985-1.75h-3.97A2 2 0 0 0 8 16m.104-14.804A1 1 0 0 0 7 2v.09A5 5 0 0 0 3 7c0 1.098-.5 3.06-1.276 4.577-.124.24-.056.533.16.707.215.174.502.216.76.216h10.712c.258 0 .545-.042.76-.216.216-.174.284-.466.16-.707C13.5 10.06 13 8.098 13 7a5 5 0 0 0-4-4.91V2a1 1 0 0 0-.896-.804"></path>
+                            </svg>
+                            <span class="notification-badge d-none" id="studentNotificationBadge">0</span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarNotifications">
+                            <div class="notification-header">
+                                <div class="fw-semibold">Notifications</div>
+                                <div class="text-muted small">Recent class updates</div>
+                            </div>
+                            <div class="notification-list" id="studentNotificationList">
+                                <div class="notification-loading">Loading updates...</div>
+                            </div>
+                        </div>
+                    </div><div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" id="navbarProfile"><img id="navbarProfilePhoto" src="https://via.placeholder.com/32" alt="Profile photo" width="32" height="32" class="rounded-circle me-1"><span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${studentFullName}">Student User</span><span class="text-muted small fw-semibold">ID: <span th:text="${studentId}">S2024001</span></span></span></button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarProfile">
                             <li><a class="dropdown-item" href="/student/profile"><svg class="bi bi-person me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                                         <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"></path>
@@ -445,92 +699,127 @@ body {
         </div>
     </nav>
     <div class="container-fluid mt-5 pt-4">
-        <div class="row">
-            <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center flex-wrap flex-md-nowrap pt-3 mb-3 pb-2 border-bottom">
-                    <h1 class="h2">Student Profile</h1>
-                </div>
-                <div class="row mb-4">
-                    <div class="col-lg-8 mx-auto">
-                        <div class="card">
-                            <div class="card-header text-white bg-primary">
-                                <h5 class="mb-0 card-title">Student Information</h5>
+        <div class="profile-page">
+            <section class="profile-hero">
+                <span class="profile-kicker">Student Account</span>
+                <h1 class="profile-title">Profile Settings</h1>
+                <p class="profile-subtitle">Review your academic identity, update your personal details, and keep your account secure from one place.</p>
+            </section>
+
+            <section class="card profile-card profile-summary">
+                <div class="card-body">
+                    <div class="profile-summary-grid">
+                        <div class="profile-identity">
+                            <img id="profilePhoto" src="https://via.placeholder.com/124" alt="Student profile photo" class="profile-photo">
+                            <input id="profilePhotoInput" type="file" class="d-none" accept="image/png,image/jpeg,image/gif,image/webp">
+                            <h2 class="profile-name" id="profileStudentName" th:text="${studentFullName}">John Doe</h2>
+                            <div class="profile-id-label">Student ID: <span id="profileStudentId" th:text="${studentId}">S2024001</span></div>
+                            <button class="btn btn-outline-primary profile-photo-button" type="button" id="changePhotoBtn">Change Profile Picture</button>
+                        </div>
+
+                        <div class="profile-meta-grid">
+                            <div class="profile-meta-item">
+                                <span class="profile-meta-label">Course</span>
+                                <span class="profile-meta-value" id="profileCourse" th:text="${studentCourse}">Computer Science</span>
                             </div>
-                            <div class="card-body">
-                                <div class="text-center mb-4">
-                                    <div class="bg-light rounded-circle d-inline-flex justify-content-center align-items-center" style="width:100px;height:100px;margin:0 auto;"><svg class="bi bi-person-fill fs-1 text-primary" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"></path>
-                                        </svg></div>
-                                    <div class="mt-2"><button class="btn btn-outline-primary btn-sm">Change Profile Picture</button></div>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-sm-4"><strong>Student Name:</strong></div>
-                                    <div class="col-sm-8"><span th:text="${studentFullName}">John Doe</span></div>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-sm-4"><strong>Student ID:</strong></div>
-                                    <div class="col-sm-8"><span th:text="${studentId}">S2024001</span></div>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-sm-4"><strong>Course:</strong></div>
-                                    <div class="col-sm-8"><span th:text="${studentCourse}">Computer Science</span></div>
-                                </div>
+                            <div class="profile-meta-item">
+                                <span class="profile-meta-label">Section</span>
+                                <span class="profile-meta-value" id="profileSection" th:text="${studentSection}">CS-101-A</span>
+                            </div>
+                            <div class="profile-meta-item">
+                                <span class="profile-meta-label">Enrollment Status</span>
+                                <span class="profile-meta-value" id="profileStatus" th:text="${studentStatus}">Active</span>
+                            </div>
+                            <div class="profile-meta-item">
+                                <span class="profile-meta-label">Account</span>
+                                <span class="profile-meta-value">Student Portal Access</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <section class="card profile-card h-100">
+                        <div class="card-body">
+                            <h3 class="profile-section-title">Edit Profile</h3>
+                            <p class="profile-section-copy">Keep your displayed name accurate across the student portal.</p>
+                            <form id="editProfileForm">
                                 <div class="row">
-                                    <div class="col-sm-4"><strong>Section:</strong></div>
-                                    <div class="col-sm-8"><span th:text="${studentSection}">CS-101-A</span></div>
+                                    <div class="col-md-5 mb-3">
+                                        <label class="form-label profile-label" for="firstName">First Name</label>
+                                        <input class="form-control profile-input" type="text" id="firstName" maxlength="127" placeholder="Enter first name">
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label class="form-label profile-label" for="middleInitial">M.I.</label>
+                                        <input class="form-control profile-input" type="text" id="middleInitial" maxlength="1" placeholder="M">
+                                    </div>
+                                    <div class="col-md-5 mb-3">
+                                        <label class="form-label profile-label" for="lastName">Last Name</label>
+                                        <input class="form-control profile-input" type="text" id="lastName" maxlength="127" placeholder="Enter last name">
+                                    </div>
                                 </div>
-                            </div>
+                                <div class="d-grid">
+                                    <button class="btn btn-primary profile-action-button" type="submit">Save Profile</button>
+                                </div>
+                            </form>
                         </div>
-                    </div>
+                    </section>
                 </div>
-                <div class="row">
-                    <div class="col-lg-8 mx-auto">
-                        <div class="card">
-                            <div class="card-header text-white bg-secondary">
-                                <h5 class="mb-0 card-title">Edit Profile</h5>
-                            </div>
-                            <div class="card-body">
-                                <form id="editProfileForm">
-                                    <div class="mb-3">
-                                        <label class="form-label" for="currentPassword">Current Password</label>
-                                        <div class="input-group">
-                                            <input class="form-control" type="password" id="currentPassword" placeholder="Enter current password">
-                                            <button class="btn btn-outline-secondary btn-sm" id="toggleCurrentPassword" type="button">
-                                                <img id="currentPasswordIcon" alt="Toggle Password" height="16" src="/assets/img/hide.png" width="16">
-                                            </button>
-                                        </div>
+
+                <div class="col-lg-6">
+                    <section class="card profile-card h-100">
+                        <div class="card-body">
+                            <h3 class="profile-section-title">Security</h3>
+                            <p class="profile-section-copy">Update your password with your current credentials before making any change.</p>
+                            <div class="profile-inline-note">Use at least 8 characters with uppercase, lowercase, and number.</div>
+                            <form id="passwordForm">
+                                <div class="mb-3">
+                                    <label class="form-label profile-label" for="newPassword">New Password</label>
+                                    <div class="input-group">
+                                        <input class="form-control profile-input" type="password" id="newPassword" placeholder="Enter new password">
+                                        <button class="btn btn-outline-secondary btn-sm profile-password-toggle" id="toggleNewPassword" type="button">
+                                            <img id="newPasswordIcon" alt="Toggle Password" height="16" src="/assets/img/hide.png" width="16">
+                                        </button>
                                     </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" for="newPassword">New Password</label>
-                                        <div class="input-group">
-                                            <input class="form-control" type="password" id="newPassword" placeholder="Enter new password">
-                                            <button class="btn btn-outline-secondary btn-sm" id="toggleNewPassword" type="button">
-                                                <img id="newPasswordIcon" alt="Toggle Password" height="16" src="/assets/img/hide.png" width="16">
-                                            </button>
-                                        </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label profile-label" for="currentPassword">Current Password</label>
+                                    <div class="input-group">
+                                        <input class="form-control profile-input" type="password" id="currentPassword" placeholder="Enter current password">
+                                        <button class="btn btn-outline-secondary btn-sm profile-password-toggle" id="toggleCurrentPassword" type="button">
+                                            <img id="currentPasswordIcon" alt="Toggle Password" height="16" src="/assets/img/hide.png" width="16">
+                                        </button>
                                     </div>
-                                    <div class="mb-2">
-                                        <label class="form-label" for="confirmPassword">Confirm Password</label>
-                                        <div class="input-group">
-                                            <input class="form-control" type="password" id="confirmPassword" placeholder="Confirm new password">
-                                            <button class="btn btn-outline-secondary btn-sm" id="toggleConfirmPassword" type="button">
-                                                <img id="confirmPasswordIcon" alt="Toggle Password" height="16" src="/assets/img/hide.png" width="16">
-                                            </button>
-                                        </div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label profile-label" for="confirmPassword">Confirm Password</label>
+                                    <div class="input-group">
+                                        <input class="form-control profile-input" type="password" id="confirmPassword" placeholder="Confirm new password">
+                                        <button class="btn btn-outline-secondary btn-sm profile-password-toggle" id="toggleConfirmPassword" type="button">
+                                            <img id="confirmPasswordIcon" alt="Toggle Password" height="16" src="/assets/img/hide.png" width="16">
+                                        </button>
                                     </div>
-                                    <div class="text-danger small d-none" id="passwordError">Passwords do not match.</div>
-                                    <div class="d-grid"><button class="btn btn-primary" type="submit">Save Changes</button></div>
-                                </form>
-                            </div>
+                                </div>
+                                <div class="text-danger small d-none mb-3" id="passwordError">Passwords do not match.</div>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary profile-action-button" type="submit">Update Password</button>
+                                    <button class="btn btn-outline-danger profile-danger-button" type="button" id="deleteAccountBtn">Delete Account</button>
+                                </div>
+                            </form>
                         </div>
-                    </div>
+                    </section>
                 </div>
             </div>
         </div>
     </div>
     <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/student-notifications.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
             const toggles = [
                 { buttonId: 'toggleCurrentPassword', inputId: 'currentPassword', iconId: 'currentPasswordIcon' },
                 { buttonId: 'toggleNewPassword', inputId: 'newPassword', iconId: 'newPasswordIcon' },
@@ -550,26 +839,165 @@ body {
                 });
             });
 
-            const form = document.getElementById('editProfileForm');
+            const profileForm = document.getElementById('editProfileForm');
+            const passwordForm = document.getElementById('passwordForm');
             const newPassword = document.getElementById('newPassword');
             const confirmPassword = document.getElementById('confirmPassword');
             const passwordError = document.getElementById('passwordError');
+            const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+            const changePhotoBtn = document.getElementById('changePhotoBtn');
+            const profilePhotoInput = document.getElementById('profilePhotoInput');
+            const profilePhoto = document.getElementById('profilePhoto');
+            const navbarProfilePhoto = document.getElementById('navbarProfilePhoto');
 
-            if (form && newPassword && confirmPassword && passwordError) {
-                form.addEventListener('submit', function(event) {
-                    const newValue = newPassword.value.trim();
-                    const confirmValue = confirmPassword.value.trim();
-                    if (newValue || confirmValue) {
-                        if (newValue !== confirmValue) {
-                            event.preventDefault();
-                            passwordError.classList.remove('d-none');
-                            confirmPassword.focus();
-                            return;
-                        }
-                    }
-                    passwordError.classList.add('d-none');
+            function setText(id, value) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = value ?? '';
+                }
+            }
+
+            function setValue(id, value) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.value = value ?? '';
+                }
+            }
+
+            function formatFullName(profile) {
+                if (!profile) return '';
+                const parts = [
+                    profile.firstName || '',
+                    profile.middleInitial ? `${profile.middleInitial}.` : '',
+                    profile.lastName || ''
+                ].filter(part => part && String(part).trim() !== '');
+                return parts.join(' ').trim();
+            }
+
+            async function fetchStudentJson(url, options = {}) {
+                const method = (options.method || 'GET').toUpperCase();
+                const headers = { ...(options.headers || {}) };
+                const isFormData = options.body instanceof FormData;
+                if (!headers['Content-Type'] && method !== 'GET' && method !== 'HEAD' && !isFormData) {
+                    headers['Content-Type'] = 'application/json';
+                }
+                if (csrfToken && method !== 'GET' && method !== 'HEAD') {
+                    headers[csrfHeader] = csrfToken;
+                }
+
+                const response = await fetch(url, {
+                    credentials: 'same-origin',
+                    ...options,
+                    method,
+                    headers
                 });
 
+                const contentType = response.headers.get('content-type') || '';
+                const text = await response.text();
+                const isJson = contentType.includes('application/json');
+                const payload = isJson && text ? JSON.parse(text) : null;
+
+                if (!response.ok) {
+                    const message = (payload && (payload.message || payload.error)) || text || response.statusText;
+                    throw new Error(message || 'Request failed.');
+                }
+                if (response.status === 204 || text.trim() === '') {
+                    return null;
+                }
+                return isJson ? payload : text;
+            }
+
+            function applyPhoto(photoUrl) {
+                if (!photoUrl) {
+                    return;
+                }
+                const resolved = `${photoUrl}?t=${Date.now()}`;
+                if (profilePhoto) {
+                    profilePhoto.src = resolved;
+                }
+                if (navbarProfilePhoto) {
+                    navbarProfilePhoto.src = resolved;
+                }
+            }
+
+            async function loadProfile() {
+                const profile = await fetchStudentJson('/student/api/profile');
+                if (!profile) {
+                    return;
+                }
+                const fullName = formatFullName(profile) || profile.studentId || '';
+                setText('profileStudentName', fullName);
+                setText('profileStudentId', profile.studentId || '');
+                setText('profileCourse', profile.course || 'Unassigned');
+                setText('profileSection', profile.section || 'Unassigned');
+                setText('profileStatus', profile.status || 'Active');
+                applyPhoto(profile.photoUrl);
+
+                setValue('firstName', profile.firstName || '');
+                setValue('middleInitial', profile.middleInitial || '');
+                setValue('lastName', profile.lastName || '');
+            }
+
+            function validatePasswordFields() {
+                const newValue = newPassword.value.trim();
+                const confirmValue = confirmPassword.value.trim();
+                if (newValue !== confirmValue) {
+                    passwordError.classList.remove('d-none');
+                    confirmPassword.focus();
+                    return false;
+                }
+                passwordError.classList.add('d-none');
+                return true;
+            }
+
+            function isValidName(value) {
+                return /^[A-Za-z][A-Za-z .'-]{0,126}$/.test(value);
+            }
+
+            function isStrongPassword(value) {
+                return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(value);
+            }
+
+            if (profileForm) {
+                profileForm.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+                    const firstName = document.getElementById('firstName').value.trim();
+                    const middleInitial = document.getElementById('middleInitial').value.trim();
+                    const lastName = document.getElementById('lastName').value.trim();
+
+                    if (!firstName || !lastName) {
+                        alert('First name and last name are required.');
+                        return;
+                    }
+                    if (!isValidName(firstName) || !isValidName(lastName)) {
+                        alert('Names may only contain letters, spaces, apostrophes, periods, and hyphens.');
+                        return;
+                    }
+                    if (middleInitial && !/^[A-Za-z]$/.test(middleInitial)) {
+                        alert('Middle initial must be a single letter.');
+                        return;
+                    }
+
+                    const payload = {
+                        firstName,
+                        middleInitial,
+                        lastName
+                    };
+
+                    try {
+                        await fetchStudentJson('/student/api/profile', {
+                            method: 'PUT',
+                            body: JSON.stringify(payload)
+                        });
+                        await loadProfile();
+                        alert('Profile updated successfully.');
+                    } catch (error) {
+                        alert(error.message || 'Unable to update profile.');
+                    }
+                });
+            }
+
+            if (passwordForm && newPassword && confirmPassword && passwordError) {
                 confirmPassword.addEventListener('input', function() {
                     if (passwordError.classList.contains('d-none')) {
                         return;
@@ -578,14 +1006,106 @@ body {
                         passwordError.classList.add('d-none');
                     }
                 });
+
+                passwordForm.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+                    const currentPassword = document.getElementById('currentPassword').value;
+                    const newValue = newPassword.value.trim();
+                    const confirmValue = confirmPassword.value.trim();
+
+                    if (!currentPassword) {
+                        alert('Current password is required.');
+                        return;
+                    }
+                    if (!newValue) {
+                        alert('New password is required.');
+                        return;
+                    }
+                    if (!isStrongPassword(newValue)) {
+                        alert('Password must be at least 8 characters and include uppercase, lowercase, and number.');
+                        return;
+                    }
+                    if (!confirmValue) {
+                        alert('Confirm password is required.');
+                        return;
+                    }
+                    if (!validatePasswordFields()) {
+                        return;
+                    }
+
+                    try {
+                        await fetchStudentJson('/student/api/profile/password', {
+                            method: 'PUT',
+                            body: JSON.stringify({
+                                currentPassword,
+                                newPassword: newValue,
+                                confirmPassword: confirmValue
+                            })
+                        });
+                        document.getElementById('currentPassword').value = '';
+                        newPassword.value = '';
+                        confirmPassword.value = '';
+                        passwordError.classList.add('d-none');
+                        alert('Password updated successfully.');
+                    } catch (error) {
+                        alert(error.message || 'Unable to update password.');
+                    }
+                });
             }
+
+            if (deleteAccountBtn) {
+                deleteAccountBtn.addEventListener('click', async function() {
+                    const confirmed = window.confirmAsync
+                        ? await window.confirmAsync('Delete your account? This cannot be undone.')
+                        : window.confirm('Delete your account? This cannot be undone.');
+                    if (!confirmed) {
+                        return;
+                    }
+
+                    try {
+                        await fetchStudentJson('/student/api/profile', { method: 'DELETE' });
+                        window.location.href = '/Student-login?deleted';
+                    } catch (error) {
+                        alert(error.message || 'Unable to delete account.');
+                    }
+                });
+            }
+
+            if (changePhotoBtn && profilePhotoInput) {
+                changePhotoBtn.addEventListener('click', function() {
+                    profilePhotoInput.click();
+                });
+
+                profilePhotoInput.addEventListener('change', async function() {
+                    const file = profilePhotoInput.files && profilePhotoInput.files[0];
+                    if (!file) {
+                        return;
+                    }
+                    const formData = new FormData();
+                    formData.append('photo', file);
+                    try {
+                        const updated = await fetchStudentJson('/student/api/profile/photo', {
+                            method: 'PUT',
+                            body: formData
+                        });
+                        applyPhoto(updated?.photoUrl);
+                        profilePhotoInput.value = '';
+                        alert('Profile photo updated successfully.');
+                    } catch (error) {
+                        profilePhotoInput.value = '';
+                        alert(error.message || 'Unable to update profile photo.');
+                    }
+                });
+            }
+
+            loadProfile().catch(error => {
+                alert(error.message || 'Unable to load profile.');
+            });
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/assets/js/global-swal.js"></script>
 </body>
 
 </html>
-
-
-
 

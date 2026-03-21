@@ -97,6 +97,25 @@
   transition: all 0.3s ease;
 }
 
+.announcement-image {
+  width: 100%;
+  max-height: 260px;
+  object-fit: cover;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(13, 110, 253, 0.12);
+  margin-bottom: 0.95rem;
+}
+
+.announcement-image-preview {
+  display: none;
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(13, 110, 253, 0.15);
+  margin-top: 0.75rem;
+}
+
 .announcement-card {
   transition: all 0.3s ease;
 }
@@ -644,6 +663,7 @@ body {
                 </div>
                 <div class="modal-body">
                     <h4 id="viewAnnouncementTitle"></h4>
+                    <img alt="Announcement image" class="announcement-image mt-3" id="viewAnnouncementImage">
                     <p class="mt-3" id="viewAnnouncementContent"></p><small class="text-muted" id="viewAnnouncementMetadata"></small>
                 </div>
                 <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button></div>
@@ -664,6 +684,7 @@ body {
                         <div class="mb-3"><label class="form-label" for="editAnnouncementTarget">Target Subject/Section</label><select class="form-select" id="editAnnouncementTarget">
                                 <option th:each="target : ${professorAnnouncementTargets}" th:value="${target}" th:text="${target}">All Sections</option>
                             </select></div>
+                        <div class="mb-3"><label class="form-label" for="editAnnouncementImage">Image</label><input accept="image/*" class="form-control" id="editAnnouncementImage" type="file"><div class="form-text">Optional. Upload JPG, PNG, GIF, or WEBP.</div><img alt="Announcement preview" class="announcement-image-preview" id="editAnnouncementImagePreview"></div>
                     </form>
                 </div>
                 <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary" id="saveAnnouncementBtn" type="button">Save Changes</button></div>
@@ -685,6 +706,7 @@ body {
                             </select></div>
                         <div class="mb-3"><label class="form-label" for="announcementContent">Message / Content*</label><textarea class="form-control" id="announcementContent" placeholder="Enter announcement content" required="" rows="5"></textarea></div>
                         <div class="mb-3"><label class="form-label" for="announcementDate">Date*</label><input class="form-control" id="announcementDate" required="" type="date"></div>
+                        <div class="mb-3"><label class="form-label" for="announcementImage">Image</label><input accept="image/*" class="form-control" id="announcementImage" type="file"><div class="form-text">Optional. Upload JPG, PNG, GIF, or WEBP.</div><img alt="Announcement preview" class="announcement-image-preview" id="announcementImagePreview"></div>
                         <div class="mb-3"><label class="form-label" for="announcementStatus">Status*</label><select class="form-select" id="announcementStatus" required="">
                                 <option value="Draft">Draft</option>
                                 <option value="Published" selected="">Published</option>
@@ -1241,6 +1263,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const viewModalElement = document.getElementById('viewAnnouncementModal');
     const editModalElement = document.getElementById('editAnnouncementModal');
     const postModalElement = document.getElementById('postAnnouncementModal');
+    const createImageInput = document.getElementById('announcementImage');
+    const createImagePreview = document.getElementById('announcementImagePreview');
+    const editImageInput = document.getElementById('editAnnouncementImage');
+    const editImagePreview = document.getElementById('editAnnouncementImagePreview');
 
     let announcementsCache = new Map();
     let currentEditId = null;
@@ -1254,7 +1280,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const method = (options.method || 'GET').toUpperCase();
         const headers = { ...(options.headers || {}) };
 
-        if (!headers['Content-Type'] && method !== 'GET' && method !== 'HEAD') {
+        if (!headers['Content-Type'] && method !== 'GET' && method !== 'HEAD' && !(options.body instanceof FormData)) {
             headers['Content-Type'] = 'application/json';
         }
         if (csrfToken && method !== 'GET' && method !== 'HEAD') {
@@ -1309,6 +1335,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const statusLabel = formatStatus(announcement.status);
         const headerClass = statusHeaderClass(announcement.status);
         const postedOn = formatPostedOn(announcement);
+        const imageMarkup = announcement.imageUrl
+            ? `<img src="${announcement.imageUrl}" alt="Announcement image" class="announcement-image">`
+            : '';
 
         const cardWrapper = document.createElement('div');
         cardWrapper.className = 'col-12 announcement-card';
@@ -1326,6 +1355,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
                 <div class="card-body">
+                    ${imageMarkup}
                     <p class="card-text">${announcement.content || ''}</p>
                     <small class="text-muted">Posted on ${postedOn} | For: ${announcement.subject || ''}</small>
                 </div>
@@ -1394,6 +1424,16 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('viewAnnouncementTitle').textContent = announcement.title || '';
         document.getElementById('viewAnnouncementContent').textContent = announcement.content || '';
         document.getElementById('viewAnnouncementMetadata').textContent = `Posted on ${formatPostedOn(announcement)} | For: ${announcement.subject || ''}`;
+        const image = document.getElementById('viewAnnouncementImage');
+        if (image) {
+            if (announcement.imageUrl) {
+                image.src = announcement.imageUrl;
+                image.style.display = 'block';
+            } else {
+                image.removeAttribute('src');
+                image.style.display = 'none';
+            }
+        }
         const modal = getModalInstance(viewModalElement);
         if (modal) modal.show();
     }
@@ -1405,8 +1445,56 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('editAnnouncementContent').value = announcement.content || '';
         document.getElementById('editAnnouncementDate').value = announcement.postedOn || '';
         document.getElementById('editAnnouncementTarget').value = announcement.subject || '';
+        if (editImageInput) {
+            editImageInput.value = '';
+        }
+        updateImagePreview(editImagePreview, null, announcement.imageUrl || '');
         const modal = getModalInstance(editModalElement);
         if (modal) modal.show();
+    }
+
+    function updateImagePreview(previewElement, file, existingUrl = '') {
+        if (!previewElement) return;
+        if (previewElement.dataset.objectUrl) {
+            URL.revokeObjectURL(previewElement.dataset.objectUrl);
+            delete previewElement.dataset.objectUrl;
+        }
+        if (file) {
+            const objectUrl = URL.createObjectURL(file);
+            previewElement.src = objectUrl;
+            previewElement.dataset.objectUrl = objectUrl;
+            previewElement.style.display = 'block';
+            return;
+        }
+        if (existingUrl) {
+            previewElement.src = existingUrl;
+            previewElement.style.display = 'block';
+            return;
+        }
+        previewElement.removeAttribute('src');
+        previewElement.style.display = 'none';
+    }
+
+    function validateAnnouncementImage(file) {
+        if (!file) return;
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            throw new Error('Unsupported image type. Allowed: JPG, PNG, GIF, WEBP.');
+        }
+    }
+
+    function buildAnnouncementFormData(fields, imageFile) {
+        const formData = new FormData();
+        formData.append('title', fields.title);
+        formData.append('subject', fields.subject);
+        formData.append('content', fields.content);
+        formData.append('status', fields.status);
+        formData.append('postedOn', fields.postedOn || '');
+        if (imageFile) {
+            validateAnnouncementImage(imageFile);
+            formData.append('image', imageFile);
+        }
+        return formData;
     }
 
     document.addEventListener('click', async function(event) {
@@ -1438,7 +1526,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!(await window.confirmAsync(confirmMessage))) return;
             await fetchProfessorJson(`/professor/api/announcements/${announcement.id}`, {
                 method: 'PUT',
-                body: JSON.stringify({
+                body: buildAnnouncementFormData({
                     title: announcement.title,
                     content: announcement.content,
                     subject: announcement.subject,
@@ -1466,6 +1554,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const content = document.getElementById('announcementContent').value.trim();
             const postedOn = document.getElementById('announcementDate').value;
             const status = document.getElementById('announcementStatus').value;
+            const imageFile = createImageInput?.files?.[0];
 
             if (!title || !subject || !content || !postedOn) {
                 alert('Please fill in all required fields.');
@@ -1474,10 +1563,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             await fetchProfessorJson('/professor/api/announcements', {
                 method: 'POST',
-                body: JSON.stringify({ title, subject, content, status, postedOn })
+                body: buildAnnouncementFormData({ title, subject, content, status, postedOn }, imageFile)
             });
 
             document.getElementById('announcementForm').reset();
+            updateImagePreview(createImagePreview, null, '');
             const modal = getModalInstance(postModalElement);
             if (modal) modal.hide();
             await loadAnnouncements();
@@ -1489,6 +1579,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const content = document.getElementById('announcementContent').value.trim();
             const postedOn = document.getElementById('announcementDate').value;
             const status = document.getElementById('announcementStatus').value;
+            const imageFile = createImageInput?.files?.[0];
 
             if (!title || !subject || !content || !postedOn) {
                 alert('Please fill in all required fields.');
@@ -1497,10 +1588,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             await fetchProfessorJson('/professor/api/announcements', {
                 method: 'POST',
-                body: JSON.stringify({ title, subject, content, status, postedOn })
+                body: buildAnnouncementFormData({ title, subject, content, status, postedOn }, imageFile)
             });
 
             document.getElementById('announcementForm').reset();
+            updateImagePreview(createImagePreview, null, '');
             const modal = getModalInstance(postModalElement);
             if (modal) modal.hide();
             await loadAnnouncements();
@@ -1514,6 +1606,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const subject = document.getElementById('editAnnouncementTarget').value.trim();
             const content = document.getElementById('editAnnouncementContent').value.trim();
             const postedOn = document.getElementById('editAnnouncementDate').value;
+            const imageFile = editImageInput?.files?.[0];
             if (!title || !subject || !content) {
                 alert('Please fill in all required fields.');
                 return;
@@ -1524,13 +1617,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
             await fetchProfessorJson(`/professor/api/announcements/${currentEditId}`, {
                 method: 'PUT',
-                body: JSON.stringify({ title, subject, content, status, postedOn })
+                body: buildAnnouncementFormData({ title, subject, content, status, postedOn }, imageFile)
             });
 
             const modal = getModalInstance(editModalElement);
             if (modal) modal.hide();
             currentEditId = null;
+            updateImagePreview(editImagePreview, null, '');
             await loadAnnouncements();
+        });
+    }
+
+    if (createImageInput) {
+        createImageInput.addEventListener('change', function() {
+            updateImagePreview(createImagePreview, this.files?.[0] || null, '');
+        });
+    }
+
+    if (editImageInput) {
+        editImageInput.addEventListener('change', function() {
+            const existing = announcementsCache.get(String(currentEditId));
+            updateImagePreview(editImagePreview, this.files?.[0] || null, existing?.imageUrl || '');
         });
     }
 

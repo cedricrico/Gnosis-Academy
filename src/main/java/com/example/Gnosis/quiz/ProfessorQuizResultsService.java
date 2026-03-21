@@ -31,7 +31,7 @@ public class ProfessorQuizResultsService {
 
 	@Transactional(readOnly = true)
 	public List<QuizResultCard> listQuizCards(String professorId) {
-		return quizRepository.findAllByOrderByCreatedAtDesc()
+		return quizRepository.findByProfessorIdOrderByCreatedAtDesc(professorId)
 				.stream()
 				.map(quiz -> {
 					long totalAttempts = quizAttemptRepository.countByQuizId(quiz.getId());
@@ -48,7 +48,7 @@ public class ProfessorQuizResultsService {
 							quiz.getDescription(),
 							quiz.getSubject(),
 							quiz.getSection(),
-							quiz.getStatus(),
+							resolveDisplayStatus(quiz),
 							Math.toIntExact(totalAttempts),
 							Math.toIntExact(studentCount)
 					);
@@ -60,6 +60,9 @@ public class ProfessorQuizResultsService {
 	public QuizResultDetails getQuizResults(Long quizId, String professorId) {
 		Quiz quiz = quizRepository.findById(quizId)
 				.orElseThrow(() -> new NoSuchElementException("Quiz not found."));
+		if (!hasText(professorId) || !professorId.trim().equals(quiz.getProfessorId())) {
+			throw new IllegalArgumentException("Unauthorized quiz access.");
+		}
 
 		List<QuizAttempt> attempts = quizAttemptRepository.findByQuizIdOrderByStudentIdAscAttemptsCountDesc(quizId);
 		if (attempts.isEmpty()) {
@@ -194,6 +197,20 @@ public class ProfessorQuizResultsService {
 	private static String fallback(String value, String defaultValue) {
 		String normalized = normalize(value);
 		return normalized != null ? normalized : defaultValue;
+	}
+
+	private static String resolveDisplayStatus(Quiz quiz) {
+		if (quiz == null) {
+			return null;
+		}
+		String status = normalize(quiz.getStatus());
+		if (status == null) {
+			return QuizService.isExpired(quiz) ? "EXPIRED" : null;
+		}
+		if (!"archived".equalsIgnoreCase(status) && QuizService.isExpired(quiz)) {
+			return "EXPIRED";
+		}
+		return status.toUpperCase();
 	}
 
 	public record QuizResultCard(

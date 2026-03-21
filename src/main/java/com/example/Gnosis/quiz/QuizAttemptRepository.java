@@ -9,6 +9,7 @@ import java.util.List;
 public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> {
 	long countByQuizIdAndStudentId(Long quizId, String studentId);
 	long countByQuizId(Long quizId);
+	List<QuizAttempt> findByQuizIdInOrderByStudentIdAscQuizIdAscAttemptsCountDesc(List<Long> quizIds);
 	List<QuizAttempt> findByQuizIdOrderByStudentIdAscAttemptsCountDesc(Long quizId);
 	List<QuizAttempt> findByQuizIdAndStudentIdOrderByAttemptsCountDesc(Long quizId, String studentId);
 	java.util.Optional<QuizAttempt> findByQuizIdAndStudentIdAndAttemptsCount(Long quizId, String studentId, Integer attemptsCount);

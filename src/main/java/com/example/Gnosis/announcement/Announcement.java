@@ -41,6 +41,17 @@ public class Announcement {
 	@Column(length = 32)
 	private String postedOn;
 
+	@Column(length = 255)
+	private String imagePath;
+
+	@Column(length = 255)
+	private String imageName;
+
+	@Column(length = 128)
+	private String imageContentType;
+
+	private Long imageSize;
+
 	@Column(nullable = false)
 	private Instant createdAt;
 
@@ -108,6 +119,38 @@ public class Announcement {
 
 	public void setPostedOn(String postedOn) {
 		this.postedOn = postedOn;
+	}
+
+	public String getImagePath() {
+		return imagePath;
+	}
+
+	public void setImagePath(String imagePath) {
+		this.imagePath = imagePath;
+	}
+
+	public String getImageName() {
+		return imageName;
+	}
+
+	public void setImageName(String imageName) {
+		this.imageName = imageName;
+	}
+
+	public String getImageContentType() {
+		return imageContentType;
+	}
+
+	public void setImageContentType(String imageContentType) {
+		this.imageContentType = imageContentType;
+	}
+
+	public Long getImageSize() {
+		return imageSize;
+	}
+
+	public void setImageSize(Long imageSize) {
+		this.imageSize = imageSize;
 	}
 
 	public Instant getCreatedAt() {

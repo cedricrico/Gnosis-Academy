@@ -13,10 +13,22 @@ body {
 .results-shell {
   max-width: 1100px;
 }
-.summary-card, .review-card {
+.summary-card, .review-card, .result-banner {
   border: none;
   border-radius: 18px;
   box-shadow: 0 10px 30px rgba(20, 35, 90, 0.08);
+}
+.result-banner.pass {
+  background: linear-gradient(135deg, #e8fff1 0%, #f8fffb 100%);
+  border-left: 6px solid #198754;
+}
+.result-banner.fail {
+  background: linear-gradient(135deg, #fff1f1 0%, #fff9f9 100%);
+  border-left: 6px solid #dc3545;
+}
+.result-banner-title {
+  font-size: 1.15rem;
+  font-weight: 700;
 }
 .score-ring {
   width: 220px;
@@ -52,6 +64,30 @@ body {
   padding: 1rem;
   background: #fff;
 }
+.confetti-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1055;
+}
+.confetti-piece {
+  position: absolute;
+  top: -24px;
+  width: 10px;
+  height: 18px;
+  opacity: 0.9;
+  animation: confetti-fall 2200ms linear forwards;
+}
+@keyframes confetti-fall {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate3d(var(--confetti-x, 0px), 110vh, 0) rotate(540deg);
+    opacity: 0;
+  }
+}
     </style>
 </head>
 <body>
@@ -76,6 +112,13 @@ body {
             </div>
             <a class="btn btn-outline-secondary btn-sm" href="/student/quiz">Back to Quizzes</a>
             <a class="btn btn-primary btn-sm d-none" href="#" id="retakeQuizBtn">Retake Quiz</a>
+        </div>
+    </div>
+
+    <div class="card result-banner mb-4" id="resultBanner">
+        <div class="card-body p-4">
+            <div class="result-banner-title" id="resultBannerTitle">Quiz submitted.</div>
+            <div class="text-muted mt-1" id="resultBannerMessage">Your result summary is shown below.</div>
         </div>
     </div>
 
@@ -143,6 +186,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     const wrongAnswersListEl = document.getElementById('wrongAnswersList');
     const scoreRingEl = document.getElementById('scoreRing');
     const retakeQuizBtn = document.getElementById('retakeQuizBtn');
+    const resultBannerEl = document.getElementById('resultBanner');
+    const resultBannerTitleEl = document.getElementById('resultBannerTitle');
+    const resultBannerMessageEl = document.getElementById('resultBannerMessage');
 
     if (titleEl) titleEl.textContent = title;
     if (metaEl) metaEl.textContent = subject;
@@ -170,10 +216,44 @@ document.addEventListener('DOMContentLoaded', async function () {
                 <div class="fw-semibold mb-2">Question ${item.number}</div>
                 <div class="mb-2">${escapeHtml(item.prompt)}</div>
                 <div class="text-danger small mb-1">Your Answer: ${escapeHtml(item.answer || '(No answer)')}</div>
-                <div class="text-success small">Correct Answer: ${escapeHtml(item.correctAnswer || '(Not set)')}</div>
             `;
             wrongAnswersListEl.appendChild(block);
         });
+    }
+
+    function launchConfetti() {
+        const layer = document.createElement('div');
+        layer.className = 'confetti-layer';
+        const colors = ['#198754', '#0d6efd', '#ffc107', '#dc3545', '#6f42c1'];
+        for (let index = 0; index < 90; index += 1) {
+            const piece = document.createElement('div');
+            piece.className = 'confetti-piece';
+            piece.style.left = `${Math.random() * 100}vw`;
+            piece.style.background = colors[index % colors.length];
+            piece.style.animationDelay = `${Math.random() * 250}ms`;
+            piece.style.setProperty('--confetti-x', `${(Math.random() - 0.5) * 240}px`);
+            piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+            layer.appendChild(piece);
+        }
+        document.body.appendChild(layer);
+        window.setTimeout(() => layer.remove(), 2600);
+    }
+
+    function renderResultBanner(percent) {
+        if (!resultBannerEl || !resultBannerTitleEl || !resultBannerMessageEl) {
+            return;
+        }
+        const passed = percent >= 75;
+        resultBannerEl.classList.remove('pass', 'fail');
+        resultBannerEl.classList.add(passed ? 'pass' : 'fail');
+        if (passed) {
+            resultBannerTitleEl.textContent = 'Congratulations, you passed the quiz!';
+            resultBannerMessageEl.textContent = 'Your score reached the passing mark. Review your summary below.';
+            launchConfetti();
+            return;
+        }
+        resultBannerTitleEl.textContent = 'You failed. Try again next time.';
+        resultBannerMessageEl.textContent = 'Your score did not reach the passing mark. Review the questions you missed below.';
     }
 
     try {
@@ -191,7 +271,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         const correctDegrees = total > 0 ? Math.round((correct / total) * 360) : 0;
 
         if (titleEl) titleEl.textContent = title || `Quiz #${payload.quizId}`;
-        if (metaEl) metaEl.textContent = `${subject} • Attempt ${payload.attemptNumber}`;
+        if (metaEl) metaEl.textContent = `${subject} | Attempt ${payload.attemptNumber}`;
         if (attemptLabelEl) attemptLabelEl.textContent = payload.attemptNumber ?? '-';
         if (scoreValueEl) scoreValueEl.textContent = `${percent}%`;
         if (scoreFractionEl) scoreFractionEl.textContent = `${correct} / ${total}`;
@@ -222,6 +302,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (scoreRingEl) {
             scoreRingEl.style.background = `conic-gradient(#198754 0deg ${correctDegrees}deg, #dc3545 ${correctDegrees}deg 360deg)`;
         }
+        renderResultBanner(percent);
         renderWrongAnswers((payload.items || []).filter(item => !item.correct));
     } catch (error) {
         if (wrongAnswersListEl) {

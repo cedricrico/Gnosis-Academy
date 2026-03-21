@@ -797,7 +797,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </script>
     <script>
-// Inlined from /assets/js/instructor/lessons.jsdocument.addEventListener('DOMContentLoaded', function() {
+// Inlined from /assets/js/instructor/lessons.js
+document.addEventListener('DOMContentLoaded', function() {
     // Filter lessons based on selected criteria
     function filterLessons() {
         const subjectFilter = document.getElementById('lessonSubjectFilter').value;
@@ -1438,7 +1439,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Export announcements to CSV
     function exportAnnouncementsToCSV() {
         const announcements = document.querySelectorAll('.announcement-card');
-        let csvContent = 'Title,Subject,Date,Status\';
+        let csvContent = 'Title,Subject,Date,Status\n';
         
         announcements.forEach(announcement => {
             if (announcement.style.display !== 'none') {
@@ -1450,7 +1451,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Escape commas and quotes in CSV
                 const escapeCSV = (str) => `"${str.replace(/"/g, '""')}"`;
                 
-                csvContent += `${escapeCSV(title)},${escapeCSV(subject)},${escapeCSV(dateText)},${escapeCSV(status)}\`;
+                csvContent += `${escapeCSV(title)},${escapeCSV(subject)},${escapeCSV(dateText)},${escapeCSV(status)}\n`;
             }
         });
         
@@ -1902,7 +1903,7 @@ function exportAssignments() {
     const rows = document.querySelectorAll('tbody tr');
     
     // Create CSV header
-    let csvContent = 'Title,Subject,Due Date,Status\';
+    let csvContent = 'Title,Subject,Due Date,Status\n';
     
     // Add each assignment to CSV
     rows.forEach(row => {
@@ -1915,7 +1916,7 @@ function exportAssignments() {
             const dueDate = cells[3].textContent;
             const status = cells[4].textContent;
             
-            csvContent += `"${title}","${subject}","${dueDate}","${status}"\`;
+            csvContent += `"${title}","${subject}","${dueDate}","${status}"\n`;
         }
     });
     
@@ -2062,7 +2063,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Event delegation for table actions - attach to tbody for dynamic content
-    quizTableBody.addEventListener('click', async function(e) {
+    if (quizTableBody) {
+        quizTableBody.addEventListener('click', async function(e) {
         const target = e.target;
         
         // Find the closest button element
@@ -2103,7 +2105,8 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             await deleteQuiz(row);
         }
-    });
+        });
+    }
     
     // Filter quizzes based on selected filters and search
     function filterQuizzes() {

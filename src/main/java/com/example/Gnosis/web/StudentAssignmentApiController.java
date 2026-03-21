@@ -70,6 +70,8 @@ public class StudentAssignmentApiController {
 						response.setSubmitted(true);
 						response.setSubmissionId(submission.getId());
 						response.setSubmittedAt(submission.getSubmittedAt());
+						response.setSubmissionGrade(submission.getGrade());
+						response.setGradedAt(submission.getGradedAt());
 					}
 				})
 				.toList();

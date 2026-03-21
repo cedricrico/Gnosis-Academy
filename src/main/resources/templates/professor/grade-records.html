@@ -605,7 +605,7 @@ body {
                         <div class="card text-white bg-primary">
                             <div class="card-body">
                                 <h5 class="card-title">Class Average</h5>
-                                <p class="card-text display-6">84.2%</p>
+                                <p class="card-text display-6" id="classAverageCard">-</p>
                             </div>
                         </div>
                     </div>
@@ -613,7 +613,7 @@ body {
                         <div class="card text-white bg-success">
                             <div class="card-body">
                                 <h5 class="card-title">Pass Rate</h5>
-                                <p class="card-text display-6">92%</p>
+                                <p class="card-text display-6" id="passRateCard">-</p>
                             </div>
                         </div>
                     </div>
@@ -621,7 +621,7 @@ body {
                         <div class="card text-white bg-warning">
                             <div class="card-body">
                                 <h5 class="card-title">Highest Score</h5>
-                                <p class="card-text display-6">98%</p>
+                                <p class="card-text display-6" id="highestScoreCard">-</p>
                             </div>
                         </div>
                     </div>
@@ -629,7 +629,7 @@ body {
                         <div class="card text-white bg-info">
                             <div class="card-body">
                                 <h5 class="card-title">Lowest Score</h5>
-                                <p class="card-text display-6">62%</p>
+                                <p class="card-text display-6" id="lowestScoreCard">-</p>
                             </div>
                         </div>
                     </div>
@@ -640,20 +640,19 @@ body {
                             <div class="col-md-3"><label class="form-label" for="gradeSearch">Search Student</label><input type="text" class="form-control" id="gradeSearch" placeholder="Search by name or ID"></div>
                             <div class="col-md-3"><label class="form-label" for="gradeComponentFilter">Component</label><select class="form-select" id="gradeComponentFilter">
                                     <option value="" selected="">All Components</option>
-                                    <option value="">Assignments</option>
-                                    <option value="">Quizzes</option>
-                                    <option value="">Exams</option>
-                                    <option value="">Participation</option>
+                                    <option value="assignments">Assignments</option>
+                                    <option value="quizzes">Quizzes</option>
+                                    <option value="overall">Overall</option>
                                 </select></div>
                             <div class="col-md-3"><label class="form-label" for="gradeRangeFilter">Grade Range</label><select class="form-select" id="gradeRangeFilter">
                                     <option value="" selected="">All Ranges</option>
-                                    <option value="">A (90-100%)</option>
-                                    <option value="">B (80-89%)</option>
-                                    <option value="">C (70-79%)</option>
-                                    <option value="">D (60-69%)</option>
-                                    <option value="">F (&lt;60%)</option>
+                                    <option value="A">A (90-100%)</option>
+                                    <option value="B">B (80-89%)</option>
+                                    <option value="C">C (70-79%)</option>
+                                    <option value="D">D (60-69%)</option>
+                                    <option value="F">F (&lt;60%)</option>
                                 </select></div>
-                            <div class="col-md-3 d-flex align-items-end"><button class="btn btn-outline-primary w-100" type="button"><svg class="bi bi-funnel" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                            <div class="col-md-3 d-flex align-items-end"><button class="btn btn-outline-primary w-100" id="applyGradeFilters" type="button"><svg class="bi bi-funnel" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                                         <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"></path>
                                     </svg> Apply Filters </button></div>
                         </div>
@@ -665,21 +664,19 @@ body {
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover">
+                            <table class="table table-striped table-hover" id="gradeRecordsTable">
                                 <thead>
                                     <tr>
                                         <th scope="col">Student ID</th>
                                         <th scope="col">Name</th>
-                                        <th scope="col">Assignments (30%)</th>
-                                        <th scope="col">Quizzes (20%)</th>
-                                        <th scope="col">Midterm (20%)</th>
-                                        <th scope="col">Final (30%)</th>
-                                        <th scope="col">Total</th>
+                                        <th scope="col">Assignments</th>
+                                        <th scope="col">Quizzes</th>
+                                        <th scope="col">Overall</th>
                                         <th scope="col">Letter Grade</th>
                                         <th scope="col">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody></tbody>
+                                <tbody id="gradeRecordsTableBody"></tbody>
                             </table>
                         </div>
                         <nav aria-label="Grade records pagination">
@@ -2501,6 +2498,174 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tableBody = document.getElementById('gradeRecordsTableBody');
+    const searchInput = document.getElementById('gradeSearch');
+    const componentFilter = document.getElementById('gradeComponentFilter');
+    const rangeFilter = document.getElementById('gradeRangeFilter');
+    const applyButton = document.getElementById('applyGradeFilters');
+    const classAverageCard = document.getElementById('classAverageCard');
+    const passRateCard = document.getElementById('passRateCard');
+    const highestScoreCard = document.getElementById('highestScoreCard');
+    const lowestScoreCard = document.getElementById('lowestScoreCard');
+    if (!tableBody) return;
+
+    let gradeRows = [];
+
+    function formatPercent(value) {
+        if (value === null || value === undefined || Number.isNaN(Number(value))) {
+            return '-';
+        }
+        return `${Number(value).toFixed(2)}%`;
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function componentValue(row, component) {
+        switch (component) {
+            case 'assignments':
+                return row.assignmentPercent;
+            case 'quizzes':
+                return row.quizPercent;
+            case 'overall':
+                return row.totalPercent;
+            default:
+                return null;
+        }
+    }
+
+    function matchesRange(row, selectedRange) {
+        if (!selectedRange) return true;
+        return (row.letterGrade || '').toUpperCase() === selectedRange.toUpperCase();
+    }
+
+    function matchesComponent(row, selectedComponent) {
+        if (!selectedComponent) return true;
+        const value = componentValue(row, selectedComponent);
+        return value !== null && value !== undefined;
+    }
+
+    function matchesSearch(row, searchText) {
+        if (!searchText) return true;
+        const haystack = `${row.studentId || ''} ${row.studentName || ''} ${row.course || ''} ${row.section || ''}`.toLowerCase();
+        return haystack.includes(searchText);
+    }
+
+    function renderRows(rows) {
+        if (!rows.length) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">No grade records found.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        tableBody.innerHTML = rows.map(row => `
+            <tr>
+                <td>${escapeHtml(row.studentId || '-')}</td>
+                <td>
+                    <div class="fw-semibold">${escapeHtml(row.studentName || '-')}</div>
+                    <div class="small text-muted">${escapeHtml(row.course || '')}${row.section ? ' • ' + escapeHtml(row.section) : ''}</div>
+                </td>
+                <td>${formatPercent(row.assignmentPercent)}</td>
+                <td>${formatPercent(row.quizPercent)}</td>
+                <td class="fw-semibold">${formatPercent(row.totalPercent)}</td>
+                <td><span class="badge ${row.letterGrade === 'A' ? 'bg-success' : row.letterGrade === 'B' ? 'bg-primary' : row.letterGrade === 'C' ? 'bg-warning text-dark' : row.letterGrade === 'D' ? 'bg-warning' : row.letterGrade === 'F' ? 'bg-danger' : 'bg-secondary'}">${escapeHtml(row.letterGrade || '-')}</span></td>
+                <td>
+                    <button class="btn btn-outline-primary btn-sm grade-details-btn" type="button"
+                        data-student="${escapeHtml(row.studentName || '-')}"
+                        data-assignment-count="${row.assignmentCount ?? 0}"
+                        data-quiz-count="${row.quizCount ?? 0}">
+                        View
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderSummary(summary) {
+        const safeSummary = summary || {};
+        if (classAverageCard) {
+            classAverageCard.textContent = formatPercent(safeSummary.classAverage);
+        }
+        if (passRateCard) {
+            passRateCard.textContent = formatPercent(safeSummary.passRate);
+        }
+        if (highestScoreCard) {
+            highestScoreCard.textContent = formatPercent(safeSummary.highestScore);
+        }
+        if (lowestScoreCard) {
+            lowestScoreCard.textContent = formatPercent(safeSummary.lowestScore);
+        }
+    }
+
+    function applyFilters() {
+        const searchText = (searchInput?.value || '').trim().toLowerCase();
+        const selectedComponent = componentFilter?.value || '';
+        const selectedRange = rangeFilter?.value || '';
+        const filtered = gradeRows.filter(row =>
+            matchesSearch(row, searchText)
+            && matchesComponent(row, selectedComponent)
+            && matchesRange(row, selectedRange)
+        );
+        renderRows(filtered);
+    }
+
+    async function loadGradeRecords() {
+        try {
+            const response = await fetch('/professor/api/grade-records', { credentials: 'same-origin', cache: 'no-store' });
+            if (!response.ok) {
+                throw new Error(await response.text() || 'Unable to load grade records.');
+            }
+            const payload = await response.json();
+            gradeRows = Array.isArray(payload?.rows) ? payload.rows : [];
+            renderSummary(payload?.summary);
+            applyFilters();
+        } catch (error) {
+            console.error(error);
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-danger py-4">${escapeHtml(error.message || 'Unable to load grade records.')}</td>
+                </tr>
+            `;
+            renderSummary(null);
+        }
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', applyFilters);
+    }
+    if (componentFilter) {
+        componentFilter.addEventListener('change', applyFilters);
+    }
+    if (rangeFilter) {
+        rangeFilter.addEventListener('change', applyFilters);
+    }
+    if (applyButton) {
+        applyButton.addEventListener('click', applyFilters);
+    }
+
+    tableBody.addEventListener('click', function(event) {
+        const button = event.target.closest('.grade-details-btn');
+        if (!button) return;
+        const student = button.getAttribute('data-student') || 'Student';
+        const assignmentCount = button.getAttribute('data-assignment-count') || '0';
+        const quizCount = button.getAttribute('data-quiz-count') || '0';
+        alert(`${student}\nAssignments graded: ${assignmentCount}\nQuizzes recorded: ${quizCount}\nOverall is calculated from available assignment and quiz scores only.`);
+    });
+
+    loadGradeRecords();
+});
+    </script>
     <script>
 document.addEventListener('DOMContentLoaded', function() {
     const photo = document.getElementById('navbarProfilePhoto');

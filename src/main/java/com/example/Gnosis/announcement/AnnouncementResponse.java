@@ -11,6 +11,9 @@ public class AnnouncementResponse {
 	private String professorId;
 	private String professorName;
 	private String postedOn;
+	private String imageName;
+	private String imageContentType;
+	private String imageUrl;
 	private Instant createdAt;
 	private Instant updatedAt;
 
@@ -76,6 +79,30 @@ public class AnnouncementResponse {
 
 	public void setPostedOn(String postedOn) {
 		this.postedOn = postedOn;
+	}
+
+	public String getImageName() {
+		return imageName;
+	}
+
+	public void setImageName(String imageName) {
+		this.imageName = imageName;
+	}
+
+	public String getImageContentType() {
+		return imageContentType;
+	}
+
+	public void setImageContentType(String imageContentType) {
+		this.imageContentType = imageContentType;
+	}
+
+	public String getImageUrl() {
+		return imageUrl;
+	}
+
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
 	}
 
 	public Instant getCreatedAt() {

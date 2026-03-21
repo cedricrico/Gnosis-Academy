@@ -24,10 +24,119 @@
         .btn-primary:hover, .btn-primary:focus { background: #3a56d4; border-color: #3a56d4; }
         .btn-outline-primary { color: #4361ee; border-color: #4361ee; }
         .btn-outline-primary:hover, .btn-outline-primary:focus { background: #4361ee; border-color: #4361ee; }
-        .grade-pill { min-width: 92px; display: inline-flex; justify-content: center; }
+        .submission-summary-card {
+            border-radius: 18px;
+            border: 1px solid rgba(95,117,143,.12);
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 14px 30px rgba(23,36,65,.07);
+        }
+        .submission-summary-card .card-body { padding: .95rem 1rem; }
+        .submission-summary-label {
+            color: #738396;
+            font-size: .76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+        .submission-summary-value {
+            margin-top: .25rem;
+            color: #233548;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        .submission-list { display: grid; gap: .85rem; }
+        .submission-row {
+            border: 1px solid rgba(100,122,149,.12);
+            border-radius: 18px;
+            background: rgba(255,255,255,.95);
+            box-shadow: 0 12px 28px rgba(23,36,65,.08);
+        }
+        .submission-row-body {
+            display: grid;
+            grid-template-columns: minmax(0, 1.8fr) auto auto auto;
+            gap: 1rem;
+            align-items: center;
+            padding: 1rem 1.15rem;
+        }
+        .submission-main-title {
+            color: #223447;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: .15rem;
+        }
+        .submission-main-subtitle {
+            color: #5f6f83;
+            font-size: .84rem;
+        }
+        .submission-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .35rem;
+            margin-top: .55rem;
+        }
+        .submission-meta .badge {
+            font-size: .72rem;
+            font-weight: 600;
+        }
+        .submission-file {
+            margin-top: .55rem;
+            color: #6d7d91;
+            font-size: .8rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .submission-kpi {
+            min-width: 110px;
+            text-align: center;
+        }
+        .submission-kpi-value {
+            font-size: 1.4rem;
+            line-height: 1;
+            font-weight: 700;
+            color: #1f2f44;
+        }
+        .submission-kpi-label {
+            margin-top: .25rem;
+            color: #5d6d80;
+            font-size: .8rem;
+        }
+        .grade-pill {
+            min-width: 92px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            padding: .38rem .7rem;
+            font-size: .76rem;
+            line-height: 1.1;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+        .submission-actions {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+        .submission-actions .btn {
+            width: 42px;
+            height: 42px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            margin: 0 !important;
+        }
+        .submission-actions .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        .submission-actions .text-muted { font-size: .8rem; }
         @media (max-width: 767.98px) {
             .sidebar { position: fixed; top: 70px; left: 0; bottom: 0; z-index: 1040; background: #f8f9fa; width: 250px; transform: translateX(-100%); transition: transform .3s ease-in-out; overflow-y: auto; }
             .sidebar.show { transform: translateX(0); }
+            .submission-row-body { grid-template-columns: 1fr; align-items: start; }
+            .submission-kpi { text-align: left; min-width: 0; }
         }
         @media (max-width: 576px) {
             #submissionPreviewFrame { min-height: 70vh !important; }
@@ -112,41 +221,44 @@
                                 <label class="form-label" for="submissionSectionFilter">Filter by Section</label>
                                 <select class="form-select" id="submissionSectionFilter"><option value="">All Sections</option></select>
                             </div>
-                            <div class="col-6 col-md-1">
-                                <label class="form-label" for="submissionDateFrom">From</label>
-                                <input class="form-control" type="date" id="submissionDateFrom">
-                            </div>
-                            <div class="col-6 col-md-2">
-                                <label class="form-label" for="submissionDateTo">To</label>
-                                <input class="form-control" type="date" id="submissionDateTo">
-                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="card mb-4">
                     <div class="card-body">
-                        <div class="table-responsive d-none" id="submissionTableWrapper">
-                            <table class="table table-hover align-middle">
-                                <thead>
-                                    <tr>
-                                        <th>Submitted At</th>
-                                        <th>Assignment</th>
-                                        <th>Subject</th>
-                                        <th>Student</th>
-                                        <th>Course</th>
-                                        <th>Section</th>
-                                        <th>Grade</th>
-                                        <th>File</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="submissionTableBody"></tbody>
-                            </table>
+                        <div class="row g-3 mb-4 d-none" id="submissionSummaryRow">
+                            <div class="col-md-4">
+                                <div class="card submission-summary-card h-100">
+                                    <div class="card-body">
+                                        <div class="submission-summary-label">Visible Submissions</div>
+                                        <div class="submission-summary-value" id="submissionVisibleCount">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card submission-summary-card h-100">
+                                    <div class="card-body">
+                                        <div class="submission-summary-label">Graded Entries</div>
+                                        <div class="submission-summary-value" id="submissionGradedCount">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card submission-summary-card h-100">
+                                    <div class="card-body">
+                                        <div class="submission-summary-label">Latest Submission</div>
+                                        <div class="submission-summary-value" id="submissionLatestDate">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="submission-list d-none" id="submissionListWrapper">
+                            <div id="submissionListBody"></div>
                         </div>
                         <div class="text-muted text-center py-3 submission-empty" id="submissionSelectState">
-                            <div class="fw-semibold">Apply a filter to view submissions.</div>
-                            <div>Select a subject, section, or date range to load matching uploads.</div>
+                            <div class="fw-semibold">No submissions loaded.</div>
+                            <div>Assignment submissions will appear here once they are available.</div>
                         </div>
                         <div class="text-muted text-center py-3 d-none submission-empty" id="submissionEmptyState">
                             <div class="fw-semibold">No submissions yet.</div>
@@ -187,10 +299,6 @@
                         <input class="form-control" id="submissionGradeInput" min="0" type="number">
                         <div class="form-text" id="submissionGradeHelp">Enter the student score.</div>
                     </div>
-                    <div class="mb-0">
-                        <label class="form-label" for="submissionFeedbackInput">Feedback</label>
-                        <textarea class="form-control" id="submissionFeedbackInput" rows="4" placeholder="Optional comments for the student"></textarea>
-                    </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
@@ -209,15 +317,14 @@ document.addEventListener('DOMContentLoaded', function() {
         sidebarToggle.addEventListener('click', function() { sidebar.classList.toggle('show'); });
     }
 
-    const tableBody = document.getElementById('submissionTableBody');
-    const tableWrapper = document.getElementById('submissionTableWrapper');
+    const listBody = document.getElementById('submissionListBody');
+    const listWrapper = document.getElementById('submissionListWrapper');
+    const summaryRow = document.getElementById('submissionSummaryRow');
     const emptyState = document.getElementById('submissionEmptyState');
     const selectState = document.getElementById('submissionSelectState');
     const titleFilter = document.getElementById('submissionTitleFilter');
     const subjectFilter = document.getElementById('submissionSubjectFilter');
     const sectionFilter = document.getElementById('submissionSectionFilter');
-    const dateFromInput = document.getElementById('submissionDateFrom');
-    const dateToInput = document.getElementById('submissionDateTo');
     const previewModalEl = document.getElementById('submissionPreviewModal');
     const previewMeta = document.getElementById('submissionPreviewMeta');
     const previewImage = document.getElementById('submissionPreviewImage');
@@ -228,7 +335,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const gradeMeta = document.getElementById('gradeSubmissionMeta');
     const gradeInput = document.getElementById('submissionGradeInput');
     const gradeHelp = document.getElementById('submissionGradeHelp');
-    const feedbackInput = document.getElementById('submissionFeedbackInput');
     const saveGradeBtn = document.getElementById('saveSubmissionGradeBtn');
     const previewModal = previewModalEl ? new bootstrap.Modal(previewModalEl) : null;
     const gradeModal = gradeModalEl ? new bootstrap.Modal(gradeModalEl) : null;
@@ -280,76 +386,80 @@ document.addEventListener('DOMContentLoaded', function() {
         return `<span class="badge bg-success grade-pill">${text}</span>`;
     }
 
-    function clearTable() { while (tableBody.firstChild) tableBody.removeChild(tableBody.firstChild); }
+    function actionIcon(path) {
+        return `<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">${path}</svg>`;
+    }
+
+    function clearTable() { while (listBody.firstChild) listBody.removeChild(listBody.firstChild); }
     function renderEmpty() { emptyState.classList.remove('d-none'); }
     function hideEmpty() { emptyState.classList.add('d-none'); }
-    function showSelectState() { tableWrapper.classList.add('d-none'); selectState.classList.remove('d-none'); }
-    function hideSelectState() { selectState.classList.add('d-none'); tableWrapper.classList.remove('d-none'); }
+    function showSelectState() {
+        listWrapper.classList.add('d-none');
+        summaryRow.classList.add('d-none');
+        selectState.classList.remove('d-none');
+    }
+    function hideSelectState() {
+        selectState.classList.add('d-none');
+        listWrapper.classList.remove('d-none');
+        summaryRow.classList.remove('d-none');
+    }
+
+    function updateSummary(list) {
+        const visibleCount = document.getElementById('submissionVisibleCount');
+        const gradedCount = document.getElementById('submissionGradedCount');
+        const latestDate = document.getElementById('submissionLatestDate');
+        if (visibleCount) visibleCount.textContent = String(list.length);
+        if (gradedCount) gradedCount.textContent = String(list.filter(item => item.grade != null).length);
+        if (latestDate) latestDate.textContent = list.length ? formatDate(list[0].submittedAt) : '-';
+    }
 
     function addRow(submission) {
-        const row = document.createElement('tr');
-        const studentLabel = submission.studentName ? `${submission.studentName} (${submission.studentId || ''})` : (submission.studentId || '-');
-        const cells = [
-            formatDate(submission.submittedAt),
-            submission.assignmentTitle || '-',
-            submission.assignmentSubject || '-',
-            studentLabel,
-            submission.studentCourse || '-',
-            submission.studentSection || '-'
-        ];
-        cells.forEach(text => {
-            const td = document.createElement('td');
-            td.textContent = text;
-            row.appendChild(td);
-        });
-
-        const gradeCell = document.createElement('td');
-        gradeCell.innerHTML = gradeLabel(submission);
-        row.appendChild(gradeCell);
-
-        [
-            submission.filename || '-'
-        ].forEach(text => {
-            const td = document.createElement('td');
-            td.textContent = text;
-            row.appendChild(td);
-        });
-        const action = document.createElement('td');
+        const row = document.createElement('div');
+        row.className = 'submission-row';
+        const actionGroup = document.createElement('div');
+        actionGroup.className = 'submission-actions';
+        let actionsHtml = '';
         if (submission.downloadUrl) {
-            const link = document.createElement('a');
-            link.className = 'btn btn-sm btn-outline-primary';
-            link.href = submission.downloadUrl;
-            link.textContent = 'Download';
-            action.appendChild(link);
-
-            const previewBtn = document.createElement('button');
-            previewBtn.type = 'button';
-            previewBtn.className = 'btn btn-sm btn-outline-secondary ms-2';
-            previewBtn.textContent = 'Preview';
-            previewBtn.dataset.previewUrl = submission.downloadUrl.replace('/download', '/preview');
-            previewBtn.dataset.filename = submission.filename || '';
-            previewBtn.dataset.contentType = submission.contentType || '';
-            previewBtn.dataset.assignment = submission.assignmentTitle || '';
-            previewBtn.dataset.student = submission.studentName || submission.studentId || '';
-            action.appendChild(previewBtn);
+            actionsHtml += `
+                <a class="btn btn-outline-primary" href="${submission.downloadUrl}" aria-label="Download submission">
+                    ${actionIcon('<path d="M.5 9.9a.5.5 0 0 1 .5.5v2.6a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-2.6a.5.5 0 0 1 1 0v2.6A1.5 1.5 0 0 1 14.5 14h-13A1.5 1.5 0 0 1 0 13v-2.6a.5.5 0 0 1 .5-.5"/><path d="M7.646 10.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 9.293V1.5a.5.5 0 0 0-1 0v7.793L5.354 7.146a.5.5 0 1 0-.708.708z"/>')}
+                </a>
+                <button type="button" class="btn btn-outline-secondary" data-preview-url="${submission.downloadUrl.replace('/download', '/preview')}" data-filename="${submission.filename || ''}" data-content-type="${submission.contentType || ''}" data-assignment="${submission.assignmentTitle || ''}" data-student="${submission.studentName || submission.studentId || ''}" aria-label="Preview submission">
+                    ${actionIcon('<path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.12 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/>')}
+                </button>
+            `;
         } else {
-            action.textContent = '-';
+            actionsHtml += '<span class="text-muted">-</span>';
         }
+        actionsHtml += `
+            <button type="button" class="btn btn-primary" data-grade-submission-id="${submission.id}" data-student="${submission.studentName || submission.studentId || ''}" data-assignment="${submission.assignmentTitle || ''}" data-points="${submission.assignmentPoints ?? ''}" data-grade="${submission.grade ?? ''}" data-feedback="${submission.feedback || ''}" aria-label="${submission.grade == null ? 'Grade submission' : 'Edit grade'}">
+                ${actionIcon('<path d="M15.502 1.94a.5.5 0 0 1 0 .706l-1.75 1.75-2-2 1.75-1.75a.5.5 0 0 1 .707 0z"/><path d="M1 13.5V16h2.5l7.373-7.373-2.5-2.5z"/><path fill-rule="evenodd" d="M1 13.5V16h2.5l7.373-7.373-2.5-2.5z"/>')}
+            </button>
+        `;
+        actionGroup.innerHTML = actionsHtml;
 
-        const gradeBtn = document.createElement('button');
-        gradeBtn.type = 'button';
-        gradeBtn.className = 'btn btn-sm btn-primary ms-2';
-        gradeBtn.textContent = submission.grade == null ? 'Grade' : 'Edit Grade';
-        gradeBtn.dataset.gradeSubmissionId = submission.id;
-        gradeBtn.dataset.student = submission.studentName || submission.studentId || '';
-        gradeBtn.dataset.assignment = submission.assignmentTitle || '';
-        gradeBtn.dataset.points = submission.assignmentPoints ?? '';
-        gradeBtn.dataset.grade = submission.grade ?? '';
-        gradeBtn.dataset.feedback = submission.feedback || '';
-        action.appendChild(gradeBtn);
-
-        row.appendChild(action);
-        tableBody.appendChild(row);
+        row.innerHTML = `
+            <div class="submission-row-body">
+                <div>
+                    <div class="submission-main-title">${submission.assignmentTitle || '-'}</div>
+                    <div class="submission-main-subtitle">${submission.assignmentSubject || '-'} | ${submission.studentName || submission.studentId || '-'}</div>
+                    <div class="submission-meta">
+                        <span class="badge text-bg-light border">${submission.studentCourse || '-'}</span>
+                        <span class="badge text-bg-light border">${submission.studentSection || '-'}</span>
+                        <span class="badge text-bg-light border">${formatDate(submission.submittedAt) || '-'}</span>
+                    </div>
+                    <div class="submission-file">${submission.filename || '-'}</div>
+                </div>
+                <div>${gradeLabel(submission)}</div>
+                <div class="submission-kpi">
+                    <div class="submission-kpi-value">${submission.assignmentPoints != null ? submission.assignmentPoints : '-'}</div>
+                    <div class="submission-kpi-label">Max Points</div>
+                </div>
+                <div class="submission-actions-host"></div>
+            </div>
+        `;
+        row.querySelector('.submission-actions-host').replaceWith(actionGroup);
+        listBody.appendChild(row);
     }
 
     function openGradeModal(submission) {
@@ -361,7 +471,6 @@ document.addEventListener('DOMContentLoaded', function() {
         gradeHelp.textContent = submission.assignmentPoints != null
             ? `Enter a score from 0 to ${submission.assignmentPoints}.`
             : 'Enter the student score.';
-        feedbackInput.value = submission.feedback || '';
         if (gradeModal) {
             gradeModal.show();
         }
@@ -425,51 +534,28 @@ document.addEventListener('DOMContentLoaded', function() {
         resetSelectOptions(sectionFilter, Array.from(sections).sort(), 'All Sections');
     }
 
-    function parseDateValue(value, endOfDay) {
-        if (!value) return null;
-        const date = new Date(value);
-        if (Number.isNaN(date.getTime())) return null;
-        if (endOfDay) date.setHours(23, 59, 59, 999);
-        return date;
-    }
-
     function applyFilters(list) {
         const selectedTitle = titleFilter.value.trim();
         const selectedSubject = subjectFilter.value.trim();
         const selectedSection = sectionFilter.value.trim();
-        const fromDate = parseDateValue(dateFromInput.value, false);
-        const toDate = parseDateValue(dateToInput.value, true);
         return list.filter(item => {
             if (selectedTitle && item.assignmentTitle !== selectedTitle) return false;
             if (selectedSubject && item.assignmentSubject !== selectedSubject) return false;
             if (selectedSection && item.studentSection !== selectedSection) return false;
-            if (fromDate || toDate) {
-                const submittedAt = item.submittedAt ? new Date(item.submittedAt) : null;
-                if (!submittedAt || Number.isNaN(submittedAt.getTime())) return false;
-                if (fromDate && submittedAt < fromDate) return false;
-                if (toDate && submittedAt > toDate) return false;
-            }
             return true;
         });
     }
 
-    function hasActiveFilters() {
-        return Boolean(titleFilter.value.trim() || subjectFilter.value.trim() || sectionFilter.value.trim() || dateFromInput.value || dateToInput.value);
-    }
-
     function renderTable(list) {
         clearTable();
-        if (!hasActiveFilters()) {
-            hideEmpty();
-            showSelectState();
-            return;
-        }
         hideSelectState();
         if (!list.length) {
+            updateSummary([]);
             renderEmpty();
             return;
         }
         hideEmpty();
+        updateSummary(list);
         list.forEach(addRow);
     }
 
@@ -492,10 +578,8 @@ document.addEventListener('DOMContentLoaded', function() {
     titleFilter.addEventListener('change', renderAll);
     subjectFilter.addEventListener('change', renderAll);
     sectionFilter.addEventListener('change', renderAll);
-    dateFromInput.addEventListener('change', renderAll);
-    dateToInput.addEventListener('change', renderAll);
 
-    tableBody.addEventListener('click', function(event) {
+    listBody.addEventListener('click', function(event) {
         const previewBtn = event.target.closest('button[data-preview-url]');
         if (previewBtn) {
             const meta = `${previewBtn.dataset.assignment || 'Assignment'}${previewBtn.dataset.student ? ' | ' + previewBtn.dataset.student : ''}`;
@@ -531,8 +615,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const updated = await fetchProfessorJson(`/professor/api/assignment-submissions/${currentGradeSubmissionId}/grade`, {
                     method: 'PUT',
                     body: JSON.stringify({
-                        grade: grade,
-                        feedback: feedbackInput.value
+                        grade: grade
                     })
                 });
                 submissions = submissions.map(item => String(item.id) === String(updated.id) ? updated : item);

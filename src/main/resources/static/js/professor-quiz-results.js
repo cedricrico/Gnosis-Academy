@@ -75,29 +75,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function buildQuizCard(card) {
         const column = document.createElement('div');
-        column.className = 'col-md-6 col-xl-4';
+        column.className = 'col-12 quiz-row-divider';
 
         const description = normalize(card.description) || 'No quiz description provided.';
         const isActive = String(card.id) === String(state.selectedQuizId);
+        const status = normalize(card.status || 'Draft');
+        const statusClass = status.toLowerCase().replace(/\s+/g, '-');
 
         column.innerHTML = `
             <div class="card quiz-result-card${isActive ? ' active' : ''}" data-quiz-id="${card.id}">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
-                        <div>
-                            <h5 class="card-title mb-1">${escapeHtml(card.title || 'Untitled Quiz')}</h5>
-                            <div class="text-muted small">${escapeHtml(card.subject || 'No subject')}</div>
+                    <div class="quiz-row-main">
+                        <div class="quiz-card-header">
+                            <div class="quiz-card-title-block">
+                                <h5 class="card-title quiz-result-title mb-1">${escapeHtml(card.title || 'Untitled Quiz')}</h5>
+                                <div class="quiz-result-subject">${escapeHtml(card.subject || 'No subject')}</div>
+                            </div>
                         </div>
-                        <span class="badge text-bg-light border">${escapeHtml(card.status || 'Draft')}</span>
+                        <div class="quiz-result-meta mt-2">
+                            <span class="badge text-bg-light border">${escapeHtml(card.section || 'All Sections')}</span>
+                            <span class="badge text-bg-light border">${Number(card.studentCount ?? 0)} students</span>
+                        </div>
+                        <p class="quiz-result-description mb-0 mt-2">${escapeHtml(description)}</p>
                     </div>
-                    <p class="text-muted small mb-0">${escapeHtml(description)}</p>
-                    <div class="quiz-result-meta">
-                        <span class="badge text-bg-primary-subtle text-primary-emphasis">${escapeHtml(card.section || 'All Sections')}</span>
-                        <span class="badge text-bg-light border">${Number(card.studentCount ?? 0)} students</span>
+                    <div>
+                        <span class="badge text-bg-light border quiz-status-badge ${escapeHtml(statusClass)}">${escapeHtml(status || 'Draft')}</span>
                     </div>
                     <div class="quiz-result-kpi">
-                        <span>Total attempts</span>
-                        <strong>${Number(card.totalAttempts ?? 0)}</strong>
+                        <div class="quiz-attempt-count">${Number(card.totalAttempts ?? 0)}</div>
+                        <div class="quiz-attempt-label">Total Attempts</div>
+                    </div>
+                    <div class="quiz-result-actions">
+                        <button class="btn quiz-action-btn${isActive ? ' view-active' : ''}" type="button" data-action="view" data-quiz-id="${card.id}" aria-label="View quiz results">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.12 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"></path>
+                                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"></path>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -189,8 +203,10 @@ document.addEventListener('DOMContentLoaded', function() {
             flags.push('<span class="badge text-bg-danger">Needs Review</span>');
         }
         return `
-            <div class="score-pill">${score.text} <span class="text-muted fw-normal">(${score.percentText})</span></div>
-            <div class="mt-1">${flags.join(' ')}</div>
+            <div class="score-cell">
+                <div class="score-pill">${score.text} <span class="text-muted fw-normal">(${score.percentText})</span></div>
+                <div class="score-flags">${flags.join(' ')}</div>
+            </div>
         `;
     }
 
@@ -219,11 +235,15 @@ document.addEventListener('DOMContentLoaded', function() {
         pageRows.forEach(row => {
             const tableRow = document.createElement('tr');
             tableRow.innerHTML = `
-                <td class="fw-semibold">${escapeHtml(row.studentId || '-')}</td>
-                <td>${escapeHtml(row.studentName || '-')}</td>
-                <td>${escapeHtml(row.course || '-')}</td>
-                <td>${escapeHtml(row.section || '-')}</td>
-                <td>${Number(row.attemptsTaken ?? 0)}</td>
+                <td>
+                    <div class="student-cell-name">${escapeHtml(row.studentName || '-')}</div>
+                    <div class="student-cell-id">${escapeHtml(row.studentId || '-')}</div>
+                </td>
+                <td>
+                    <div class="student-cell-name">${escapeHtml(row.course || '-')}</div>
+                    <div class="student-cell-meta">${escapeHtml(row.section || '-')}</div>
+                </td>
+                <td><span class="attempt-pill">${Number(row.attemptsTaken ?? 0)}</span></td>
                 <td>${buildScoreCell(row)}</td>
             `;
             elements.tableBody.appendChild(tableRow);
@@ -293,7 +313,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     elements.cardsGrid.addEventListener('click', function(event) {
-        const card = event.target.closest('[data-quiz-id]');
+        const viewButton = event.target.closest('[data-action="view"]');
+        if (viewButton) {
+            const quizId = viewButton.getAttribute('data-quiz-id');
+            if (quizId) {
+                loadQuizDetails(quizId, true).catch(error => {
+                    console.error(error);
+                });
+            }
+            return;
+        }
+
+        const card = event.target.closest('.quiz-result-card[data-quiz-id]');
         if (!card) {
             return;
         }

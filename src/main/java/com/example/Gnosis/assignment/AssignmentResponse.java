@@ -20,6 +20,8 @@ public class AssignmentResponse {
 	private boolean submitted;
 	private Long submissionId;
 	private Instant submittedAt;
+	private Integer submissionGrade;
+	private Instant gradedAt;
 	private Instant createdAt;
 	private Instant updatedAt;
 
@@ -157,6 +159,22 @@ public class AssignmentResponse {
 
 	public void setSubmittedAt(Instant submittedAt) {
 		this.submittedAt = submittedAt;
+	}
+
+	public Integer getSubmissionGrade() {
+		return submissionGrade;
+	}
+
+	public void setSubmissionGrade(Integer submissionGrade) {
+		this.submissionGrade = submissionGrade;
+	}
+
+	public Instant getGradedAt() {
+		return gradedAt;
+	}
+
+	public void setGradedAt(Instant gradedAt) {
+		this.gradedAt = gradedAt;
 	}
 
 	public Instant getCreatedAt() {

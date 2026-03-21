@@ -102,7 +102,7 @@ public class AssignmentSubmissionService {
 		if (grade < 0) {
 			throw new IllegalArgumentException("Grade must be 0 or higher.");
 		}
-		Integer maxPoints = submission.getAssignmentPoints();
+		Integer maxPoints = resolveAssignmentPoints(submission);
 		if (maxPoints != null && grade > maxPoints) {
 			throw new IllegalArgumentException("Grade cannot exceed the assignment points.");
 		}
@@ -110,6 +110,14 @@ public class AssignmentSubmissionService {
 		submission.setFeedback(trimToNull(feedback));
 		submission.setGradedAt(Instant.now());
 		return toResponse(submissionRepository.save(submission));
+	}
+
+	private Integer resolveAssignmentPoints(AssignmentSubmission submission) {
+		Integer currentPoints = assignmentRepository.findById(submission.getAssignmentId())
+				.map(Assignment::getPoints)
+				.orElse(submission.getAssignmentPoints());
+		submission.setAssignmentPoints(currentPoints);
+		return currentPoints;
 	}
 
 	@Transactional(readOnly = true)

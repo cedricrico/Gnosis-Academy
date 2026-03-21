@@ -94,6 +94,11 @@ public class StudentController {
 		return "student/student-profile";
 	}
 
+	@GetMapping("/records")
+	public String studentRecords() {
+		return "student/student-records";
+	}
+
 	@GetMapping("/quiz")
 	public String studentQuiz() {
 		return "student/student-quiz";
@@ -144,7 +149,10 @@ public class StudentController {
 		String professor = blankToDefault(response.getProfessorName(), "Instructor");
 		String subject = blankToDefault(response.getSubject(), "All Sections");
 		String dateLabel = formatAnnouncementDate(response);
-		return new StudentAnnouncementRow(title, content, dateLabel, professor, subject);
+		String imageUrl = response.getImageName() != null && !response.getImageName().isBlank()
+				? "/student/api/announcements/" + response.getId() + "/image"
+				: null;
+		return new StudentAnnouncementRow(title, content, dateLabel, professor, subject, imageUrl);
 	}
 
 	private static String formatAnnouncementDate(AnnouncementResponse response) {
@@ -179,7 +187,8 @@ public class StudentController {
 			String content,
 			String postedOn,
 			String professorName,
-			String subject
+			String subject,
+			String imageUrl
 	) {
 	}
 }

@@ -68,6 +68,26 @@ public class StudentQuizApiController {
 				.toList();
 	}
 
+	@PostMapping("/join")
+	public QuizJoinResponse quickJoin(
+			Authentication authentication,
+			@RequestBody QuizJoinRequest request
+	) {
+		StudentContext context = resolveStudentContext(authentication);
+		com.example.Gnosis.quiz.Quiz quiz = quizService.getEntityForStudentByCode(
+				request == null ? null : request.code(),
+				context.section(),
+				resolveAllowedSubjects(context)
+		);
+		return new QuizJoinResponse(
+				quiz.getId(),
+				quiz.getTitle(),
+				quiz.getSubject(),
+				quiz.getDueDate(),
+				quiz.getCode()
+		);
+	}
+
 	@GetMapping("/{id}/session")
 	public QuizAttemptService.StudentQuizSession session(
 			@PathVariable Long id,
@@ -180,4 +200,6 @@ public class StudentQuizApiController {
 
 	private record StudentContext(String course, String section) {}
 	private record QuizSubmissionRequest(java.util.Map<String, String> answers, boolean forceSubmit) {}
+	private record QuizJoinRequest(String code) {}
+	private record QuizJoinResponse(Long id, String title, String subject, String dueDate, String code) {}
 }

@@ -50,23 +50,24 @@
 
 .card {
   border: none;
-  border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(23, 36, 65, 0.08);
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease;
 }
 
 .card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(23, 36, 65, 0.11);
 }
 
 .card-header {
-  background-color: #f8f9fa;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+  background: linear-gradient(180deg, #fcfdff 0%, #f5f8fc 100%);
+  border-bottom: 1px solid rgba(95, 117, 143, 0.12);
+  padding: 0.95rem 1.15rem;
 }
 
 .table th {
-  background-color: #f8f9fa;
+  background-color: #f7f9fc;
 }
 
 .table-hover tbody tr:hover {
@@ -81,7 +82,9 @@
 
 body {
   padding-top: 70px;
-  background-color: #f8f9fa;
+  background:
+    radial-gradient(circle at top left, rgba(67, 97, 238, 0.08), transparent 24%),
+    linear-gradient(180deg, #f6f8fc 0%, #eef3f8 100%);
   color: #333333;
 }
 
@@ -93,30 +96,36 @@ body {
 .quiz-result-card {
   cursor: pointer;
   height: 100%;
+  border: 1px solid rgba(100, 122, 149, 0.12);
+  overflow: hidden;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
 }
 
 .quiz-result-card.active {
-  outline: 2px solid rgba(67, 97, 238, 0.25);
-  box-shadow: 0 12px 30px rgba(67, 97, 238, 0.16);
+  border-color: rgba(95, 129, 215, 0.55);
+  box-shadow: 0 14px 34px rgba(67, 97, 238, 0.14);
+  background: linear-gradient(180deg, #fcfdff 0%, #f4f7fe 100%);
 }
 
 .quiz-result-card .card-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) auto auto auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 1.2rem;
 }
 
 .quiz-result-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .quiz-result-kpi {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  font-size: 0.95rem;
+  min-width: 104px;
+  text-align: center;
+  color: #5d6d80;
 }
 
 .result-highlight {
@@ -154,16 +163,230 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.35rem 0.65rem;
+  padding: 0.32rem 0.6rem;
   border-radius: 999px;
   background: rgba(67, 97, 238, 0.08);
   color: #3a56d4;
   font-weight: 600;
+  font-size: 0.88rem;
 }
 
 .pagination-info {
   color: #6c757d;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
+}
+
+.results-page-title {
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.results-shell {
+  margin-top: 1.1rem;
+}
+
+.results-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.summary-tile {
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(95, 117, 143, 0.12);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.summary-tile-label {
+  color: #738396;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.summary-tile-value {
+  margin-top: 0.25rem;
+  color: #233548;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.compact-table {
+  margin-bottom: 0;
+}
+
+.compact-table th {
+  color: #64758b;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.75rem 0.85rem;
+  border-bottom-width: 1px;
+}
+
+.compact-table td {
+  padding: 0.8rem 0.85rem;
+  vertical-align: middle;
+}
+
+.student-cell-name {
+  color: #223447;
+  font-weight: 600;
+}
+
+.student-cell-id,
+.student-cell-meta {
+  color: #728295;
+  font-size: 0.84rem;
+}
+
+.attempt-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.2rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  background: #eef2f8;
+  color: #31465d;
+  font-weight: 700;
+}
+
+.score-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.score-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.results-section-card .card-body {
+  padding: 1rem 1.15rem 1.1rem;
+}
+
+.quiz-result-description {
+  color: #6d7d91;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.quiz-result-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #223447;
+}
+
+.quiz-card-header {
+  display: block;
+}
+
+.quiz-card-title-block {
+  min-width: 0;
+}
+
+.quiz-result-subject {
+  color: #5f6f83;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.quiz-status-badge {
+  white-space: nowrap;
+  min-width: 96px;
+  justify-content: center;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  border-radius: 999px;
+}
+
+.quiz-status-badge.published {
+  background: rgba(25, 135, 84, 0.14) !important;
+  color: #157347 !important;
+  border-color: rgba(25, 135, 84, 0.16) !important;
+}
+
+.quiz-status-badge.expired {
+  background: rgba(220, 53, 69, 0.12) !important;
+  color: #b02a37 !important;
+  border-color: rgba(220, 53, 69, 0.16) !important;
+}
+
+.quiz-status-badge.draft,
+.quiz-status-badge.archived {
+  background: rgba(108, 117, 125, 0.12) !important;
+  color: #5c6670 !important;
+  border-color: rgba(108, 117, 125, 0.16) !important;
+}
+
+.quiz-result-meta .badge,
+.quiz-status-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.quiz-row-main {
+  min-width: 0;
+}
+
+.quiz-result-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.quiz-attempt-count {
+  font-size: 2rem;
+  line-height: 1;
+  font-weight: 700;
+  color: #1f2f44;
+}
+
+.quiz-attempt-label {
+  margin-top: 0.2rem;
+  font-size: 0.82rem;
+  color: #5d6d80;
+}
+
+.quiz-action-btn {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(95, 117, 143, 0.18);
+  background: #fff;
+  color: #31465d;
+}
+
+.quiz-action-btn:hover {
+  background: #f6f8fc;
+  color: #223447;
+}
+
+.quiz-action-btn.view-active {
+  background: linear-gradient(180deg, #7f9de0 0%, #6588d2 100%);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 10px 20px rgba(101, 136, 210, 0.24);
+}
+
+.quiz-row-divider + .quiz-row-divider {
+  margin-top: 0.75rem;
 }
 
 @media (max-width: 767.98px) {
@@ -194,6 +417,29 @@ body {
   .container-fluid {
     padding-left: 1rem;
     padding-right: 1rem;
+  }
+
+  .results-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quiz-result-card .card-body {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .quiz-result-kpi {
+    text-align: left;
+  }
+
+  .quiz-result-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .results-summary-grid {
+    grid-template-columns: 1fr;
   }
 }
     </style>
@@ -236,16 +482,38 @@ body {
             <div class="position-sticky pt-3">
                 <h4 class="text-center mb-4">Gnosis Portal</h4>
                 <ul class="nav flex-column">
-                    <li class="nav-item"><a class="nav-link" href="/professor/dashboard">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/professor/sections">Sections</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/professor/dashboard"><svg class="bi bi-speedometer2 me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 4a.5.5 0 0 1 .5.5v4.5h4a.5.5 0 0 1 0 1h-4.5a.5.5 0 0 1-.5-.5V4.5A.5.5 0 0 1 8 4"></path>
+                                <path d="M3.732 4.732a6 6 0 1 1 8.536 8.536.5.5 0 0 1-.707-.707 5 5 0 1 0-7.122-7.122.5.5 0 0 1-.707-.707"></path>
+                                <path d="M10.5 10a.5.5 0 0 1 .5.5v.5a3 3 0 1 1-6 0v-.5a.5.5 0 0 1 1 0v.5a2 2 0 1 0 4 0v-.5a.5.5 0 0 1 .5-.5"></path>
+                            </svg>Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/professor/sections"><svg class="bi bi-collection me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M2.5 3.5a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1zm2-2a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1zM0 13a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 16 13V6a1.5 1.5 0 0 0-1.5-1.5h-13A1.5 1.5 0 0 0 0 6zm1.5.5A.5.5 0 0 1 1 13V6a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5z"></path>
+                            </svg>Sections</a></li>
                 </ul>
                 <h6 class="text-muted d-flex justify-content-between align-items-center mt-4 mb-1 px-3 text-uppercase small">Quick Actions</h6>
                 <ul class="nav flex-column">
-                    <li class="nav-item"><a class="nav-link" href="/professor/announcements">Announcements</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/professor/assignments">Assignments</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/professor/lessons">Lessons</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/professor/quiz">Quizzes</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="/professor/quiz-results">Quiz Results</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/professor/announcements"><svg class="bi bi-megaphone me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M13 2.5a1.5 1.5 0 0 1 3 0v11a1.5 1.5 0 0 1-3 0v-.214c-2.162-1.241-4.49-1.843-6.912-2.083l.405 2.712A1 1 0 0 1 5.51 15.1h-.548a1 1 0 0 1-.916-.599l-1.85-3.49a68.14 68.14 0 0 0-.202-.003A2.014 2.014 0 0 1 0 9V7a2.02 2.02 0 0 1 1.992-2.013 74.663 74.663 0 0 0 2.483-.075c3.043-.154 6.148-.849 8.525-2.199zm1 0v11a.5.5 0 0 0 1 0v-11a.5.5 0 0 0-1 0m-1 1.35c-2.344 1.205-5.209 1.842-8 2.033v4.233c.18.01.359.022.537.036 2.568.189 5.093.744 7.463 1.993V3.85zm-9 6.215v-4.13a95.09 95.09 0 0 1-1.992.052A1.02 1.02 0 0 0 1 7v2c0 .55.448 1.002 1.006 1.009A60.49 60.49 0 0 1 4 10.065m-.657.975 1.609 3.037.01.024h.548l-.002-.014-.443-2.966a68.019 68.019 0 0 0-1.722-.082z"></path>
+                            </svg>Announcements</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/professor/assignments"><svg class="bi bi-journal-bookmark me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M6 8V1h1v6.117L8.743 6.07a.5.5 0 0 1 .514 0L11 7.117V1h1v7a.5.5 0 0 1-.757.429L9 7.083 6.757 8.43A.5.5 0 0 1 6 8"></path>
+                                <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2"></path>
+                                <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z"></path>
+                            </svg>Assignments</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/professor/lessons"><svg class="bi bi-file-earmark-text me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"></path>
+                                <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"></path>
+                            </svg>Lessons</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/professor/quiz"><svg class="bi bi-question-circle me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94"></path>
+                            </svg>Quizzes</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/professor/quiz-results"><svg class="bi bi-bar-chart-line me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M0 0h1v15h15v1H0z"></path>
+                                <path d="M10 10.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5V14h-2zM6 7.5A.5.5 0 0 1 6.5 7h1a.5.5 0 0 1 .5.5V14H6zM2 12.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5V14H2z"></path>
+                                <path fill-rule="evenodd" d="M14 4.5a.5.5 0 0 1-.5.5h-2.793l-2.146 2.147a.5.5 0 0 1-.708 0L5.5 4.793 2.854 7.439a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0L8.207 6.086l1.793-1.793A1 1 0 0 1 10.707 4H13.5a.5.5 0 0 1 .5.5"></path>
+                            </svg>Quiz Results</a></li>
                 </ul>
             </div>
         </div>
@@ -253,7 +521,7 @@ body {
         <main class="col-md-9 col-lg-10 ms-sm-auto px-md-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap flex-md-nowrap pt-3 mb-3 pb-2 border-bottom">
                 <div>
-                    <h1 class="h2 mb-1">Quiz Results</h1>
+                    <h1 class="results-page-title mb-1">Quiz Results</h1>
                     <p class="text-muted mb-0">Open a quiz card to review attempts, scores, and section-level performance.</p>
                 </div>
                 <div class="btn-toolbar mb-2 mb-md-0">
@@ -266,8 +534,8 @@ body {
                 </div>
             </div>
 
-            <section class="mb-4">
-                <div class="card">
+            <section class="mb-4 results-shell">
+                <div class="card results-section-card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Quiz Cards</h5>
                         <span class="text-muted small" id="quizCardsCount">0 quizzes</span>
@@ -282,7 +550,7 @@ body {
             </section>
 
             <section>
-                <div class="card">
+                <div class="card results-section-card">
                     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <div>
                             <h5 class="mb-0" id="resultTableTitle">Student Results</h5>
@@ -301,30 +569,22 @@ body {
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="row g-3 mb-3" id="selectedQuizSummaryRow">
-                            <div class="col-md-3">
-                                <div class="border rounded-3 p-3 h-100 bg-light">
-                                    <div class="text-muted small">Subject</div>
-                                    <div class="fw-semibold" id="selectedQuizSubject">-</div>
-                                </div>
+                        <div class="results-summary-grid mb-3" id="selectedQuizSummaryRow">
+                            <div class="summary-tile">
+                                <div class="summary-tile-label">Subject</div>
+                                <div class="summary-tile-value" id="selectedQuizSubject">-</div>
                             </div>
-                            <div class="col-md-3">
-                                <div class="border rounded-3 p-3 h-100 bg-light">
-                                    <div class="text-muted small">Section</div>
-                                    <div class="fw-semibold" id="selectedQuizSection">-</div>
-                                </div>
+                            <div class="summary-tile">
+                                <div class="summary-tile-label">Section</div>
+                                <div class="summary-tile-value" id="selectedQuizSection">-</div>
                             </div>
-                            <div class="col-md-3">
-                                <div class="border rounded-3 p-3 h-100 bg-light">
-                                    <div class="text-muted small">Students Attempted</div>
-                                    <div class="fw-semibold" id="selectedQuizStudents">0</div>
-                                </div>
+                            <div class="summary-tile">
+                                <div class="summary-tile-label">Students Attempted</div>
+                                <div class="summary-tile-value" id="selectedQuizStudents">0</div>
                             </div>
-                            <div class="col-md-3">
-                                <div class="border rounded-3 p-3 h-100 bg-light">
-                                    <div class="text-muted small">Highest Score</div>
-                                    <div class="fw-semibold" id="selectedQuizTopScore">-</div>
-                                </div>
+                            <div class="summary-tile">
+                                <div class="summary-tile-label">Highest Score</div>
+                                <div class="summary-tile-value" id="selectedQuizTopScore">-</div>
                             </div>
                         </div>
 
@@ -335,13 +595,11 @@ body {
 
                         <div id="resultTableWrapper" class="d-none">
                             <div class="table-responsive">
-                                <table class="table table-hover align-middle">
+                                <table class="table table-hover align-middle compact-table">
                                     <thead>
                                     <tr>
-                                        <th>Student ID</th>
-                                        <th>Student Name</th>
-                                        <th>Course</th>
-                                        <th>Section</th>
+                                        <th>Student</th>
+                                        <th>Academic Info</th>
                                         <th>Attempts Taken</th>
                                         <th>Score</th>
                                     </tr>
