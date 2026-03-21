@@ -213,6 +213,7 @@ public class SecurityConfig {
 		http.csrf(csrf -> csrf.ignoringRequestMatchers(
 				"/h2-console/**",
 				"/logout",
+				"/login",
 				"/student/api/assignments/**"
 		));
 		http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));

@@ -55,7 +55,32 @@ document.addEventListener('DOMContentLoaded', function() {
     // Navigation Handling
     const navLinks = document.querySelectorAll('.sidebar a');
     const contentSections = document.querySelectorAll('.content-section');
-    
+
+    function activateSection(targetSection) {
+        if (!targetSection) {
+            return;
+        }
+
+        const targetEl = document.querySelector(targetSection);
+        if (!targetEl) {
+            return;
+        }
+
+        navLinks.forEach(l => {
+            if (l.parentElement) {
+                l.parentElement.classList.remove('active');
+            }
+        });
+        contentSections.forEach(section => section.classList.remove('active'));
+
+        const matchingLink = document.querySelector(`.sidebar a[href="${targetSection}"]`);
+        if (matchingLink && matchingLink.parentElement) {
+            matchingLink.parentElement.classList.add('active');
+        }
+
+        targetEl.classList.add('active');
+    }
+
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
@@ -65,27 +90,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            const targetEl = document.querySelector(targetSection);
-            if (!targetEl) {
-                return;
+            activateSection(targetSection);
+            if (window.location.hash !== targetSection) {
+                window.location.hash = targetSection;
             }
-            
-            // Remove active class from all links and sections
-            navLinks.forEach(l => {
-                if (l.parentElement) {
-                    l.parentElement.classList.remove('active');
-                }
-            });
-            contentSections.forEach(section => section.classList.remove('active'));
-            
-            // Add active class to clicked link
-            if (this.parentElement) {
-                this.parentElement.classList.add('active');
-            }
-            
-            // Show corresponding section
-            targetEl.classList.add('active');
         });
+    });
+
+    if (window.location.hash) {
+        activateSection(window.location.hash);
+    }
+
+    window.addEventListener('hashchange', function() {
+        activateSection(window.location.hash);
     });
 
     // Subject Tags Management
@@ -462,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Add event listeners for existing remove-slot buttons
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', async function(e) {
         if (e.target && e.target.classList.contains('remove-slot')) {
             e.target.closest('.schedule-slot').remove();
         }
@@ -822,7 +839,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return true;
     }
 
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', async function(e) {
         const viewBtn = e.target.closest('.view-instructor');
         if (viewBtn) {
             e.preventDefault();
@@ -1781,23 +1798,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dropdownProfileLink) {
         dropdownProfileLink.addEventListener('click', function(e) {
             e.preventDefault();
-            
-            // Remove active class from all sidebar links and sections
-            navLinks.forEach(l => l.parentElement.classList.remove('active'));
-            contentSections.forEach(section => section.classList.remove('active'));
-            
-            // Add active class to the profile section
-            const profileSection = document.querySelector('#profile-section');
-            if (profileSection) {
-                profileSection.classList.add('active');
-            }
-            
-            // Also activate the profile link in sidebar if it exists
-            const sidebarProfileLink = document.querySelector('#sidebar a[href="#profile-section"]');
-            if (sidebarProfileLink) {
-                sidebarProfileLink.parentElement.classList.add('active');
+
+            activateSection('#profile-section');
+            if (window.location.hash !== '#profile-section') {
+                window.location.hash = '#profile-section';
             }
         });
     }
 });
-
