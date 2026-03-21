@@ -2,6 +2,7 @@ package com.example.Gnosis.web;
 
 import com.example.Gnosis.quiz.QuizRequest;
 import com.example.Gnosis.quiz.QuizResponse;
+import com.example.Gnosis.quiz.ProfessorQuizResultsService;
 import com.example.Gnosis.quiz.QuizService;
 import com.example.Gnosis.schoolclass.SchoolClassDto;
 import com.example.Gnosis.schoolclass.SchoolClassService;
@@ -24,10 +25,16 @@ import java.util.List;
 public class ProfessorQuizApiController {
 	private final SchoolClassService schoolClassService;
 	private final QuizService quizService;
+	private final ProfessorQuizResultsService professorQuizResultsService;
 
-	public ProfessorQuizApiController(SchoolClassService schoolClassService, QuizService quizService) {
+	public ProfessorQuizApiController(
+			SchoolClassService schoolClassService,
+			QuizService quizService,
+			ProfessorQuizResultsService professorQuizResultsService
+	) {
 		this.schoolClassService = schoolClassService;
 		this.quizService = quizService;
+		this.professorQuizResultsService = professorQuizResultsService;
 	}
 
 	@GetMapping("/meta")
@@ -63,6 +70,21 @@ public class ProfessorQuizApiController {
 	public List<QuizResponse> list(Authentication authentication) {
 		ProfessorIdentity professor = resolveProfessor(authentication);
 		return quizService.listForProfessor(professor.id());
+	}
+
+	@GetMapping("/results")
+	public List<ProfessorQuizResultsService.QuizResultCard> resultCards(Authentication authentication) {
+		ProfessorIdentity professor = resolveProfessor(authentication);
+		return professorQuizResultsService.listQuizCards(professor.id());
+	}
+
+	@GetMapping("/{id}/results")
+	public ProfessorQuizResultsService.QuizResultDetails resultDetails(
+			@PathVariable Long id,
+			Authentication authentication
+	) {
+		ProfessorIdentity professor = resolveProfessor(authentication);
+		return professorQuizResultsService.getQuizResults(id, professor.id());
 	}
 
 	@PostMapping

@@ -5,7 +5,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
@@ -45,6 +47,8 @@ public class AssignmentSubmission {
 	@Column(length = 128)
 	private String studentSection;
 
+	private Integer assignmentPoints;
+
 	@Column(nullable = false, length = 255)
 	private String filename;
 
@@ -55,6 +59,14 @@ public class AssignmentSubmission {
 	private String contentType;
 
 	private Long fileSize;
+
+	private Integer grade;
+
+	@Lob
+	@Column(columnDefinition = "LONGTEXT")
+	private String feedback;
+
+	private Instant gradedAt;
 
 	@Column(nullable = false)
 	private Instant submittedAt;
@@ -130,6 +142,14 @@ public class AssignmentSubmission {
 		this.studentSection = studentSection;
 	}
 
+	public Integer getAssignmentPoints() {
+		return assignmentPoints;
+	}
+
+	public void setAssignmentPoints(Integer assignmentPoints) {
+		this.assignmentPoints = assignmentPoints;
+	}
+
 	public String getFilename() {
 		return filename;
 	}
@@ -162,6 +182,30 @@ public class AssignmentSubmission {
 		this.fileSize = fileSize;
 	}
 
+	public Integer getGrade() {
+		return grade;
+	}
+
+	public void setGrade(Integer grade) {
+		this.grade = grade;
+	}
+
+	public String getFeedback() {
+		return feedback;
+	}
+
+	public void setFeedback(String feedback) {
+		this.feedback = feedback;
+	}
+
+	public Instant getGradedAt() {
+		return gradedAt;
+	}
+
+	public void setGradedAt(Instant gradedAt) {
+		this.gradedAt = gradedAt;
+	}
+
 	public Instant getSubmittedAt() {
 		return submittedAt;
 	}
@@ -169,5 +213,12 @@ public class AssignmentSubmission {
 	@PrePersist
 	void onCreate() {
 		submittedAt = Instant.now();
+	}
+
+	@PreUpdate
+	void onUpdate() {
+		if (grade != null && gradedAt == null) {
+			gradedAt = Instant.now();
+		}
 	}
 }

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Quiz Results</title>
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+    <style>
+body {
+  padding-top: 70px;
+  background: #f6f8fb;
+}
+.results-shell {
+  max-width: 1100px;
+}
+.summary-card, .review-card {
+  border: none;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(20, 35, 90, 0.08);
+}
+.score-ring {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin: 0 auto;
+  background: conic-gradient(#198754 0deg, #198754 0deg, #dc3545 0deg, #dc3545 360deg);
+}
+.score-ring::before {
+  content: "";
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: white;
+  position: absolute;
+}
+.score-ring-inner {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+.metric-chip {
+  border-radius: 999px;
+  padding: 0.4rem 0.8rem;
+  font-weight: 600;
+  display: inline-block;
+}
+.result-item {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  padding: 1rem;
+  background: #fff;
+}
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg bg-white shadow-sm navbar-light fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold d-flex align-items-center" href="/student/dashboard">
+            <span class="d-flex justify-content-center align-items-center me-2"><img src="/assets/img/Logo.jpg" alt="Logo" width="32" height="32"></span>Gnosis Academy
+        </a>
+        <a class="btn btn-outline-secondary btn-sm" href="/student/quiz">Back to Quizzes</a>
+    </div>
+</nav>
+<main class="container py-4 results-shell">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+        <div>
+            <h1 class="h2 mb-1" id="resultQuizTitle">Quiz Results</h1>
+            <div class="text-muted" id="resultQuizMeta">Subject</div>
+        </div>
+        <div class="d-flex gap-2 align-items-start flex-wrap justify-content-end">
+            <div class="text-end me-2">
+                <div class="text-muted small">Attempt</div>
+                <div class="fw-semibold" id="resultAttemptLabel">1</div>
+            </div>
+            <a class="btn btn-outline-secondary btn-sm" href="/student/quiz">Back to Quizzes</a>
+            <a class="btn btn-primary btn-sm d-none" href="#" id="retakeQuizBtn">Retake Quiz</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card summary-card h-100">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-4">Score Summary</h2>
+                    <div class="score-ring position-relative" id="scoreRing">
+                        <div class="score-ring-inner">
+                            <div class="text-muted small">Score</div>
+                            <div class="display-6 fw-bold" id="scoreValue">0%</div>
+                            <div class="text-muted" id="scoreFraction">0 / 0</div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-center gap-2 flex-wrap mt-4">
+                        <span class="metric-chip text-bg-success" id="correctChip">Correct: 0</span>
+                        <span class="metric-chip text-bg-danger" id="wrongChip">Wrong: 0</span>
+                    </div>
+                    <hr class="my-4">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="text-muted small">Attempts Used</div>
+                            <div class="fw-semibold" id="attemptsUsedValue">0</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="text-muted small">Attempts Remaining</div>
+                            <div class="fw-semibold" id="attemptsRemainingValue">Unlimited</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card review-card h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <h2 class="h5 mb-0">Answer Review</h2>
+                        <span class="text-muted small" id="reviewSummary">0 wrong answers</span>
+                    </div>
+                    <div class="d-grid gap-3" id="wrongAnswersList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<script>
+document.addEventListener('DOMContentLoaded', async function () {
+    const params = new URLSearchParams(window.location.search);
+    const quizId = params.get('id') || '';
+    const attempt = params.get('attempt') || '';
+    const title = params.get('title') || 'Quiz Results';
+    const subject = params.get('subject') || 'Subject';
+
+    const titleEl = document.getElementById('resultQuizTitle');
+    const metaEl = document.getElementById('resultQuizMeta');
+    const attemptLabelEl = document.getElementById('resultAttemptLabel');
+    const scoreValueEl = document.getElementById('scoreValue');
+    const scoreFractionEl = document.getElementById('scoreFraction');
+    const correctChipEl = document.getElementById('correctChip');
+    const wrongChipEl = document.getElementById('wrongChip');
+    const attemptsUsedEl = document.getElementById('attemptsUsedValue');
+    const attemptsRemainingEl = document.getElementById('attemptsRemainingValue');
+    const reviewSummaryEl = document.getElementById('reviewSummary');
+    const wrongAnswersListEl = document.getElementById('wrongAnswersList');
+    const scoreRingEl = document.getElementById('scoreRing');
+    const retakeQuizBtn = document.getElementById('retakeQuizBtn');
+
+    if (titleEl) titleEl.textContent = title;
+    if (metaEl) metaEl.textContent = subject;
+    if (attemptLabelEl) attemptLabelEl.textContent = attempt || '-';
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function renderWrongAnswers(items) {
+        wrongAnswersListEl.innerHTML = '';
+        if (!items.length) {
+            wrongAnswersListEl.innerHTML = '<div class="text-success fw-semibold">Perfect score. No wrong answers.</div>';
+            return;
+        }
+        items.forEach(item => {
+            const block = document.createElement('div');
+            block.className = 'result-item';
+            block.innerHTML = `
+                <div class="fw-semibold mb-2">Question ${item.number}</div>
+                <div class="mb-2">${escapeHtml(item.prompt)}</div>
+                <div class="text-danger small mb-1">Your Answer: ${escapeHtml(item.answer || '(No answer)')}</div>
+                <div class="text-success small">Correct Answer: ${escapeHtml(item.correctAnswer || '(Not set)')}</div>
+            `;
+            wrongAnswersListEl.appendChild(block);
+        });
+    }
+
+    try {
+        const response = await fetch(`/student/api/quizzes/${encodeURIComponent(quizId)}/attempts/${encodeURIComponent(attempt)}`, {
+            cache: 'no-store'
+        });
+        if (!response.ok) {
+            throw new Error('Unable to load quiz results.');
+        }
+        const payload = await response.json();
+        const total = payload.totalQuestions || 0;
+        const correct = payload.correctAnswers || 0;
+        const wrong = Math.max(total - correct, 0);
+        const percent = total > 0 ? Math.round((correct / total) * 100) : 0;
+        const correctDegrees = total > 0 ? Math.round((correct / total) * 360) : 0;
+
+        if (titleEl) titleEl.textContent = title || `Quiz #${payload.quizId}`;
+        if (metaEl) metaEl.textContent = `${subject} • Attempt ${payload.attemptNumber}`;
+        if (attemptLabelEl) attemptLabelEl.textContent = payload.attemptNumber ?? '-';
+        if (scoreValueEl) scoreValueEl.textContent = `${percent}%`;
+        if (scoreFractionEl) scoreFractionEl.textContent = `${correct} / ${total}`;
+        if (correctChipEl) correctChipEl.textContent = `Correct: ${correct}`;
+        if (wrongChipEl) wrongChipEl.textContent = `Wrong: ${wrong}`;
+        if (attemptsUsedEl) attemptsUsedEl.textContent = payload.attemptsUsed ?? 0;
+        if (attemptsRemainingEl) {
+            attemptsRemainingEl.textContent = payload.attemptsRemaining == null ? 'Unlimited' : payload.attemptsRemaining;
+        }
+        if (retakeQuizBtn) {
+            const attemptsRemaining = payload.attemptsRemaining;
+            const canRetake = attemptsRemaining == null || attemptsRemaining > 0;
+            if (canRetake) {
+                const nextParams = new URLSearchParams({
+                    id: String(payload.quizId || quizId || ''),
+                    title: titleEl ? titleEl.textContent.trim() : title,
+                    subject
+                });
+                retakeQuizBtn.href = `/student/quiz/start?${nextParams.toString()}`;
+                retakeQuizBtn.classList.remove('d-none');
+            } else {
+                retakeQuizBtn.classList.add('d-none');
+            }
+        }
+        if (reviewSummaryEl) {
+            reviewSummaryEl.textContent = wrong === 1 ? '1 wrong answer' : `${wrong} wrong answers`;
+        }
+        if (scoreRingEl) {
+            scoreRingEl.style.background = `conic-gradient(#198754 0deg ${correctDegrees}deg, #dc3545 ${correctDegrees}deg 360deg)`;
+        }
+        renderWrongAnswers((payload.items || []).filter(item => !item.correct));
+    } catch (error) {
+        if (wrongAnswersListEl) {
+            wrongAnswersListEl.innerHTML = `<div class="text-danger">${escapeHtml(error.message || 'Unable to load quiz results.')}</div>`;
+        }
+    }
+});
+</script>
+</body>
+</html>

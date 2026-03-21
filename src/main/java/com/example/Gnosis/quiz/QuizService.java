@@ -7,6 +7,8 @@ import com.example.Gnosis.activity.ProfessorActivityService;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 
 @Service
 public class QuizService {
@@ -29,16 +31,38 @@ public class QuizService {
 	@Transactional(readOnly = true)
 	public List<QuizResponse> listForStudentSection(String studentSection, java.util.Set<String> allowedSubjects) {
 		java.util.Set<String> normalizedSubjects = normalizeSubjects(allowedSubjects);
-		if (normalizedSubjects.isEmpty()) {
-			return java.util.List.of();
-		}
 		return quizRepository.findAllByOrderByCreatedAtDesc()
 				.stream()
 				.filter(quiz -> isSectionAllowed(quiz.getSection(), studentSection))
-				.filter(quiz -> subjectAllowed(quiz.getSubject(), normalizedSubjects))
+				.filter(quiz -> normalizedSubjects.isEmpty() || subjectAllowed(quiz.getSubject(), normalizedSubjects))
 				.filter(QuizService::statusAllowedForStudent)
 				.map(this::toResponse)
 				.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public QuizResponse getForStudent(Long id, String studentSection, java.util.Set<String> allowedSubjects) {
+		return toResponse(getEntityForStudent(id, studentSection, allowedSubjects));
+	}
+
+	@Transactional(readOnly = true)
+	public Quiz getEntityForStudent(Long id, String studentSection, java.util.Set<String> allowedSubjects) {
+		Quiz quiz = quizRepository.findById(id)
+				.orElseThrow(() -> new NoSuchElementException("Quiz not found."));
+		if (!isSectionAllowed(quiz.getSection(), studentSection)) {
+			throw new IllegalArgumentException("Unauthorized quiz access.");
+		}
+		java.util.Set<String> normalizedSubjects = normalizeSubjects(allowedSubjects);
+		if (!normalizedSubjects.isEmpty() && !subjectAllowed(quiz.getSubject(), normalizedSubjects)) {
+			throw new IllegalArgumentException("Unauthorized quiz access.");
+		}
+		if (!statusAllowedForStudent(quiz)) {
+			throw new IllegalArgumentException("Unauthorized quiz access.");
+		}
+		if (isExpired(quiz)) {
+			throw new IllegalArgumentException("Quiz has already expired.");
+		}
+		return quiz;
 	}
 
 	@Transactional
@@ -124,7 +148,7 @@ public class QuizService {
 		response.setDurationMinutes(quiz.getDurationMinutes());
 		response.setQuestionCount(quiz.getQuestionCount());
 		response.setAttempts(quiz.getAttempts());
-		response.setStatus(quiz.getStatus());
+		response.setStatus(resolveDisplayStatus(quiz));
 		response.setDueDate(quiz.getDueDate());
 		response.setDescription(quiz.getDescription());
 		response.setQuestionsJson(quiz.getQuestionsJson());
@@ -137,7 +161,7 @@ public class QuizService {
 
 	private static boolean isSectionAllowed(String quizSection, String studentSection) {
 		if (quizSection == null || quizSection.isBlank()) {
-			return false;
+			return true;
 		}
 		String normalized = quizSection.trim();
 		if ("All Sections".equalsIgnoreCase(normalized)) {
@@ -146,18 +170,39 @@ public class QuizService {
 		if (studentSection == null || studentSection.isBlank()) {
 			return false;
 		}
-		return normalized.equalsIgnoreCase(studentSection.trim());
+		String studentNormalized = studentSection.trim();
+		if (normalized.equalsIgnoreCase(studentNormalized)) {
+			return true;
+		}
+		String compactQuizSection = normalizeLooseLabel(normalized);
+		String compactStudentSection = normalizeLooseLabel(studentNormalized);
+		return compactQuizSection.equals(compactStudentSection)
+				|| compactQuizSection.endsWith(compactStudentSection)
+				|| compactStudentSection.endsWith(compactQuizSection);
 	}
 
 	private static boolean subjectAllowed(String subject, java.util.Set<String> allowedSubjects) {
 		if (subject == null || allowedSubjects == null || allowedSubjects.isEmpty()) {
 			return false;
 		}
-		String normalized = subject.trim().toLowerCase();
-		if (normalized.isEmpty()) {
-			return false;
+		for (String variant : normalizeSubjectVariants(subject)) {
+			if (allowedSubjects.contains(variant)) {
+				return true;
+			}
+			String compactVariant = normalizeLooseLabel(variant);
+			for (String allowed : allowedSubjects) {
+				if (allowed == null || allowed.isBlank()) {
+					continue;
+				}
+				String compactAllowed = normalizeLooseLabel(allowed);
+				if (compactVariant.equals(compactAllowed)
+						|| compactVariant.contains(compactAllowed)
+						|| compactAllowed.contains(compactVariant)) {
+					return true;
+				}
+			}
 		}
-		return allowedSubjects.contains(normalized);
+		return false;
 	}
 
 	private static boolean statusAllowedForStudent(Quiz quiz) {
@@ -171,14 +216,63 @@ public class QuizService {
 		return !"draft".equalsIgnoreCase(status.trim());
 	}
 
+	public static boolean isExpired(Quiz quiz) {
+		if (quiz == null) {
+			return false;
+		}
+		String dueDate = trimToNull(quiz.getDueDate());
+		if (dueDate == null) {
+			return false;
+		}
+		try {
+			return LocalDateTime.parse(dueDate).isBefore(LocalDateTime.now());
+		} catch (DateTimeParseException ignored) {
+			return false;
+		}
+	}
+
+	private static String resolveDisplayStatus(Quiz quiz) {
+		if (quiz == null) {
+			return null;
+		}
+		String status = trimToNull(quiz.getStatus());
+		if (status == null) {
+			return isExpired(quiz) ? "EXPIRED" : null;
+		}
+		if (!"archived".equalsIgnoreCase(status) && isExpired(quiz)) {
+			return "EXPIRED";
+		}
+		return status;
+	}
+
 	private static java.util.Set<String> normalizeSubjects(java.util.Set<String> allowedSubjects) {
 		if (allowedSubjects == null || allowedSubjects.isEmpty()) {
 			return java.util.Set.of();
 		}
 		return allowedSubjects.stream()
-				.map(subject -> subject == null ? "" : subject.trim().toLowerCase())
-				.filter(subject -> !subject.isBlank())
+				.flatMap(subject -> normalizeSubjectVariants(subject).stream())
 				.collect(java.util.stream.Collectors.toSet());
+	}
+
+	private static java.util.Set<String> normalizeSubjectVariants(String subject) {
+		if (subject == null) {
+			return java.util.Set.of();
+		}
+		String normalized = subject.trim().toLowerCase();
+		if (normalized.isBlank()) {
+			return java.util.Set.of();
+		}
+		java.util.LinkedHashSet<String> variants = new java.util.LinkedHashSet<>();
+		variants.add(normalized);
+		if (normalized.contains(" - ")) {
+			String[] parts = normalized.split("\\s+-\\s+", 2);
+			for (String part : parts) {
+				if (!part.isBlank()) {
+					variants.add(part.trim());
+				}
+			}
+		}
+		return variants;
 	}
 
 	private static String requireText(String value, String message) {
@@ -195,5 +289,17 @@ public class QuizService {
 		}
 		String trimmed = value.trim();
 		return trimmed.isEmpty() ? null : trimmed;
+	}
+
+	private static String normalizeLooseLabel(String value) {
+		if (value == null) {
+			return "";
+		}
+		return value.trim()
+				.toLowerCase()
+				.replace('-', ' ')
+				.replace('_', ' ')
+				.replace('/', ' ')
+				.replaceAll("\\s+", " ");
 	}
 }

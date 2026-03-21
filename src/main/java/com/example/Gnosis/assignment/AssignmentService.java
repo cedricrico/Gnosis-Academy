@@ -22,6 +22,7 @@ import java.util.UUID;
 @Service
 public class AssignmentService {
 	private final AssignmentRepository assignmentRepository;
+	private final AssignmentSubmissionRepository submissionRepository;
 	private final ProfessorActivityService activityService;
 	private final Path attachmentRoot = Paths.get("uploads", "assignments");
 	private static final Set<String> ALLOWED_EXTENSIONS = Set.of("pdf", "doc", "docx", "ppt", "pptx");
@@ -33,8 +34,13 @@ public class AssignmentService {
 			"application/vnd.openxmlformats-officedocument.presentationml.presentation"
 	);
 
-	public AssignmentService(AssignmentRepository assignmentRepository, ProfessorActivityService activityService) {
+	public AssignmentService(
+			AssignmentRepository assignmentRepository,
+			AssignmentSubmissionRepository submissionRepository,
+			ProfessorActivityService activityService
+	) {
 		this.assignmentRepository = assignmentRepository;
+		this.submissionRepository = submissionRepository;
 		this.activityService = activityService;
 	}
 
@@ -194,6 +200,7 @@ public class AssignmentService {
 		response.setProfessorName(assignment.getProfessorName());
 		response.setAttachmentName(assignment.getAttachmentName());
 		response.setAttachmentContentType(assignment.getAttachmentContentType());
+		response.setSubmissions(submissionRepository.countByAssignmentId(assignment.getId()));
 		response.setCreatedAt(assignment.getCreatedAt());
 		response.setUpdatedAt(assignment.getUpdatedAt());
 		return response;

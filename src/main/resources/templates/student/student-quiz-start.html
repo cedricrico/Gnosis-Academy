@@ -418,10 +418,12 @@ body {
                         </div>
                         <div class="quiz-instructions">
                             <strong>Instructions:</strong>
-                            <ul class="mb-0 mt-1">
+                            <p class="mb-0 mt-1" id="quizInstructionsText">Review the quiz description provided by your instructor before answering.</p>
+                            <ul class="mb-0 mt-2" id="quizInstructionsList">
                                 <li>Answer all questions before submitting.</li>
                                 <li>You can review your answers before final submission.</li>
                                 <li>Timer will keep running until you submit.</li>
+                                <li>Switching tabs or leaving this page will automatically submit your quiz and consume an attempt.</li>
                             </ul>
                         </div>
                     </div>
@@ -433,9 +435,6 @@ body {
                                 <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
                             </div>
                         </div>
-                    </div>
-                    <div class="quiz-header-right">
-                        <a class="btn btn-outline-secondary btn-sm" href="/student/quiz">Back to Quizzes</a>
                     </div>
                 </div>
 
@@ -454,7 +453,7 @@ body {
                 <div class="row">
                     <div class="col-12">
                         <div class="d-flex justify-content-end pb-4">
-                            <button class="btn btn-success w-100" type="button">Submit Quiz</button>
+                            <button class="btn btn-success w-100" id="submitQuizBtn" type="button">Submit Quiz</button>
                         </div>
                     </div>
                 </div>
@@ -465,6 +464,7 @@ body {
     <script>
 document.addEventListener('DOMContentLoaded', function() {
     const params = new URLSearchParams(window.location.search);
+    let quizId = params.get('id') || '';
     const title = params.get('title') || 'Quiz';
     const subject = params.get('subject') || 'Subject';
     const due = params.get('due') || 'Date';
@@ -475,6 +475,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const questionList = document.getElementById('questionList');
     const progressText = document.querySelector('.quiz-progress p');
     const progressBar = document.querySelector('.quiz-progress .progress-bar');
+    const timerLabel = document.querySelector('.quiz-timer');
+    const submitQuizBtn = document.getElementById('submitQuizBtn');
+    const instructionsText = document.getElementById('quizInstructionsText');
+    let activeQuestions = [];
+    let timerInterval = null;
+    let secondsRemaining = 0;
+    let submissionInFlight = false;
+    let quizSubmitted = false;
 
     if (titleHeading) {
         titleHeading.textContent = title;
@@ -486,43 +494,48 @@ document.addEventListener('DOMContentLoaded', function() {
         dueMeta.textContent = due;
     }
 
-    const quizQuestions = [
-        {
-            id: "q1",
-            type: "identification",
-            prompt: "Define the term \"algorithm\" in one sentence."
-        },
-        {
-            id: "q2",
-            type: "multiple_choice",
-            prompt: "Which data structure uses FIFO order?",
-            options: ["Stack", "Queue", "Tree", "Graph"]
-        }
-    ];
-
     function renderQuestions(questions) {
         if (!questionList) {
             return;
         }
+        activeQuestions = Array.isArray(questions) ? questions : [];
         questionList.innerHTML = "";
-        questions.forEach((question, index) => {
+        if (!activeQuestions.length) {
+            const empty = document.createElement("div");
+            empty.className = "text-muted";
+            empty.textContent = "No quiz questions were found for this quiz.";
+            questionList.appendChild(empty);
+            if (progressText) {
+                progressText.textContent = "Answered 0 of 0 questions";
+            }
+            if (progressBar) {
+                progressBar.style.width = "0%";
+                progressBar.setAttribute("aria-valuenow", "0");
+            }
+            if (submitQuizBtn) {
+                submitQuizBtn.disabled = true;
+            }
+            return;
+        }
+        if (submitQuizBtn) {
+            submitQuizBtn.disabled = false;
+        }
+        activeQuestions.forEach((question, index) => {
             const card = document.createElement("div");
             card.className = "question-card";
+            const questionType = normalizeQuestionType(question.type);
 
             const prompt = document.createElement("p");
             prompt.className = "mb-2";
-            prompt.innerHTML = `<strong>${index + 1}.</strong> ${question.prompt}`;
+            const promptText = question.prompt || question.question || `Question ${index + 1}`;
+            prompt.innerHTML = `<strong>${index + 1}.</strong> ${promptText}`;
             card.appendChild(prompt);
 
-            if (question.type === "identification") {
-                const input = document.createElement("input");
-                input.type = "text";
-                input.className = "form-control";
-                input.name = question.id;
-                input.placeholder = "Type your answer here";
-                card.appendChild(input);
-            } else if (question.type === "multiple_choice") {
-                question.options.forEach((option, optionIndex) => {
+            if (questionType === "multiple_choice") {
+                const choices = Array.isArray(question.options)
+                    ? question.options
+                    : Object.values(question.choices || {});
+                choices.forEach((option, optionIndex) => {
                     const wrapper = document.createElement("div");
                     wrapper.className = `answer-option${optionIndex > 0 ? " mt-2" : ""}`;
 
@@ -532,8 +545,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     const input = document.createElement("input");
                     input.className = "form-check-input";
                     input.type = "radio";
-                    input.name = question.id;
-                    input.id = `${question.id}_option_${optionIndex}`;
+                    input.name = question.id || `q${index + 1}`;
+                    input.id = `${question.id || `q${index + 1}`}_option_${optionIndex}`;
+                    input.value = option;
 
                     const label = document.createElement("label");
                     label.className = "form-check-label";
@@ -545,21 +559,309 @@ document.addEventListener('DOMContentLoaded', function() {
                     wrapper.appendChild(formCheck);
                     card.appendChild(wrapper);
                 });
+            } else {
+                const input = document.createElement("input");
+                input.type = "text";
+                input.className = "form-control";
+                input.name = question.id || `q${index + 1}`;
+                input.placeholder = "Type your answer here";
+                input.setAttribute('data-question-id', question.id || `q${index + 1}`);
+                card.appendChild(input);
             }
 
             questionList.appendChild(card);
         });
 
-        if (progressText) {
-            progressText.textContent = `Answered 0 of ${questions.length} questions`;
+        updateProgress();
+    }
+
+    function parseQuestionsJson(raw) {
+        if (!raw) {
+            return [];
         }
-        if (progressBar) {
-            progressBar.style.width = "0%";
-            progressBar.setAttribute("aria-valuenow", "0");
+        try {
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+            console.warn('Failed to parse quiz questions JSON', error);
+            return [];
         }
     }
 
-    renderQuestions(quizQuestions);
+    function formatDurationFromSeconds(totalSeconds) {
+        const safeSeconds = Math.max(Number(totalSeconds) || 0, 0);
+        const hours = Math.floor(safeSeconds / 3600);
+        const minutes = Math.floor((safeSeconds % 3600) / 60);
+        const seconds = safeSeconds % 60;
+        if (hours > 0) {
+            return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    function setTimerLabel() {
+        if (!timerLabel) {
+            return;
+        }
+        timerLabel.textContent = `Time Remaining: ${formatDurationFromSeconds(secondsRemaining)}`;
+    }
+
+    function stopTimer() {
+        if (timerInterval) {
+            window.clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    }
+
+    function startTimer(durationMinutes) {
+        stopTimer();
+        const parsedMinutes = Number(durationMinutes);
+        const fallbackMinutes = 30;
+        secondsRemaining = Math.max(
+            Math.round((Number.isFinite(parsedMinutes) && parsedMinutes > 0 ? parsedMinutes : fallbackMinutes) * 60),
+            0
+        );
+        setTimerLabel();
+        if (secondsRemaining <= 0) {
+            return;
+        }
+        timerInterval = window.setInterval(async function() {
+            secondsRemaining = Math.max(secondsRemaining - 1, 0);
+            setTimerLabel();
+            if (secondsRemaining > 0) {
+                return;
+            }
+            stopTimer();
+            await submitQuiz(true);
+        }, 1000);
+    }
+
+    function normalizeValue(value) {
+        return String(value ?? '').trim();
+    }
+
+    function normalizeQuestionType(value) {
+        return normalizeValue(value).toLowerCase().replace(/\s+/g, '_');
+    }
+
+    function countAnsweredQuestions() {
+        if (!activeQuestions.length) {
+            return 0;
+        }
+        let answered = 0;
+        activeQuestions.forEach((question, index) => {
+            const questionId = question.id || `q${index + 1}`;
+            const questionType = normalizeQuestionType(question.type);
+            if (questionType !== 'multiple_choice') {
+                const input = questionList.querySelector(`input[name="${questionId}"]`);
+                if (input && normalizeValue(input.value)) {
+                    answered += 1;
+                }
+                return;
+            }
+            const selected = questionList.querySelector(`input[name="${questionId}"]:checked`);
+            if (selected) {
+                answered += 1;
+            }
+        });
+        return answered;
+    }
+
+    function updateProgress() {
+        const total = activeQuestions.length;
+        const answered = countAnsweredQuestions();
+        const percent = total > 0 ? Math.round((answered / total) * 100) : 0;
+        if (progressText) {
+            progressText.textContent = `Answered ${answered} of ${total} questions`;
+        }
+        if (progressBar) {
+            progressBar.style.width = `${percent}%`;
+            progressBar.setAttribute("aria-valuenow", String(percent));
+        }
+    }
+
+    function collectAnswers() {
+        const answers = {};
+        activeQuestions.forEach((question, index) => {
+            const questionId = question.id || `q${index + 1}`;
+            const questionType = normalizeQuestionType(question.type);
+            if (questionType !== 'multiple_choice') {
+                const input = questionList.querySelector(`input[name="${questionId}"]`);
+                answers[questionId] = normalizeValue(input ? input.value : '');
+                return;
+            }
+            const selected = questionList.querySelector(`input[name="${questionId}"]:checked`);
+            answers[questionId] = normalizeValue(selected ? selected.value : '');
+        });
+        return answers;
+    }
+
+    function showResults(results) {
+        stopTimer();
+        quizSubmitted = true;
+        const nextParams = new URLSearchParams({
+            id: String(results.quizId || quizId || ''),
+            attempt: String(results.attemptNumber || ''),
+            title: titleHeading ? titleHeading.textContent.trim() : title,
+            subject: subjectMeta ? subjectMeta.textContent.trim() : subject
+        });
+        window.location.href = `/student/quiz/results?${nextParams.toString()}`;
+    }
+
+    async function resolveQuizId() {
+        if (quizId) {
+            return quizId;
+        }
+        const response = await fetch('/student/api/quizzes', { cache: 'no-store' });
+        if (!response.ok) {
+            throw new Error('Unable to load quiz details.');
+        }
+        const payload = await response.json();
+        const quizzes = Array.isArray(payload) ? payload : [];
+        const matchedQuiz = quizzes.find(quiz =>
+            (quiz.title || '') === title
+                && (quiz.subject || '') === subject
+                && (quiz.dueDate || '') === due
+        );
+        if (!matchedQuiz || !matchedQuiz.id) {
+            throw new Error('Quiz not found.');
+        }
+        quizId = String(matchedQuiz.id);
+        return quizId;
+    }
+
+    async function loadQuizQuestions() {
+        try {
+            const resolvedQuizId = await resolveQuizId();
+            const response = await fetch(`/student/api/quizzes/${resolvedQuizId}/session`, { cache: 'no-store' });
+            if (!response.ok) {
+                throw new Error('Unable to load quiz details.');
+            }
+            const matchedQuiz = await response.json();
+            if (titleHeading) {
+                titleHeading.textContent = matchedQuiz.title || title;
+            }
+            if (subjectMeta) {
+                subjectMeta.textContent = matchedQuiz.subject || subject;
+            }
+            if (dueMeta) {
+                dueMeta.textContent = matchedQuiz.dueDate || due;
+            }
+            if (instructionsText) {
+                instructionsText.textContent = normalizeValue(matchedQuiz.description)
+                    || 'Review the quiz description provided by your instructor before answering.';
+            }
+            startTimer(matchedQuiz.durationMinutes);
+            renderQuestions(Array.isArray(matchedQuiz.questions) ? matchedQuiz.questions : []);
+        } catch (error) {
+            console.error(error);
+            stopTimer();
+            renderQuestions([]);
+        }
+    }
+
+    function submitQuizWithBeacon() {
+        if (submissionInFlight || quizSubmitted || !activeQuestions.length || !navigator.sendBeacon) {
+            return;
+        }
+        submissionInFlight = true;
+        stopTimer();
+        const answers = collectAnswers();
+        resolveQuizId()
+            .then(function(resolvedQuizId) {
+                const payload = JSON.stringify({
+                    quizId: Number(resolvedQuizId),
+                    answers,
+                    forceSubmit: true
+                });
+                const blob = new Blob([payload], { type: 'application/json' });
+                navigator.sendBeacon('/api/quiz-attempts', blob);
+                quizSubmitted = true;
+            })
+            .catch(function() {
+                submissionInFlight = false;
+            });
+    }
+
+    async function submitQuiz(forceSubmit, options) {
+        const config = options || {};
+        if (submissionInFlight || quizSubmitted || !activeQuestions.length) {
+            return;
+        }
+        const answers = collectAnswers();
+        if (!forceSubmit) {
+            const unanswered = Object.values(answers).filter(answer => !answer);
+            if (unanswered.length > 0) {
+                alert('Please answer all questions before submitting.');
+                return;
+            }
+        }
+
+        submissionInFlight = true;
+        if (submitQuizBtn) {
+            submitQuizBtn.disabled = true;
+        }
+
+        try {
+            stopTimer();
+            const resolvedQuizId = await resolveQuizId();
+            const response = await fetch('/api/quiz-attempts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                keepalive: !!config.keepalive,
+                body: JSON.stringify({ quizId: Number(resolvedQuizId), answers, forceSubmit })
+            });
+            if (!response.ok) {
+                const payload = await response.json().catch(() => null);
+                throw new Error(payload && payload.message ? payload.message : 'Unable to submit quiz.');
+            }
+            const payload = await response.json();
+            if (!config.skipRedirect) {
+                showResults(payload);
+            } else {
+                quizSubmitted = true;
+            }
+        } catch (error) {
+            if (config.suppressAlerts) {
+                return;
+            }
+            if (forceSubmit) {
+                alert(error.message || 'Unable to auto-submit quiz.');
+            } else {
+                alert(error.message || 'Unable to submit quiz.');
+            }
+            submissionInFlight = false;
+            if (submitQuizBtn) {
+                submitQuizBtn.disabled = false;
+            }
+        }
+    }
+
+    if (questionList) {
+        questionList.addEventListener('input', updateProgress);
+        questionList.addEventListener('change', updateProgress);
+    }
+
+    if (submitQuizBtn) {
+        submitQuizBtn.addEventListener('click', async function() {
+            await submitQuiz(false);
+        });
+    }
+
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState !== 'hidden') {
+            return;
+        }
+        submitQuiz(true, { suppressAlerts: true });
+    });
+
+    window.addEventListener('pagehide', function() {
+        submitQuizWithBeacon();
+    });
+
+    loadQuizQuestions();
 });
     </script>
     <script src="/assets/js/global-swal.js"></script>

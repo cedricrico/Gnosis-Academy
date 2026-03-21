@@ -16,6 +16,7 @@ public class AssignmentResponse {
 	private String attachmentName;
 	private String attachmentUrl;
 	private String attachmentContentType;
+	private Long submissions;
 	private boolean submitted;
 	private Long submissionId;
 	private Instant submittedAt;
@@ -124,6 +125,14 @@ public class AssignmentResponse {
 
 	public void setAttachmentContentType(String attachmentContentType) {
 		this.attachmentContentType = attachmentContentType;
+	}
+
+	public Long getSubmissions() {
+		return submissions;
+	}
+
+	public void setSubmissions(Long submissions) {
+		this.submissions = submissions;
 	}
 
 	public boolean isSubmitted() {

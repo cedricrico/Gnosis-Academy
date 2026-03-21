@@ -24,6 +24,7 @@
         .btn-primary:hover, .btn-primary:focus { background: #3a56d4; border-color: #3a56d4; }
         .btn-outline-primary { color: #4361ee; border-color: #4361ee; }
         .btn-outline-primary:hover, .btn-outline-primary:focus { background: #4361ee; border-color: #4361ee; }
+        .grade-pill { min-width: 92px; display: inline-flex; justify-content: center; }
         @media (max-width: 767.98px) {
             .sidebar { position: fixed; top: 70px; left: 0; bottom: 0; z-index: 1040; background: #f8f9fa; width: 250px; transform: translateX(-100%); transition: transform .3s ease-in-out; overflow-y: auto; }
             .sidebar.show { transform: translateX(0); }
@@ -135,6 +136,7 @@
                                         <th>Student</th>
                                         <th>Course</th>
                                         <th>Section</th>
+                                        <th>Grade</th>
                                         <th>File</th>
                                         <th>Action</th>
                                     </tr>
@@ -170,6 +172,34 @@
         </div>
     </div>
 
+    <div class="modal fade" role="dialog" tabindex="-1" id="gradeSubmissionModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Grade Submission</h5>
+                    <button class="btn-close" aria-label="Close" data-bs-dismiss="modal" type="button"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2 fw-semibold" id="gradeSubmissionStudentLabel">Student</div>
+                    <div class="text-muted small mb-3" id="gradeSubmissionMeta">Assignment</div>
+                    <div class="mb-3">
+                        <label class="form-label" for="submissionGradeInput">Score</label>
+                        <input class="form-control" id="submissionGradeInput" min="0" type="number">
+                        <div class="form-text" id="submissionGradeHelp">Enter the student score.</div>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label" for="submissionFeedbackInput">Feedback</label>
+                        <textarea class="form-control" id="submissionFeedbackInput" rows="4" placeholder="Optional comments for the student"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                    <button class="btn btn-primary" id="saveSubmissionGradeBtn" type="button">Save Grade</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -193,14 +223,61 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewImage = document.getElementById('submissionPreviewImage');
     const previewFrame = document.getElementById('submissionPreviewFrame');
     const previewFallback = document.getElementById('submissionPreviewFallback');
+    const gradeModalEl = document.getElementById('gradeSubmissionModal');
+    const gradeStudentLabel = document.getElementById('gradeSubmissionStudentLabel');
+    const gradeMeta = document.getElementById('gradeSubmissionMeta');
+    const gradeInput = document.getElementById('submissionGradeInput');
+    const gradeHelp = document.getElementById('submissionGradeHelp');
+    const feedbackInput = document.getElementById('submissionFeedbackInput');
+    const saveGradeBtn = document.getElementById('saveSubmissionGradeBtn');
     const previewModal = previewModalEl ? new bootstrap.Modal(previewModalEl) : null;
+    const gradeModal = gradeModalEl ? new bootstrap.Modal(gradeModalEl) : null;
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
     let submissions = [];
+    let currentGradeSubmissionId = null;
+
+    async function fetchProfessorJson(url, options = {}) {
+        const method = (options.method || 'GET').toUpperCase();
+        const headers = { Accept: 'application/json', ...(options.headers || {}) };
+        const isFormData = options.body instanceof FormData;
+        if (csrfToken && method !== 'GET' && method !== 'HEAD' && !headers[csrfHeader]) {
+            headers[csrfHeader] = csrfToken;
+        }
+        if (!headers['Content-Type'] && method !== 'GET' && method !== 'HEAD' && !isFormData) {
+            headers['Content-Type'] = 'application/json';
+        }
+        const response = await fetch(url, { ...options, method, headers });
+        if (!response.ok) {
+            const contentType = response.headers.get('content-type') || '';
+            let message = 'Request failed.';
+            if (contentType.includes('application/json')) {
+                const payload = await response.json().catch(() => null);
+                message = payload?.message || payload?.error || message;
+            } else {
+                const text = await response.text().catch(() => '');
+                if (text) message = text;
+            }
+            throw new Error(message);
+        }
+        const contentType = response.headers.get('content-type') || '';
+        return contentType.includes('application/json') ? response.json() : null;
+    }
 
     function formatDate(value) {
         if (!value) return '';
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) return value;
         return date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+    }
+
+    function gradeLabel(submission) {
+        if (submission.grade == null) {
+            return '<span class="badge bg-warning text-dark grade-pill">Ungraded</span>';
+        }
+        const maxPoints = submission.assignmentPoints;
+        const text = maxPoints != null ? `${submission.grade}/${maxPoints}` : `${submission.grade}`;
+        return `<span class="badge bg-success grade-pill">${text}</span>`;
     }
 
     function clearTable() { while (tableBody.firstChild) tableBody.removeChild(tableBody.firstChild); }
@@ -218,10 +295,21 @@ document.addEventListener('DOMContentLoaded', function() {
             submission.assignmentSubject || '-',
             studentLabel,
             submission.studentCourse || '-',
-            submission.studentSection || '-',
-            submission.filename || '-'
+            submission.studentSection || '-'
         ];
         cells.forEach(text => {
+            const td = document.createElement('td');
+            td.textContent = text;
+            row.appendChild(td);
+        });
+
+        const gradeCell = document.createElement('td');
+        gradeCell.innerHTML = gradeLabel(submission);
+        row.appendChild(gradeCell);
+
+        [
+            submission.filename || '-'
+        ].forEach(text => {
             const td = document.createElement('td');
             td.textContent = text;
             row.appendChild(td);
@@ -247,8 +335,36 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             action.textContent = '-';
         }
+
+        const gradeBtn = document.createElement('button');
+        gradeBtn.type = 'button';
+        gradeBtn.className = 'btn btn-sm btn-primary ms-2';
+        gradeBtn.textContent = submission.grade == null ? 'Grade' : 'Edit Grade';
+        gradeBtn.dataset.gradeSubmissionId = submission.id;
+        gradeBtn.dataset.student = submission.studentName || submission.studentId || '';
+        gradeBtn.dataset.assignment = submission.assignmentTitle || '';
+        gradeBtn.dataset.points = submission.assignmentPoints ?? '';
+        gradeBtn.dataset.grade = submission.grade ?? '';
+        gradeBtn.dataset.feedback = submission.feedback || '';
+        action.appendChild(gradeBtn);
+
         row.appendChild(action);
         tableBody.appendChild(row);
+    }
+
+    function openGradeModal(submission) {
+        currentGradeSubmissionId = submission.id;
+        gradeStudentLabel.textContent = submission.studentName || submission.studentId || 'Student';
+        gradeMeta.textContent = `${submission.assignmentTitle || 'Assignment'}${submission.assignmentPoints != null ? ` | Max points: ${submission.assignmentPoints}` : ''}`;
+        gradeInput.value = submission.grade ?? '';
+        gradeInput.max = submission.assignmentPoints ?? '';
+        gradeHelp.textContent = submission.assignmentPoints != null
+            ? `Enter a score from 0 to ${submission.assignmentPoints}.`
+            : 'Enter the student score.';
+        feedbackInput.value = submission.feedback || '';
+        if (gradeModal) {
+            gradeModal.show();
+        }
     }
 
     function resetPreview() {
@@ -361,9 +477,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function loadSubmissions() {
         try {
-            const response = await fetch('/professor/api/assignment-submissions', { headers: { Accept: 'application/json' } });
-            if (!response.ok) throw new Error('Unable to load submissions.');
-            const data = await response.json();
+            const data = await fetchProfessorJson('/professor/api/assignment-submissions');
             submissions = Array.isArray(data) ? data : [];
             buildFilterOptions(submissions);
             renderAll();
@@ -383,11 +497,57 @@ document.addEventListener('DOMContentLoaded', function() {
 
     tableBody.addEventListener('click', function(event) {
         const previewBtn = event.target.closest('button[data-preview-url]');
-        if (!previewBtn) return;
-        const meta = `${previewBtn.dataset.assignment || 'Assignment'}${previewBtn.dataset.student ? ' | ' + previewBtn.dataset.student : ''}`;
-        showPreview(meta, previewBtn.dataset.previewUrl, previewBtn.dataset.contentType, previewBtn.dataset.filename);
-        if (previewModal) previewModal.show();
+        if (previewBtn) {
+            const meta = `${previewBtn.dataset.assignment || 'Assignment'}${previewBtn.dataset.student ? ' | ' + previewBtn.dataset.student : ''}`;
+            showPreview(meta, previewBtn.dataset.previewUrl, previewBtn.dataset.contentType, previewBtn.dataset.filename);
+            if (previewModal) previewModal.show();
+            return;
+        }
+
+        const gradeBtn = event.target.closest('button[data-grade-submission-id]');
+        if (!gradeBtn) return;
+        const submission = submissions.find(item => String(item.id) === gradeBtn.dataset.gradeSubmissionId);
+        if (!submission) return;
+        openGradeModal(submission);
     });
+
+    if (saveGradeBtn) {
+        saveGradeBtn.addEventListener('click', async function() {
+            if (!currentGradeSubmissionId) return;
+            const scoreValue = gradeInput.value.trim();
+            if (scoreValue === '') {
+                alert('Please enter a score.');
+                return;
+            }
+            const grade = Number(scoreValue);
+            const max = gradeInput.max ? Number(gradeInput.max) : null;
+            if (Number.isNaN(grade) || grade < 0 || (max != null && !Number.isNaN(max) && grade > max)) {
+                alert(max != null ? `Score must be between 0 and ${max}.` : 'Please enter a valid score.');
+                return;
+            }
+
+            saveGradeBtn.disabled = true;
+            try {
+                const updated = await fetchProfessorJson(`/professor/api/assignment-submissions/${currentGradeSubmissionId}/grade`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        grade: grade,
+                        feedback: feedbackInput.value
+                    })
+                });
+                submissions = submissions.map(item => String(item.id) === String(updated.id) ? updated : item);
+                buildFilterOptions(submissions);
+                renderAll();
+                if (gradeModal) {
+                    gradeModal.hide();
+                }
+            } catch (error) {
+                alert(error.message || 'Unable to save grade.');
+            } finally {
+                saveGradeBtn.disabled = false;
+            }
+        });
+    }
 
     loadSubmissions();
 });

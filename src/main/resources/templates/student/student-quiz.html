@@ -537,13 +537,14 @@ body {
                                                 <th>Quiz Name</th>
                                                 <th>Subject</th>
                                                 <th>Due Date</th>
+                                                <th>Score</th>
                                                 <th>Status</th>
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody id="quizTableBody">
                                             <tr id="quizEmptyRow">
-                                                <td colspan="5" class="text-center text-muted">No quizzes available.</td>
+                                                <td colspan="6" class="text-center text-muted">No quizzes available.</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -674,6 +675,29 @@ document.addEventListener('DOMContentLoaded', function() {
         return { label, className: 'bg-info' };
     }
 
+    function isExpired(dueDateRaw) {
+        const dueDate = normalizeText(dueDateRaw);
+        if (!dueDate) {
+            return false;
+        }
+        const parsed = new Date(dueDate);
+        return !Number.isNaN(parsed.getTime()) && parsed.getTime() < Date.now();
+    }
+
+    function resolveStudentStatus(quiz, expired, canAttempt) {
+        const attemptsUsed = Number.isFinite(quiz.attemptsUsed) ? quiz.attemptsUsed : 0;
+        if (attemptsUsed > 0) {
+            if (canAttempt) {
+                return { label: 'Finished • Retake Available', className: 'bg-primary' };
+            }
+            return { label: 'Finished', className: 'bg-success' };
+        }
+        if (expired) {
+            return { label: 'Expired', className: 'bg-danger' };
+        }
+        return { label: 'Not Taken', className: 'bg-secondary' };
+    }
+
     function renderSubjectTiles(quizzes) {
         subjectTilesContainer.innerHTML = '';
         const subjectCounts = quizzes.reduce((acc, quiz) => {
@@ -724,28 +748,48 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (filtered.length === 0) {
             const row = document.createElement('tr');
-            row.innerHTML = '<td colspan="5" class="text-center text-muted">No quizzes available for this subject.</td>';
+            row.innerHTML = '<td colspan="6" class="text-center text-muted">No quizzes available for this subject.</td>';
             quizTableBody.appendChild(row);
             return;
         }
 
         filtered.forEach(quiz => {
             const status = formatStatus(quiz.status);
+            const attemptsUsed = Number.isFinite(quiz.attemptsUsed) ? quiz.attemptsUsed : 0;
+            const attemptsRemaining = quiz.attemptsRemaining;
+            const expired = isExpired(quiz.dueDate);
+            const canAttempt = quiz.canAttempt !== false && !expired;
+            const attemptsLabel = attemptsRemaining == null
+                ? `Attempts used: ${attemptsUsed}`
+                : `Attempts left: ${attemptsRemaining}`;
+            const scoreLabel = Number.isFinite(quiz.latestScore) && Number.isFinite(quiz.latestScoreTotal)
+                ? `${quiz.latestScore} / ${quiz.latestScoreTotal}`
+                : 'Not taken';
+            const studentStatus = resolveStudentStatus(quiz, expired, canAttempt);
             const row = document.createElement('tr');
             row.dataset.subject = normalizeText(quiz.subject) || 'Uncategorized';
             row.innerHTML = `
                 <td>${normalizeText(quiz.title) || 'Untitled quiz'}</td>
                 <td>${normalizeText(quiz.subject) || '-'}</td>
                 <td>${normalizeText(quiz.dueDate) || 'No due date'}</td>
-                <td><span class="badge ${status.className}">${status.label}</span></td>
+                <td>${scoreLabel}</td>
+                <td>
+                    <div class="d-flex flex-column gap-1">
+                        <span class="badge ${studentStatus.className}">${studentStatus.label}</span>
+                        <small class="text-muted">Quiz: ${expired ? 'Expired' : status.label}</small>
+                        <small class="text-muted">${attemptsLabel}</small>
+                    </div>
+                </td>
                 <td>
                     <button class="btn btn-primary btn-sm start-quiz-btn"
                         data-bs-toggle="modal"
                         data-bs-target="#startQuizModal"
+                        data-quiz-id="${quiz.id ?? ''}"
                         data-quiz-title="${normalizeText(quiz.title)}"
                         data-quiz-subject="${normalizeText(quiz.subject)}"
-                        data-quiz-due="${normalizeText(quiz.dueDate)}">
-                        Start Quiz
+                        data-quiz-due="${normalizeText(quiz.dueDate)}"
+                        ${canAttempt ? '' : 'disabled'}>
+                        ${expired ? 'Quiz Expired' : (canAttempt ? 'Start Quiz' : 'No Attempts Left')}
                     </button>
                 </td>
             `;
@@ -791,9 +835,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!button) {
             return;
         }
+        const quizId = button.getAttribute('data-quiz-id') || '';
         const title = button.getAttribute('data-quiz-title') || '';
         const subject = button.getAttribute('data-quiz-subject') || '';
         const due = button.getAttribute('data-quiz-due') || '';
+        if (confirmStartQuizBtn) {
+            confirmStartQuizBtn.setAttribute('data-quiz-id', quizId);
+        }
         if (startQuizTitle) startQuizTitle.textContent = title;
         if (startQuizSubject) startQuizSubject.textContent = subject;
         if (startQuizDue) startQuizDue.textContent = due || 'No due date';
@@ -801,10 +849,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (confirmStartQuizBtn && startQuizModal) {
         confirmStartQuizBtn.addEventListener('click', function() {
+            const id = confirmStartQuizBtn.getAttribute('data-quiz-id') || '';
             const title = startQuizTitle ? startQuizTitle.textContent.trim() : '';
             const subject = startQuizSubject ? startQuizSubject.textContent.trim() : '';
             const due = startQuizDue ? startQuizDue.textContent.trim() : '';
-            const params = new URLSearchParams({ title, subject, due });
+            const params = new URLSearchParams({ id, title, subject, due });
             window.location.href = `/student/quiz/start?${params.toString()}`;
         });
     }
@@ -824,7 +873,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             quizzesCache = [];
             renderSubjectTiles([]);
-            quizTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Unable to load quizzes.</td></tr>';
+            quizTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Unable to load quizzes.</td></tr>';
         }
     }
 
@@ -833,137 +882,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Inlined from /assets/js/student/student-assignments.js
-// Assignment data - in a real application, this would come from a database
-const assignments = {
-    1: {
-        title: "Database ER Diagram",
-        subject: "Database Systems",
-        dueDate: "March 20, 2026",
-        description: "Create an Entity-Relationship diagram for a university database system. The diagram should include entities for Students, Courses, Instructors, and Departments with appropriate relationships and attributes.",
-        status: "uploaded"
-    },
-    2: {
-        title: "Programming Project 1",
-        subject: "Computer Science",
-        dueDate: "March 25, 2026",
-        description: "Develop a console-based application for managing student records. The application should allow adding, editing, deleting, and searching student information.",
-        status: "not_submitted"
-    },
-    3: {
-        title: "Web App Prototype",
-        subject: "Computer Science",
-        dueDate: "April 1, 2026",
-        description: "Create a responsive web application prototype for an online bookstore. Include features for browsing books, user registration, and shopping cart functionality.",
-        status: "not_submitted"
-    },
-    4: {
-        title: "Mathematics Problem Set",
-        subject: "Mathematics",
-        dueDate: "March 18, 2026",
-        description: "Solve the following calculus problems: 1) Find the derivative of f(x) = 3x^4 - 2x^3 + 5x - 7, 2) Calculate the definite integral from 0 to 2 of (x^2 + 3x) dx, 3) Solve the differential equation dy/dx = 2x.",
-        status: "uploaded"
-    },
-    5: {
-        title: "English Essay",
-        subject: "English",
-        dueDate: "March 15, 2026",
-        description: "Write a 1000-word essay on the impact of social media on modern communication. Include arguments for both positive and negative effects, supported by credible sources.",
-        status: "uploaded"
-    }
-};
-
-// Store current assignment ID being viewed
-let currentAssignmentId = null;
-
-// Initialize modal functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = new bootstrap.Modal(document.getElementById('assignmentModal'));
-    const viewButtons = document.querySelectorAll('.view-assignment-btn');
-    const submitBtn = document.getElementById('submitAssignmentBtn');
-    const fileInput = document.getElementById('assignmentFile');
-    
-    // Add click event to all View Assignment buttons
-    viewButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            currentAssignmentId = this.getAttribute('data-assignment-id');
-            const assignment = assignments[currentAssignmentId];
-            
-            if (assignment) {
-                // Populate modal with assignment data
-                document.getElementById('assignmentTitle').textContent = assignment.title;
-                document.getElementById('assignmentSubject').textContent = assignment.subject;
-                document.getElementById('assignmentDueDate').textContent = assignment.dueDate;
-                document.getElementById('assignmentDescription').textContent = assignment.description;
-                
-                // Reset file input
-                fileInput.value = '';
-                
-                // Show modal
-                modal.show();
-            }
-        });
-    });
-    
-    // Handle assignment submission
-    submitBtn.addEventListener('click', function() {
-        if (!fileInput.files.length) {
-            alert('Please select a file to upload.');
-            return;
-        }
-        
-        const file = fileInput.files[0];
-        const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/jpg', 'image/png'];
-        
-        if (!allowedTypes.includes(file.type)) {
-            alert('Invalid file type. Please upload a PDF, DOCX, JPG, or PNG file.');
-            return;
-        }
-        
-        // Update assignment status
-        if (currentAssignmentId && assignments[currentAssignmentId]) {
-            assignments[currentAssignmentId].status = "uploaded";
-            
-            // Update the status badge in the table
-            updateAssignmentStatus(currentAssignmentId, "uploaded");
-        }
-        
-        // In a real application, you would upload the file to a server here
-        alert('Assignment submitted successfully!');
-        modal.hide();
-    });
-    
-    // Function to update assignment status in the table
-    function updateAssignmentStatus(assignmentId, status) {
-        // Find the table row for this assignment
-        const button = document.querySelector(`.view-assignment-btn[data-assignment-id="${assignmentId}"]`);
-        if (!button) return;
-        
-        const row = button.closest('tr');
-        if (!row) return;
-        
-        // Get the status cell (last cell in the row)
-        const statusCell = row.cells[4]; // Index 4 is the Status column
-        
-        if (status === "uploaded") {
-            statusCell.innerHTML = '<span class="badge bg-success">Uploaded</span>';
-        } else {
-            statusCell.innerHTML = '<span class="badge bg-secondary">Not Submitted</span>';
-        }
-    }
-    
-    // Initialize status badges on page load
-    function initializeStatusBadges() {
-        for (const assignmentId in assignments) {
-            const assignment = assignments[assignmentId];
-            if (assignment) {
-                updateAssignmentStatus(assignmentId, assignment.status);
-            }
-        }
-    }
-    
-    // Call initialization function
-    initializeStatusBadges();
-});
 </script>
     <script src="/assets/js/global-swal.js"></script>
 </body>

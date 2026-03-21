@@ -178,6 +178,11 @@ public class ProfessorUiController {
 		return "professor/quiz";
 	}
 
+	@GetMapping("/quiz-results")
+	public String quizResults() {
+		return "professor/quiz-results";
+	}
+
 	@GetMapping("/subjects")
 	public String subjects(Authentication authentication, Model model, @org.springframework.web.bind.annotation.RequestParam(name = "section", required = false) String section) {
 		String professorId = authentication != null ? authentication.getName() : "";

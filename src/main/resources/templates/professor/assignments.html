@@ -1064,6 +1064,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('viewPoints').textContent = assignment.points ?? '-';
         document.getElementById('viewAssignmentDescription').textContent = assignment.description || '';
         document.getElementById('viewAssignmentSections').textContent = Array.isArray(assignment.sections) ? assignment.sections.join(', ') : '';
+        document.getElementById('viewSubmissions').textContent = assignment.submissions ?? 0;
         const statusBadgeElement = document.getElementById('viewStatus');
         if (statusBadgeElement) {
             statusBadgeElement.textContent = assignment.status || '';
@@ -1293,7 +1294,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const subject = document.getElementById('assignmentSubject').value.trim();
             const description = document.getElementById('assignmentDescription').value.trim();
             const dueDate = document.getElementById('dueDate').value;
-            const status = 'DRAFT';
+            const status = 'Published';
             const pointsRaw = document.getElementById('points').value.trim();
             const points = pointsRaw === '' ? null : Number(pointsRaw);
             const attachmentFile = document.getElementById('assignmentFile').files[0];

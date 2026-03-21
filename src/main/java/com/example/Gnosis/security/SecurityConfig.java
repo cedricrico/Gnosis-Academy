@@ -12,7 +12,10 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.SecurityContextRepository;
 
 @Configuration
-public class SecurityConfig {
+	public class SecurityConfig {
+	private static final String ADMIN_COOKIE_NAME = "ADMIN_SESSION";
+	private static final String PROFESSOR_COOKIE_NAME = "PROFESSOR_SESSION";
+
 	@Order(1)
 	@Bean
 	public SecurityFilterChain adminSecurityFilterChain(
@@ -32,6 +35,7 @@ public class SecurityConfig {
 						"/api/admin/**",
 						"/admin/**"
 				)
+				.csrf(csrf -> csrf.ignoringRequestMatchers("/api/admin/**"))
 				.authenticationProvider(adminAuthProvider)
 				.securityContext(sc -> sc.securityContextRepository(adminSecurityContextRepository()))
 				.authorizeHttpRequests(auth -> auth
@@ -70,6 +74,7 @@ public class SecurityConfig {
 				.logout(logout -> logout
 						.logoutUrl("/admin/logout")
 						.invalidateHttpSession(false)
+						.deleteCookies(ADMIN_COOKIE_NAME)
 						.addLogoutHandler((request, response, authentication) -> {
 							if (request.getSession(false) != null) {
 								request.getSession(false).removeAttribute("ADMIN_SECURITY_CONTEXT");
@@ -100,6 +105,7 @@ public class SecurityConfig {
 						// Backward-compatible aliases
 						"/loginprofessor",
 						"/registerprofessor",
+						"/api/quizzes/**",
 						"/professor/**"
 				)
 				// Logout CSRF failures commonly present as 403/Whitelabel; logging out is safe to exempt.
@@ -116,6 +122,7 @@ public class SecurityConfig {
 								"/professor/login",
 								"/professor/register"
 						).permitAll()
+						.requestMatchers("/api/quizzes/**").hasRole("PROFESSOR")
 						.requestMatchers("/professor/**").hasRole("PROFESSOR")
 						.anyRequest().authenticated()
 				)
@@ -132,7 +139,7 @@ public class SecurityConfig {
 				.logout(logout -> logout
 						.logoutUrl("/professor/logout")
 						.invalidateHttpSession(false)
-						.deleteCookies("PROFESSOR_SESSION")
+						.deleteCookies(PROFESSOR_COOKIE_NAME)
 						.addLogoutHandler((request, response, authentication) -> {
 							if (request.getSession(false) != null) {
 								request.getSession(false).removeAttribute("PROFESSOR_SECURITY_CONTEXT");
@@ -163,6 +170,7 @@ public class SecurityConfig {
 						.requestMatchers(
 								"/",
 								"/landingPage",
+								"/favicon.ico",
 								"/Student-login",
 								"/Student-registration",
 								"/Professor-landing",
@@ -179,11 +187,12 @@ public class SecurityConfig {
 								"/error",
 								"/js/**",
 								"/css/**",
-								"/photos/**",
-								"/assets/**",
-								"/h2-console/**"
+						"/photos/**",
+						"/assets/**",
+						"/h2-console/**"
 
 						).permitAll()
+						.requestMatchers("/api/quiz-attempts/**").hasRole("STUDENT")
 						.requestMatchers("/student/**").hasRole("STUDENT")
 						.anyRequest().authenticated()
 				)
@@ -214,7 +223,9 @@ public class SecurityConfig {
 				"/h2-console/**",
 				"/logout",
 				"/login",
-				"/student/api/assignments/**"
+				"/api/quiz-attempts/**",
+				"/student/api/assignments/**",
+				"/student/api/quizzes/**"
 		));
 		http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
 

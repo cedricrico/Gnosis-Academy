@@ -6,7 +6,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @SpringBootApplication
-public class GnosisApplication {
+public class 	GnosisApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(GnosisApplication.class, args);

@@ -19,6 +19,11 @@ public class QuizResponse {
 	private String professorName;
 	private Instant createdAt;
 	private Instant updatedAt;
+	private Integer attemptsUsed;
+	private Integer attemptsRemaining;
+	private Boolean canAttempt;
+	private Integer latestScore;
+	private Integer latestScoreTotal;
 
 	public Long getId() {
 		return id;
@@ -146,5 +151,45 @@ public class QuizResponse {
 
 	public void setUpdatedAt(Instant updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+
+	public Integer getAttemptsUsed() {
+		return attemptsUsed;
+	}
+
+	public void setAttemptsUsed(Integer attemptsUsed) {
+		this.attemptsUsed = attemptsUsed;
+	}
+
+	public Integer getAttemptsRemaining() {
+		return attemptsRemaining;
+	}
+
+	public void setAttemptsRemaining(Integer attemptsRemaining) {
+		this.attemptsRemaining = attemptsRemaining;
+	}
+
+	public Boolean getCanAttempt() {
+		return canAttempt;
+	}
+
+	public void setCanAttempt(Boolean canAttempt) {
+		this.canAttempt = canAttempt;
+	}
+
+	public Integer getLatestScore() {
+		return latestScore;
+	}
+
+	public void setLatestScore(Integer latestScore) {
+		this.latestScore = latestScore;
+	}
+
+	public Integer getLatestScoreTotal() {
+		return latestScoreTotal;
+	}
+
+	public void setLatestScoreTotal(Integer latestScoreTotal) {
+		this.latestScoreTotal = latestScoreTotal;
 	}
 }

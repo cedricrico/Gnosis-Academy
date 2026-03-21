@@ -24,6 +24,11 @@ public class PageController {
 		return "Landing.html";
 	}
 
+	@GetMapping("/favicon.ico")
+	public String favicon() {
+		return "redirect:/assets/img/office-building.png";
+	}
+
 	@GetMapping("/student/home")
 	public String walaPage(Authentication authentication, HttpSession session, Model model) {
 		// Backward compatible route: older configs may still redirect here after login.

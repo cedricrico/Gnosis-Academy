@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,6 +33,23 @@ public class ProfessorAssignmentSubmissionApiController {
 				.stream()
 				.peek(response -> response.setDownloadUrl("/professor/api/assignment-submissions/" + response.getId() + "/download"))
 				.toList();
+	}
+
+	@PutMapping("/{id}/grade")
+	public AssignmentSubmissionResponse grade(
+			@PathVariable Long id,
+			@RequestBody GradeRequest request,
+			Authentication authentication
+	) {
+		ProfessorIdentity professor = resolveProfessor(authentication);
+		AssignmentSubmissionResponse response = submissionService.gradeSubmission(
+				id,
+				professor.id(),
+				request.grade(),
+				request.feedback()
+		);
+		response.setDownloadUrl("/professor/api/assignment-submissions/" + response.getId() + "/download");
+		return response;
 	}
 
 	@GetMapping("/{id}/download")
@@ -102,4 +121,5 @@ public class ProfessorAssignmentSubmissionApiController {
 	}
 
 	private record ProfessorIdentity(String id, String name) {}
+	private record GradeRequest(Integer grade, String feedback) {}
 }

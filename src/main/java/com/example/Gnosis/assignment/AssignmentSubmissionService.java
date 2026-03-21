@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -81,10 +82,34 @@ public class AssignmentSubmissionService {
 		submission.setStudentName(formatStudentName(student));
 		submission.setStudentCourse(student.getCourse());
 		submission.setStudentSection(student.getSectionName());
+		submission.setAssignmentPoints(assignment.getPoints());
 
 		storeFile(submission, file);
 		AssignmentSubmission saved = submissionRepository.save(submission);
 		return toResponse(saved);
+	}
+
+	@Transactional
+	public AssignmentSubmissionResponse gradeSubmission(Long id, String professorId, Integer grade, String feedback) {
+		AssignmentSubmission submission = submissionRepository.findById(id)
+				.orElseThrow(() -> new NoSuchElementException("Submission not found."));
+		if (!submission.getProfessorId().equals(professorId)) {
+			throw new IllegalArgumentException("Unauthorized submission access.");
+		}
+		if (grade == null) {
+			throw new IllegalArgumentException("Grade is required.");
+		}
+		if (grade < 0) {
+			throw new IllegalArgumentException("Grade must be 0 or higher.");
+		}
+		Integer maxPoints = submission.getAssignmentPoints();
+		if (maxPoints != null && grade > maxPoints) {
+			throw new IllegalArgumentException("Grade cannot exceed the assignment points.");
+		}
+		submission.setGrade(grade);
+		submission.setFeedback(trimToNull(feedback));
+		submission.setGradedAt(Instant.now());
+		return toResponse(submissionRepository.save(submission));
 	}
 
 	@Transactional(readOnly = true)
@@ -137,8 +162,12 @@ public class AssignmentSubmissionService {
 		response.setStudentName(submission.getStudentName());
 		response.setStudentCourse(submission.getStudentCourse());
 		response.setStudentSection(submission.getStudentSection());
+		response.setAssignmentPoints(submission.getAssignmentPoints());
 		response.setFilename(submission.getFilename());
 		response.setContentType(submission.getContentType());
+		response.setGrade(submission.getGrade());
+		response.setFeedback(submission.getFeedback());
+		response.setGradedAt(submission.getGradedAt());
 		response.setSubmittedAt(submission.getSubmittedAt());
 		return response;
 	}
@@ -215,5 +244,13 @@ public class AssignmentSubmissionService {
 		}
 		String full = sb.toString().trim();
 		return full.isEmpty() ? user.getStudentId() : full;
+	}
+
+	private static String trimToNull(String value) {
+		if (value == null) {
+			return null;
+		}
+		String trimmed = value.trim();
+		return trimmed.isEmpty() ? null : trimmed;
 	}
 }

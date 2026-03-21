@@ -11,9 +11,13 @@ public class AssignmentSubmissionResponse {
 	private String studentName;
 	private String studentCourse;
 	private String studentSection;
+	private Integer assignmentPoints;
 	private String filename;
 	private String downloadUrl;
 	private String contentType;
+	private Integer grade;
+	private String feedback;
+	private Instant gradedAt;
 	private Instant submittedAt;
 
 	public Long getId() {
@@ -80,6 +84,14 @@ public class AssignmentSubmissionResponse {
 		this.studentSection = studentSection;
 	}
 
+	public Integer getAssignmentPoints() {
+		return assignmentPoints;
+	}
+
+	public void setAssignmentPoints(Integer assignmentPoints) {
+		this.assignmentPoints = assignmentPoints;
+	}
+
 	public String getFilename() {
 		return filename;
 	}
@@ -102,6 +114,30 @@ public class AssignmentSubmissionResponse {
 
 	public void setContentType(String contentType) {
 		this.contentType = contentType;
+	}
+
+	public Integer getGrade() {
+		return grade;
+	}
+
+	public void setGrade(Integer grade) {
+		this.grade = grade;
+	}
+
+	public String getFeedback() {
+		return feedback;
+	}
+
+	public void setFeedback(String feedback) {
+		this.feedback = feedback;
+	}
+
+	public Instant getGradedAt() {
+		return gradedAt;
+	}
+
+	public void setGradedAt(Instant gradedAt) {
+		this.gradedAt = gradedAt;
 	}
 
 	public Instant getSubmittedAt() {
