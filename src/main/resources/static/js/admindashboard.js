@@ -219,6 +219,10 @@ document.addEventListener('DOMContentLoaded', function() {
             throw new Error(message);
         }
 
+        if (response.status === 204 || response.status === 205) {
+            return null;
+        }
+
         if (!contentType.includes('application/json')) {
             throw new Error('Admin session required. Please log in again.');
         }
@@ -681,6 +685,7 @@ document.addEventListener('DOMContentLoaded', function() {
             instructorDirectory.clear();
 
             tableBody.innerHTML = payload.map((professor, index) => {
+                const professorId = professor.id;
                 const employeeId = professor.employeeId || '';
                 const name = professor.fullName || '-';
                 const department = professor.department || '-';
@@ -712,7 +717,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td>
                             <button class="btn btn-outline-primary btn-sm view-instructor" data-id="${escapeHtml(employeeId)}" title="View Details">${viewIcon}<span class="ms-1">View</span></button>
                             <button class="btn btn-outline-warning btn-sm edit-instructor" data-id="${escapeHtml(employeeId)}" title="Edit Instructor">${editIcon}<span class="ms-1">Edit</span></button>
-                            <button class="btn btn-outline-danger btn-sm delete-instructor" data-id="${escapeHtml(employeeId)}" title="Delete Instructor">${deleteIcon}<span class="ms-1">Delete</span></button>
+                            <button class="btn btn-outline-danger btn-sm delete-instructor" data-id="${escapeHtml(employeeId)}" data-record-id="${escapeHtml(professorId == null ? '' : String(professorId))}" title="Delete Instructor">${deleteIcon}<span class="ms-1">Delete</span></button>
                         </td>
                         <td><span class="badge bg-success">${escapeHtml(status)}</span></td>
                     </tr>
@@ -877,17 +882,22 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             e.stopPropagation();
             const employeeId = deleteBtn.getAttribute('data-id');
-            if (!employeeId) {
-                showToast('error', 'Missing employee ID.');
+            const recordId = deleteBtn.getAttribute('data-record-id');
+            if (!employeeId && !recordId) {
+                showToast('error', 'Missing instructor identifier.');
                 return;
             }
+
+            const deleteUrl = employeeId
+                ? `/api/admin/professors/${encodeURIComponent(employeeId)}`
+                : `/api/admin/professors/by-id/${encodeURIComponent(recordId)}`;
 
             if (confirmationModal && confirmActionBtn) {
                 confirmationModal.show();
                 confirmActionBtn.onclick = async function() {
                     showLoading();
                     try {
-                        await fetchAdminJson(`/api/admin/professors/${encodeURIComponent(employeeId)}`, {
+                        await fetchAdminJson(deleteUrl, {
                             method: 'DELETE'
                         });
                         confirmationModal.hide();
@@ -900,7 +910,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 };
             } else if (await window.confirmAsync('Delete this instructor?')) {
-                await fetchAdminJson(`/api/admin/professors/${encodeURIComponent(employeeId)}`, {
+                await fetchAdminJson(deleteUrl, {
                     method: 'DELETE'
                 });
                 await loadInstructorsFromDb();
@@ -1688,17 +1698,65 @@ document.addEventListener('DOMContentLoaded', function() {
     // Profile section functionality
     const profileForm = document.getElementById('profileForm');
     const changePasswordForm = document.getElementById('changePasswordForm');
+    const adminUsernameField = document.getElementById('adminUsername');
+    const adminFirstNameField = document.getElementById('adminFirstName');
+    const adminLastNameField = document.getElementById('adminLastName');
+    const adminEmailField = document.getElementById('adminEmail');
+    const adminRoleField = document.getElementById('adminRole');
+
+    function applyAdminProfile(profile) {
+        if (!profile) {
+            return;
+        }
+        if (adminUsernameField) adminUsernameField.value = profile.username || '';
+        if (adminFirstNameField) adminFirstNameField.value = profile.firstName || '';
+        if (adminLastNameField) adminLastNameField.value = profile.lastName || '';
+        if (adminEmailField) adminEmailField.value = profile.email || '';
+        if (adminRoleField) adminRoleField.value = profile.role || 'Administrator';
+    }
+
+    async function loadAdminProfile() {
+        if (!profileForm) {
+            return;
+        }
+        try {
+            const payload = await fetchAdminJson('/api/admin/profile');
+            applyAdminProfile(payload);
+        } catch (error) {
+            showToast('error', error.message || 'Unable to load admin profile.');
+        }
+    }
 
     if (profileForm) {
-        profileForm.addEventListener('submit', function(e) {
+        profileForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            // In a real application, you would send the profile data to a server here
-            showToast('success', 'Profile updated successfully!');
+            const firstName = adminFirstNameField?.value?.trim();
+            const lastName = adminLastNameField?.value?.trim();
+            const email = adminEmailField?.value?.trim();
+
+            if (!firstName || !lastName || !email) {
+                showToast('error', 'Please fill in all profile fields.');
+                return;
+            }
+
+            showLoading();
+            try {
+                const payload = await fetchAdminJson('/api/admin/profile', {
+                    method: 'PUT',
+                    body: JSON.stringify({ firstName, lastName, email })
+                });
+                applyAdminProfile(payload);
+                showToast('success', 'Profile updated successfully.');
+            } catch (error) {
+                showToast('error', error.message || 'Unable to update profile.');
+            } finally {
+                hideLoading();
+            }
         });
     }
 
     if (changePasswordForm) {
-        changePasswordForm.addEventListener('submit', function(e) {
+        changePasswordForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const currentPassword = document.getElementById('currentPassword').value;
@@ -1720,14 +1778,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 showToast('error', 'Password must be at least 6 characters long');
                 return;
             }
-            
-            // In a real application, you would verify the current password and update it on the server
-            // For this demo, we'll just simulate a successful password change
-            showToast('success', 'Password changed successfully!');
-            
-            // Reset the form
-            changePasswordForm.reset();
+
+            showLoading();
+            try {
+                await fetchAdminJson('/api/admin/profile/password', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        currentPassword,
+                        newPassword,
+                        confirmNewPassword
+                    })
+                });
+                showToast('success', 'Password changed successfully.');
+                changePasswordForm.reset();
+            } catch (error) {
+                showToast('error', error.message || 'Unable to change password.');
+            } finally {
+                hideLoading();
+            }
         });
+    }
+
+    if (profileForm) {
+        loadAdminProfile();
     }
 
     // Password toggles: Admin profile

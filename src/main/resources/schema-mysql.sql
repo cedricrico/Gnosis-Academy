@@ -1,12 +1,22 @@
 CREATE TABLE IF NOT EXISTS admins (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(64) NOT NULL UNIQUE,
+    first_name VARCHAR(128),
+    last_name VARCHAR(128),
+    email VARCHAR(128),
     password VARCHAR(100) NOT NULL
 ) ENGINE=InnoDB;
 
-INSERT INTO admins (username, password)
-VALUES ('admin', '$2a$10$zf9bon7rEn7owliwyC7l0O9hrlSrJg/JOnPr0IpwKCKXF4jFsZ8MS')
+ALTER TABLE admins ADD COLUMN IF NOT EXISTS first_name VARCHAR(128);
+ALTER TABLE admins ADD COLUMN IF NOT EXISTS last_name VARCHAR(128);
+ALTER TABLE admins ADD COLUMN IF NOT EXISTS email VARCHAR(128);
+
+INSERT INTO admins (username, first_name, last_name, email, password)
+VALUES ('admin', 'Admin', 'User', 'admin@school.edu', '$2a$10$zf9bon7rEn7owliwyC7l0O9hrlSrJg/JOnPr0IpwKCKXF4jFsZ8MS')
 ON DUPLICATE KEY UPDATE
+    first_name = COALESCE(NULLIF(first_name, ''), VALUES(first_name)),
+    last_name = COALESCE(NULLIF(last_name, ''), VALUES(last_name)),
+    email = COALESCE(NULLIF(email, ''), VALUES(email)),
     password = VALUES(password);
 
 CREATE TABLE IF NOT EXISTS users (

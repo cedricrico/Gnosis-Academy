@@ -116,8 +116,15 @@ public class AdminProfessorService {
 		professorRepository.delete(professor);
 	}
 
+	public void deleteById(Long id) {
+		Professor professor = professorRepository.findById(id)
+				.orElseThrow(() -> new NoSuchElementException("Professor not found: " + id));
+		professorRepository.delete(professor);
+	}
+
 	private ProfessorDirectoryResponse toDirectoryResponse(Professor professor) {
 		return new ProfessorDirectoryResponse(
+				professor.getId(),
 				professor.getEmployeeId(),
 				buildFullName(professor),
 				professor.getDepartment(),

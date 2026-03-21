@@ -401,6 +401,12 @@ main {
   border-radius: 20px;
 }
 
+.assignment-status-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
 /* Responsive adjustments */
 
 @media (max-width: 767.98px) {
@@ -671,6 +677,26 @@ document.addEventListener('DOMContentLoaded', function() {
         return 'bg-info';
     }
 
+    function isAssignmentExpired(assignment) {
+        const normalizedStatus = (assignment.status || '').trim().toUpperCase();
+        if (['EXPIRED', 'CLOSED', 'ARCHIVED', 'INACTIVE'].includes(normalizedStatus)) {
+            return true;
+        }
+        if (!assignment.dueDate) {
+            return false;
+        }
+        const dueDate = new Date(assignment.dueDate);
+        return !Number.isNaN(dueDate.getTime()) && dueDate.getTime() < Date.now();
+    }
+
+    function assignmentStateLabel(assignment) {
+        return isAssignmentExpired(assignment) ? 'EXPIRED' : 'ACTIVE';
+    }
+
+    function assignmentStateBadgeClass(assignment) {
+        return isAssignmentExpired(assignment) ? 'bg-danger' : 'bg-success';
+    }
+
     function clearContainer(container) {
         while (container.firstChild) {
             container.removeChild(container.firstChild);
@@ -725,10 +751,25 @@ document.addEventListener('DOMContentLoaded', function() {
             actionCell.appendChild(actionButton);
 
             const statusCell = document.createElement('td');
-            const badge = document.createElement('span');
-            badge.className = `badge ${statusBadgeClass(assignment.status)}`;
-            badge.textContent = formatStatusLabel(assignment.status);
-            statusCell.appendChild(badge);
+            const statusStack = document.createElement('div');
+            statusStack.className = 'assignment-status-stack';
+
+            const availabilityBadge = document.createElement('span');
+            availabilityBadge.className = `badge ${assignmentStateBadgeClass(assignment)}`;
+            availabilityBadge.textContent = assignmentStateLabel(assignment);
+            statusStack.appendChild(availabilityBadge);
+
+            const submissionBadge = document.createElement('span');
+            if (assignment.submitted) {
+                submissionBadge.className = 'badge bg-primary';
+                submissionBadge.textContent = 'UPLOADED';
+            } else {
+                submissionBadge.className = 'badge bg-warning text-dark';
+                submissionBadge.textContent = 'NOT UPLOADED';
+            }
+            statusStack.appendChild(submissionBadge);
+
+            statusCell.appendChild(statusStack);
 
             row.appendChild(titleCell);
             row.appendChild(subjectCell);
@@ -854,6 +895,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 previewBtn.classList.add('d-none');
             }
         }
+        if (submitBtn) {
+            if (assignment.submitted) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Already Submitted';
+            } else if (isAssignmentExpired(assignment)) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Assignment Expired';
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Assignment';
+            }
+        }
+        if (fileInput) {
+            fileInput.disabled = !!assignment.submitted || isAssignmentExpired(assignment);
+        }
         if (modal) {
             modal.show();
         }
@@ -887,14 +943,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: formData
                 });
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(errorText || 'Unable to submit assignment.');
+                    const contentType = response.headers.get('content-type') || '';
+                    let errorMessage = 'Unable to submit assignment.';
+                    if (contentType.includes('application/json')) {
+                        const payload = await response.json();
+                        errorMessage = payload && payload.message ? payload.message : errorMessage;
+                    } else {
+                        const errorText = await response.text();
+                        if (errorText) {
+                            errorMessage = errorText;
+                        }
+                    }
+                    throw new Error(errorMessage);
                 }
                 alert('Assignment submitted successfully.');
                 if (modal) {
                     modal.hide();
                 }
                 fileInput.value = '';
+                await loadAssignments();
             } catch (error) {
                 alert(error.message || 'Unable to submit assignment.');
             }

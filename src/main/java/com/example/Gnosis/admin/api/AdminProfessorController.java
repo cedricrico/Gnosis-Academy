@@ -64,4 +64,10 @@ public class AdminProfessorController {
 		adminProfessorService.delete(employeeId);
 		return ResponseEntity.noContent().build();
 	}
+
+	@DeleteMapping("/by-id/{id}")
+	public ResponseEntity<Void> deleteProfessorById(@PathVariable Long id) {
+		adminProfessorService.deleteById(id);
+		return ResponseEntity.noContent().build();
+	}
 }

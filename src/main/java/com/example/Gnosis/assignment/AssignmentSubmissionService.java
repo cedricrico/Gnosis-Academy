@@ -48,6 +48,14 @@ public class AssignmentSubmissionService {
 				.toList();
 	}
 
+	@Transactional(readOnly = true)
+	public List<AssignmentSubmissionResponse> listForStudent(String studentId) {
+		return submissionRepository.findByStudentIdOrderBySubmittedAtDesc(studentId)
+				.stream()
+				.map(this::toResponse)
+				.toList();
+	}
+
 	@Transactional
 	public AssignmentSubmissionResponse submit(Long assignmentId, User student, MultipartFile file) {
 		if (assignmentId == null) {
@@ -59,6 +67,9 @@ public class AssignmentSubmissionService {
 		Assignment assignment = assignmentRepository.findById(assignmentId)
 				.orElseThrow(() -> new NoSuchElementException("Assignment not found."));
 		ensureAssignmentOpen(assignment);
+		if (submissionRepository.existsByAssignmentIdAndStudentId(assignmentId, student.getStudentId())) {
+			throw new IllegalArgumentException("You have already submitted this assignment.");
+		}
 		validateAttachment(file);
 
 		AssignmentSubmission submission = new AssignmentSubmission();

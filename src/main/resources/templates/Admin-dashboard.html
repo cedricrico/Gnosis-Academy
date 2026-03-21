@@ -616,14 +616,14 @@
                                 <div class="card-body">
                                     <form id="profileForm">
                                         <div class="row mb-3">
-                                            <div class="col-md-6"><label class="form-label">Username</label><input class="form-control" type="text" readonly="" value="admin_user"></div>
-                                            <div class="col-md-6"><label class="form-label">Email</label><input class="form-control" type="email" readonly="" value="admin@school.edu"></div>
+                                            <div class="col-md-6"><label class="form-label" for="adminUsername">Username</label><input class="form-control" type="text" id="adminUsername" readonly=""></div>
+                                            <div class="col-md-6"><label class="form-label" for="adminEmail">Email</label><input class="form-control" type="email" id="adminEmail" required=""></div>
                                         </div>
                                         <div class="row mb-3">
-                                            <div class="col-md-6"><label class="form-label">First Name</label><input class="form-control" type="text" value="Admin"></div>
-                                            <div class="col-md-6"><label class="form-label">Last Name</label><input class="form-control" type="text" value="User"></div>
+                                            <div class="col-md-6"><label class="form-label" for="adminFirstName">First Name</label><input class="form-control" type="text" id="adminFirstName" required=""></div>
+                                            <div class="col-md-6"><label class="form-label" for="adminLastName">Last Name</label><input class="form-control" type="text" id="adminLastName" required=""></div>
                                         </div>
-                                        <div class="mb-3"><label class="form-label">Role</label><input class="form-control" type="text" readonly="" value="Administrator"></div><button class="btn btn-primary" type="submit">Update Profile</button>
+                                        <div class="mb-3"><label class="form-label" for="adminRole">Role</label><input class="form-control" type="text" id="adminRole" readonly=""></div><button class="btn btn-primary" type="submit">Update Profile</button>
                                     </form>
                                 </div>
                             </div>

@@ -7,11 +7,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 import java.time.Instant;
 
 @Entity
-@Table(name = "assignment_submissions")
+@Table(
+		name = "assignment_submissions",
+		uniqueConstraints = @UniqueConstraint(name = "uk_assignment_submission_student", columnNames = {"assignmentId", "studentId"})
+)
 public class AssignmentSubmission {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

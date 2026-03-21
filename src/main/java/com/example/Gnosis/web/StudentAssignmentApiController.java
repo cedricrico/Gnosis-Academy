@@ -50,12 +50,26 @@ public class StudentAssignmentApiController {
 	@GetMapping
 	public List<AssignmentResponse> list(Authentication authentication) {
 		StudentContext context = resolveStudentContext(authentication);
+		User student = resolveStudent(authentication);
 		Set<String> allowedSubjects = resolveAllowedSubjects(context);
+		java.util.Map<Long, AssignmentSubmissionResponse> submissionsByAssignmentId =
+				submissionService.listForStudent(student.getStudentId()).stream()
+						.collect(java.util.stream.Collectors.toMap(
+								AssignmentSubmissionResponse::getAssignmentId,
+								response -> response,
+								(existing, replacement) -> existing
+						));
 		return assignmentService.listForStudentSection(context.section(), allowedSubjects)
 				.stream()
 				.peek(response -> {
 					if (response.getAttachmentName() != null && !response.getAttachmentName().isBlank()) {
 						response.setAttachmentUrl("/student/api/assignments/" + response.getId() + "/attachment");
+					}
+					AssignmentSubmissionResponse submission = submissionsByAssignmentId.get(response.getId());
+					if (submission != null) {
+						response.setSubmitted(true);
+						response.setSubmissionId(submission.getId());
+						response.setSubmittedAt(submission.getSubmittedAt());
 					}
 				})
 				.toList();
