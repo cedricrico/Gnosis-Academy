@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import com.example.Gnosis.schoolclass.SchoolClassDto;
 import com.example.Gnosis.schoolclass.SchoolClassService;
 import com.example.Gnosis.assignment.AssignmentRepository;
+import com.example.Gnosis.grade.ProfessorGradeRecordService;
 import com.example.Gnosis.user.User;
 import com.example.Gnosis.user.UserRepository;
 
@@ -28,11 +29,18 @@ public class ProfessorUiController {
 	private final SchoolClassService schoolClassService;
 	private final UserRepository userRepository;
 	private final AssignmentRepository assignmentRepository;
+	private final ProfessorGradeRecordService professorGradeRecordService;
 
-	public ProfessorUiController(SchoolClassService schoolClassService, UserRepository userRepository, AssignmentRepository assignmentRepository) {
+	public ProfessorUiController(
+			SchoolClassService schoolClassService,
+			UserRepository userRepository,
+			AssignmentRepository assignmentRepository,
+			ProfessorGradeRecordService professorGradeRecordService
+	) {
 		this.schoolClassService = schoolClassService;
 		this.userRepository = userRepository;
 		this.assignmentRepository = assignmentRepository;
+		this.professorGradeRecordService = professorGradeRecordService;
 	}
 
 	@ModelAttribute
@@ -237,6 +245,16 @@ public class ProfessorUiController {
 		String sectionFilter = safeTrim(section);
 		List<SchoolClassDto> classes = schoolClassService.findForProfessor(professorId, professorFullName);
 		Map<String, User> studentsById = new LinkedHashMap<>();
+		Map<String, String> averageGradeByStudentId = professorGradeRecordService
+				.listGradeRecords(professorId, professorFullName)
+				.rows()
+				.stream()
+				.collect(java.util.stream.Collectors.toMap(
+						ProfessorGradeRecordService.GradeRecordRow::studentId,
+						row -> formatAverageGrade(row.totalPercent()),
+						(left, right) -> left,
+						LinkedHashMap::new
+				));
 
 		if (sectionFilter == null) {
 			for (SchoolClassDto cls : classes) {
@@ -292,7 +310,7 @@ public class ProfessorUiController {
 						buildStudentName(student),
 						"-",
 						safeTrim(student.getStatus()) != null ? student.getStatus().trim() : "Active",
-						"-"
+						averageGradeByStudentId.getOrDefault(safeTrim(student.getStudentId()), "-")
 				))
 				.toList();
 
@@ -378,6 +396,13 @@ public class ProfessorUiController {
 			formatted.add(combined);
 		}
 		return formatted.isEmpty() ? "-" : String.join("; ", formatted);
+	}
+
+	private static String formatAverageGrade(Double totalPercent) {
+		if (totalPercent == null) {
+			return "-";
+		}
+		return String.format(java.util.Locale.ROOT, "%.2f%%", totalPercent);
 	}
 
 	private record MasterlistStudentRow(String studentId, String fullName, String email, String status, String averageGrade) {
