@@ -48,8 +48,8 @@
                                 <div class="invalid-feedback"><span>Please enter a valid student ID in format: 0000-00000.</span></div>
                             </div>
                             <div class="mb-4"><label class="form-label fw-semibold mb-1" for="password">Password</label>
-                                <div class="input-group"><input class="form-control py-2" type="password" id="password" name="password" pattern="(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}" required="" title="Password must be at least 8 characters long, contain at least one number, one lowercase and one uppercase letter"><button class="btn btn-outline-secondary" id="togglePassword" type="button"><img id="confirmEyeIcon" alt="Toggle password visibility" height="20" src="/assets/img/visible.png" width="20"></button></div>
-                                <div class="d-block invalid-feedback"><span>Password must be at least 8 characters long and contain at least one number, one lowercase and one uppercase letter.</span></div>
+                                <div class="input-group has-validation"><input class="form-control py-2" type="password" id="password" name="password" pattern="(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}" required="" title="Password must be at least 8 characters long, contain at least one number, one lowercase and one uppercase letter"><button class="btn btn-outline-secondary" id="togglePassword" type="button"><img id="confirmEyeIcon" alt="Toggle password visibility" height="20" src="/assets/img/visible.png" width="20"></button></div>
+                                <div class="invalid-feedback"><span>Password must be at least 8 characters long and contain at least one number, one lowercase and one uppercase letter.</span></div>
                                 <div class="mt-2">
                                     <div class="progress" style="height:5px;">
                                         <div class="progress-bar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" data-bss-id="1031" id="passwordStrength" role="progressbar" style="width: 0%;"><span class="visually-hidden">0%</span></div>
@@ -57,8 +57,8 @@
                                 </div>
                             </div>
                             <div class="mb-4"><label class="form-label fw-semibold mb-1" for="confirmPassword">Confirm Password</label>
-                                <div class="input-group"><input class="form-control py-2" type="password" id="confirmPassword" name="confirmPassword" required=""><button class="btn btn-outline-secondary" id="toggleConfirmPassword" type="button"><img id="confirmEyeIcon2" alt="Toggle confirm password visibility" height="20" src="/assets/img/visible.png" width="20"></button></div>
-                                <div class="d-block invalid-feedback" id="confirmPasswordFeedback"><span>Please confirm your password.</span></div>
+                                <div class="input-group has-validation"><input class="form-control py-2" type="password" id="confirmPassword" name="confirmPassword" required=""><button class="btn btn-outline-secondary" id="toggleConfirmPassword" type="button"><img id="confirmEyeIcon2" alt="Toggle confirm password visibility" height="20" src="/assets/img/visible.png" width="20"></button></div>
+                                <div class="invalid-feedback" id="confirmPasswordFeedback"><span>Please confirm your password.</span></div>
                             </div>
                             <div class="alert alert-danger" role="alert" th:if="${registerError}" th:text="${registerError}"></div>
                             <div class="d-grid"><button class="btn btn-primary btn-lg" type="submit">Create Account</button></div>

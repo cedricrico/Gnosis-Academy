@@ -31,6 +31,20 @@
         return { strength: Math.min(strength, 6), feedback: feedback };
     }
 
+    function validatePassword(input) {
+        if (!input) {
+            return true;
+        }
+        const value = input.value;
+        const pattern = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+        const isValid = value === '' || pattern.test(value);
+
+        input.setCustomValidity(isValid ? '' : 'Password must be at least 8 characters long and contain at least one number, one lowercase and one uppercase letter.');
+        input.classList.toggle('is-invalid', !isValid);
+        input.classList.toggle('is-valid', value.length > 0 && isValid);
+        return isValid;
+    }
+
     function updatePasswordStrength() {
         const password = document.getElementById('password').value;
         const { strength, feedback } = checkPasswordStrength(password);
@@ -60,24 +74,34 @@
     }
 
     function checkPasswordMatch() {
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
         const feedbackElement = document.getElementById('confirmPasswordFeedback');
-        
+        if (!passwordInput || !confirmPasswordInput || !feedbackElement) {
+            return true;
+        }
+
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+
         if (confirmPassword.length > 0) {
             if (password !== confirmPassword) {
                 feedbackElement.textContent = 'Passwords do not match';
-                feedbackElement.style.display = 'block';
-                document.getElementById('confirmPassword').classList.add('is-invalid');
-                document.getElementById('confirmPassword').classList.remove('is-valid');
+                confirmPasswordInput.setCustomValidity('Passwords do not match');
+                confirmPasswordInput.classList.add('is-invalid');
+                confirmPasswordInput.classList.remove('is-valid');
                 return false;
             } else {
-                feedbackElement.style.display = 'none';
-                document.getElementById('confirmPassword').classList.remove('is-invalid');
-                document.getElementById('confirmPassword').classList.add('is-valid');
+                feedbackElement.textContent = 'Please confirm your password.';
+                confirmPasswordInput.setCustomValidity('');
+                confirmPasswordInput.classList.remove('is-invalid');
+                confirmPasswordInput.classList.add('is-valid');
                 return true;
             }
         }
+        feedbackElement.textContent = 'Please confirm your password.';
+        confirmPasswordInput.setCustomValidity('');
+        confirmPasswordInput.classList.remove('is-invalid', 'is-valid');
         return true;
     }
 
@@ -89,6 +113,9 @@
         if (passwordInput) {
             passwordInput.addEventListener('input', updatePasswordStrength);
             passwordInput.addEventListener('blur', updatePasswordStrength);
+            passwordInput.addEventListener('input', function() { validatePassword(passwordInput); });
+            passwordInput.addEventListener('blur', function() { validatePassword(passwordInput); });
+            passwordInput.addEventListener('input', checkPasswordMatch);
         }
         
         if (confirmPasswordInput) {
@@ -262,13 +289,19 @@
                     
                     const feedbackElement = document.getElementById('confirmPasswordFeedback');
                     feedbackElement.textContent = 'Passwords do not match';
-                    feedbackElement.style.display = 'block';
+                    document.getElementById('confirmPassword').setCustomValidity('Passwords do not match');
                     document.getElementById('confirmPassword').classList.add('is-invalid');
                     return;
                 }
 
                 const studentIdInput = document.getElementById('studentId');
+                const passwordInput = document.getElementById('password');
                 if (studentIdInput && !validateStudentId(studentIdInput)) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+
+                if (passwordInput && !validatePassword(passwordInput)) {
                     event.preventDefault();
                     event.stopPropagation();
                 }

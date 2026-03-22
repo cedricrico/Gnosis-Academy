@@ -37,6 +37,15 @@ document.addEventListener('DOMContentLoaded', function() {
     if (confirmEmployeePasswordInput) {
         confirmEmployeePasswordInput.addEventListener('input', checkPasswordMatch);
     }
+    if (employeePasswordInput) {
+        employeePasswordInput.addEventListener('input', checkPasswordMatch);
+        employeePasswordInput.addEventListener('input', function() {
+            validatePassword(employeePasswordInput);
+        });
+        employeePasswordInput.addEventListener('blur', function() {
+            validatePassword(employeePasswordInput);
+        });
+    }
     
     function checkPasswordMatch() {
         if (!employeePasswordInput || !confirmEmployeePasswordInput) {
@@ -52,19 +61,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (feedbackElement) {
                     feedbackElement.textContent = 'Passwords do not match';
                 }
+                confirmEmployeePasswordInput.setCustomValidity('Passwords do not match');
                 confirmEmployeePasswordInput.classList.add('is-invalid');
                 confirmEmployeePasswordInput.classList.remove('is-valid');
                 return false;
             } else {
                 if (feedbackElement) {
-                    feedbackElement.textContent = '';
+                    feedbackElement.textContent = 'Please confirm your password.';
                 }
+                confirmEmployeePasswordInput.setCustomValidity('');
                 confirmEmployeePasswordInput.classList.remove('is-invalid');
                 confirmEmployeePasswordInput.classList.add('is-valid');
                 return true;
             }
         }
+        if (feedbackElement) {
+            feedbackElement.textContent = 'Please confirm your password.';
+        }
+        confirmEmployeePasswordInput.setCustomValidity('');
+        confirmEmployeePasswordInput.classList.remove('is-invalid', 'is-valid');
         return true;
+    }
+
+    function validatePassword(input) {
+        if (!input) {
+            return true;
+        }
+        const value = input.value;
+        const pattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+        const isValid = value === '' || pattern.test(value);
+
+        input.setCustomValidity(isValid ? '' : 'Password must be at least 8 characters long and contain at least one number, one lowercase and one uppercase letter.');
+        input.classList.toggle('is-invalid', !isValid);
+        input.classList.toggle('is-valid', value.length > 0 && isValid);
+        return isValid;
     }
 
     function validateName(input) {
@@ -191,6 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 // Additional custom validation
                 const passwordMatch = checkPasswordMatch();
+                const passwordValid = employeePasswordInput ? validatePassword(employeePasswordInput) : true;
                 const employeeIdPattern = /^\d{4}-\d{5}$/;
                 const isEmployeeIdValid = employeeIdInput ? employeeIdPattern.test(employeeIdInput.value) : true;
                 const firstNameInput = document.getElementById('firstName');
@@ -213,6 +244,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 if (!passwordMatch) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+
+                if (!passwordValid) {
                     event.preventDefault();
                     event.stopPropagation();
                 }

@@ -521,6 +521,139 @@ body {
 .card:hover {
   box-shadow: var(--landing-card-hover-shadow);
 }
+
+.grade-details-modal .modal-content {
+  border: 0;
+  border-radius: 24px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top right, rgba(76, 201, 240, 0.22), transparent 34%),
+    linear-gradient(145deg, #ffffff 0%, #f5f8ff 52%, #edf4ff 100%);
+  box-shadow: 0 28px 70px rgba(34, 52, 111, 0.24);
+}
+
+.grade-details-modal .modal-header {
+  background: linear-gradient(135deg, #2645c4 0%, #4361ee 58%, #4cc9f0 100%);
+  border-bottom: 0;
+  padding: 1.5rem 1.5rem 1.25rem;
+}
+
+.grade-modal-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.grade-modal-student {
+  color: #fff;
+}
+
+.grade-modal-student h4 {
+  margin: 0.85rem 0 0.2rem;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.grade-modal-student p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.grade-details-modal .btn-close {
+  filter: invert(1);
+  opacity: 0.92;
+}
+
+.grade-details-body {
+  padding: 1.5rem;
+}
+
+.grade-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.grade-metric-card {
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(67, 97, 238, 0.12);
+  box-shadow: 0 12px 28px rgba(63, 86, 142, 0.08);
+}
+
+.grade-metric-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.grade-metric-value {
+  color: #17326b;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.grade-metric-subtext {
+  margin-top: 0.35rem;
+  color: #6b7a99;
+  font-size: 0.88rem;
+}
+
+.grade-details-note {
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(67, 97, 238, 0.08), rgba(76, 201, 240, 0.12));
+  border: 1px solid rgba(67, 97, 238, 0.1);
+  color: #36507f;
+}
+
+.grade-details-note strong {
+  color: #1e3a8a;
+}
+
+.grade-letter-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.5rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+@media (max-width: 575.98px) {
+  .grade-modal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .grade-details-body,
+  .grade-details-modal .modal-header {
+    padding: 1.15rem;
+  }
+
+  .grade-modal-student h4 {
+    font-size: 1.45rem;
+  }
+}
 </style></head>
 
 <body>
@@ -679,15 +812,57 @@ body {
                                 <tbody id="gradeRecordsTableBody"></tbody>
                             </table>
                         </div>
-                        <nav aria-label="Grade records pagination">
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item disabled"><a class="page-link" href="#" aria-disabled="true" tabindex="-1">Previous</a></li>
-                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                <li class="page-item"><a class="page-link" href="#">Next</a></li>
-                            </ul>
+                        <nav aria-label="Grade records pagination" class="mt-3">
+                            <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
+                                <div class="small text-muted" id="gradePaginationSummary">Showing 0 of 0 students</div>
+                                <ul class="pagination justify-content-center mb-0" id="gradeRecordsPagination"></ul>
+                            </div>
                         </nav>
+                    </div>
+                </div>
+                <div class="modal fade grade-details-modal" id="gradeDetailsModal" tabindex="-1" aria-labelledby="gradeDetailsModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <div class="grade-modal-student">
+                                    <span class="grade-modal-eyebrow">Grade Record Snapshot</span>
+                                    <h4 id="gradeDetailsModalLabel">Student Name</h4>
+                                    <p><span id="gradeDetailsMeta">Course and section</span></p>
+                                </div>
+                                <div class="ms-3 text-end">
+                                    <div class="grade-letter-pill" id="gradeDetailsLetter">-</div>
+                                </div>
+                                <button type="button" class="btn-close ms-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body grade-details-body">
+                                <div class="grade-modal-grid">
+                                    <div class="grade-metric-card">
+                                        <span class="grade-metric-label">Overall Grade</span>
+                                        <div class="grade-metric-value" id="gradeDetailsOverall">-</div>
+                                        <div class="grade-metric-subtext">Combined score from graded coursework</div>
+                                    </div>
+                                    <div class="grade-metric-card">
+                                        <span class="grade-metric-label">Student ID</span>
+                                        <div class="grade-metric-value" id="gradeDetailsStudentId">-</div>
+                                        <div class="grade-metric-subtext">Current record reference</div>
+                                    </div>
+                                    <div class="grade-metric-card">
+                                        <span class="grade-metric-label">Assignments</span>
+                                        <div class="grade-metric-value" id="gradeDetailsAssignments">-</div>
+                                        <div class="grade-metric-subtext" id="gradeDetailsAssignmentCount">0 graded items</div>
+                                    </div>
+                                    <div class="grade-metric-card">
+                                        <span class="grade-metric-label">Quizzes</span>
+                                        <div class="grade-metric-value" id="gradeDetailsQuizzes">-</div>
+                                        <div class="grade-metric-subtext" id="gradeDetailsQuizCount">0 recorded quizzes</div>
+                                    </div>
+                                </div>
+                                <div class="grade-details-note">
+                                    <strong>Computation note:</strong>
+                                    Overall performance is derived from the available assignment and quiz scores currently recorded for this student.
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2030,7 +2205,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const quizSubjectFilter = document.getElementById('quizSubjectFilter');
     const quizStatusFilter = document.getElementById('quizStatusFilter');
     const quizSearch = document.getElementById('quizSearch');
-    const quizTableBody = document.querySelector('table.table tbody');
+    const quizTableBody = document.getElementById('quizTableBody');
+    if (!quizTableBody) {
+        return;
+    }
     
     // Add event listeners for filtering
     if (quizSubjectFilter) {
@@ -2509,15 +2687,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const passRateCard = document.getElementById('passRateCard');
     const highestScoreCard = document.getElementById('highestScoreCard');
     const lowestScoreCard = document.getElementById('lowestScoreCard');
+    const paginationElement = document.getElementById('gradeRecordsPagination');
+    const paginationSummary = document.getElementById('gradePaginationSummary');
+    const gradeDetailsModalElement = document.getElementById('gradeDetailsModal');
+    const gradeDetailsModal = gradeDetailsModalElement ? new bootstrap.Modal(gradeDetailsModalElement) : null;
     if (!tableBody) return;
 
     let gradeRows = [];
+    let filteredRows = [];
+    let currentPage = 1;
+    const pageSize = 10;
 
     function formatPercent(value) {
         if (value === null || value === undefined || Number.isNaN(Number(value))) {
             return '-';
         }
         return `${Number(value).toFixed(2)}%`;
+    }
+
+    function formatCount(value, singularLabel, pluralLabel) {
+        const safeValue = Number(value ?? 0);
+        const label = safeValue === 1 ? singularLabel : pluralLabel;
+        return `${safeValue} ${label}`;
     }
 
     function escapeHtml(value) {
@@ -2559,6 +2750,15 @@ document.addEventListener('DOMContentLoaded', function() {
         return haystack.includes(searchText);
     }
 
+    function totalPages() {
+        return Math.max(1, Math.ceil(filteredRows.length / pageSize));
+    }
+
+    function pageRows(rows) {
+        const startIndex = (currentPage - 1) * pageSize;
+        return rows.slice(startIndex, startIndex + pageSize);
+    }
+
     function renderRows(rows) {
         if (!rows.length) {
             tableBody.innerHTML = `
@@ -2582,14 +2782,86 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td><span class="badge ${row.letterGrade === 'A' ? 'bg-success' : row.letterGrade === 'B' ? 'bg-primary' : row.letterGrade === 'C' ? 'bg-warning text-dark' : row.letterGrade === 'D' ? 'bg-warning' : row.letterGrade === 'F' ? 'bg-danger' : 'bg-secondary'}">${escapeHtml(row.letterGrade || '-')}</span></td>
                 <td>
                     <button class="btn btn-outline-primary btn-sm grade-details-btn" type="button"
+                        data-student-id="${escapeHtml(row.studentId || '-')}"
                         data-student="${escapeHtml(row.studentName || '-')}"
+                        data-course="${escapeHtml(row.course || '')}"
+                        data-section="${escapeHtml(row.section || '')}"
+                        data-assignment-percent="${row.assignmentPercent ?? ''}"
+                        data-quiz-percent="${row.quizPercent ?? ''}"
+                        data-total-percent="${row.totalPercent ?? ''}"
+                        data-letter-grade="${escapeHtml(row.letterGrade || '-')}"
                         data-assignment-count="${row.assignmentCount ?? 0}"
                         data-quiz-count="${row.quizCount ?? 0}">
+                        <svg class="bi bi-eye me-1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8z"></path>
+                            <path d="M8 5a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path>
+                        </svg>
                         View
                     </button>
                 </td>
             </tr>
         `).join('');
+    }
+
+    function renderPagination() {
+        if (!paginationElement || !paginationSummary) return;
+
+        const total = filteredRows.length;
+        const pages = totalPages();
+        const start = total === 0 ? 0 : ((currentPage - 1) * pageSize) + 1;
+        const end = total === 0 ? 0 : Math.min(currentPage * pageSize, total);
+
+        paginationSummary.textContent = `Showing ${start}-${end} of ${total} students`;
+
+        if (total <= pageSize) {
+            paginationElement.innerHTML = '';
+            return;
+        }
+
+        const items = [];
+        const addPageItem = (label, page, disabled, active = false, ariaLabel = '') => {
+            items.push(`
+                <li class="page-item${disabled ? ' disabled' : ''}${active ? ' active' : ''}">
+                    <button class="page-link" type="button" ${ariaLabel ? `aria-label="${ariaLabel}"` : ''} ${disabled ? 'disabled' : ''} data-page="${page}">${label}</button>
+                </li>
+            `);
+        };
+
+        addPageItem('Previous', currentPage - 1, currentPage === 1, false, 'Previous page');
+        for (let page = 1; page <= pages; page += 1) {
+            addPageItem(String(page), page, false, page === currentPage, `Page ${page}`);
+        }
+        addPageItem('Next', currentPage + 1, currentPage === pages, false, 'Next page');
+
+        paginationElement.innerHTML = items.join('');
+    }
+
+    function openGradeDetails(button) {
+        if (!gradeDetailsModal) return;
+
+        const studentName = button.getAttribute('data-student') || 'Student';
+        const studentId = button.getAttribute('data-student-id') || '-';
+        const course = button.getAttribute('data-course') || '';
+        const section = button.getAttribute('data-section') || '';
+        const assignmentPercent = button.getAttribute('data-assignment-percent');
+        const quizPercent = button.getAttribute('data-quiz-percent');
+        const totalPercent = button.getAttribute('data-total-percent');
+        const letterGrade = button.getAttribute('data-letter-grade') || '-';
+        const assignmentCount = button.getAttribute('data-assignment-count') || '0';
+        const quizCount = button.getAttribute('data-quiz-count') || '0';
+        const meta = [course, section].filter(Boolean).join(' | ') || 'No course/section assigned';
+
+        document.getElementById('gradeDetailsModalLabel').textContent = studentName;
+        document.getElementById('gradeDetailsMeta').textContent = meta;
+        document.getElementById('gradeDetailsLetter').textContent = letterGrade;
+        document.getElementById('gradeDetailsStudentId').textContent = studentId;
+        document.getElementById('gradeDetailsOverall').textContent = formatPercent(totalPercent);
+        document.getElementById('gradeDetailsAssignments').textContent = formatPercent(assignmentPercent);
+        document.getElementById('gradeDetailsQuizzes').textContent = formatPercent(quizPercent);
+        document.getElementById('gradeDetailsAssignmentCount').textContent = formatCount(assignmentCount, 'graded item', 'graded items');
+        document.getElementById('gradeDetailsQuizCount').textContent = formatCount(quizCount, 'recorded quiz', 'recorded quizzes');
+
+        gradeDetailsModal.show();
     }
 
     function renderSummary(summary) {
@@ -2612,12 +2884,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const searchText = (searchInput?.value || '').trim().toLowerCase();
         const selectedComponent = componentFilter?.value || '';
         const selectedRange = rangeFilter?.value || '';
-        const filtered = gradeRows.filter(row =>
+        filteredRows = gradeRows.filter(row =>
             matchesSearch(row, searchText)
             && matchesComponent(row, selectedComponent)
             && matchesRange(row, selectedRange)
         );
-        renderRows(filtered);
+        const pages = totalPages();
+        if (currentPage > pages) {
+            currentPage = pages;
+        }
+        renderRows(pageRows(filteredRows));
+        renderPagination();
     }
 
     async function loadGradeRecords() {
@@ -2642,25 +2919,45 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (searchInput) {
-        searchInput.addEventListener('input', applyFilters);
+        searchInput.addEventListener('input', function() {
+            currentPage = 1;
+            applyFilters();
+        });
     }
     if (componentFilter) {
-        componentFilter.addEventListener('change', applyFilters);
+        componentFilter.addEventListener('change', function() {
+            currentPage = 1;
+            applyFilters();
+        });
     }
     if (rangeFilter) {
-        rangeFilter.addEventListener('change', applyFilters);
+        rangeFilter.addEventListener('change', function() {
+            currentPage = 1;
+            applyFilters();
+        });
     }
     if (applyButton) {
-        applyButton.addEventListener('click', applyFilters);
+        applyButton.addEventListener('click', function() {
+            currentPage = 1;
+            applyFilters();
+        });
+    }
+    if (paginationElement) {
+        paginationElement.addEventListener('click', function(event) {
+            const button = event.target.closest('[data-page]');
+            if (!button || button.disabled) return;
+            const nextPage = Number(button.getAttribute('data-page'));
+            if (Number.isNaN(nextPage)) return;
+            currentPage = Math.min(Math.max(nextPage, 1), totalPages());
+            renderRows(pageRows(filteredRows));
+            renderPagination();
+        });
     }
 
     tableBody.addEventListener('click', function(event) {
         const button = event.target.closest('.grade-details-btn');
         if (!button) return;
-        const student = button.getAttribute('data-student') || 'Student';
-        const assignmentCount = button.getAttribute('data-assignment-count') || '0';
-        const quizCount = button.getAttribute('data-quiz-count') || '0';
-        alert(`${student}\nAssignments graded: ${assignmentCount}\nQuizzes recorded: ${quizCount}\nOverall is calculated from available assignment and quiz scores only.`);
+        openGradeDetails(button);
     });
 
     loadGradeRecords();
@@ -2719,10 +3016,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </body>
 
 </html>
-
-
-
-
 
 
 

@@ -8,8 +8,12 @@
     <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="/assets/css/student-notifications.css">
     <style>
+:root {
+  --records-navbar-offset: 84px;
+}
+
 body {
-  padding-top: 70px;
+  padding-top: var(--records-navbar-offset);
   background:
     radial-gradient(circle at top left, rgba(13, 110, 253, 0.08), transparent 24%),
     linear-gradient(180deg, #f6f8fc 0%, #eef3f8 100%);
@@ -26,25 +30,11 @@ body {
 }
 
 .sidebar {
-  min-height: calc(100vh - 70px);
+  min-height: calc(100vh - var(--records-navbar-offset));
   background-color: #f8f9fa;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
-  padding: 0 0 1rem;
+  padding: 1rem 0;
   transition: transform 0.3s ease-in-out;
-}
-
-.sidebar-brand {
-  display: block;
-  margin: 0 0 1rem;
-  width: 100%;
-  min-height: 22px;
-  padding: 0.95rem 1.25rem;
-  background: linear-gradient(135deg, #5b7ee5 0%, #4a6fdc 100%);
-  color: #fff;
-  font-size: 1.7rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  line-height: 1.1;
 }
 
 .sidebar .nav-link {
@@ -220,7 +210,7 @@ body {
 @media (max-width: 767.98px) {
   .sidebar {
     position: fixed;
-    top: 70px;
+    top: var(--records-navbar-offset);
     left: 0;
     bottom: 0;
     z-index: 1040;
@@ -240,6 +230,10 @@ body {
 }
 
 @media (max-width: 576px) {
+  :root {
+    --records-navbar-offset: 78px;
+  }
+
   .container-fluid {
     padding-left: 1rem;
     padding-right: 1rem;
@@ -247,6 +241,22 @@ body {
 }
     </style>
     <link rel="stylesheet" href="/assets/css/student-admin-parity.css">
+    <style>
+body {
+  padding-top: var(--records-navbar-offset) !important;
+}
+
+.sidebar {
+  min-height: calc(100vh - var(--records-navbar-offset));
+  padding: 1rem 0;
+}
+
+@media (max-width: 767.98px) {
+  .sidebar {
+    top: var(--records-navbar-offset);
+  }
+}
+    </style>
 </head>
 
 <body>
@@ -294,8 +304,8 @@ body {
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-3 col-lg-2 bg-light d-md-block sidebar" id="sidebarMenu">
-                <div class="position-sticky">
-                    <div class="sidebar-brand">Gnosis Portal</div>
+                <div class="position-sticky pt-3">
+                    <h4 class="text-center mb-4">Gnosis Portal</h4>
                     <ul class="nav flex-column">
                         <li class="nav-item"><a class="nav-link" href="/student/dashboard"><svg class="bi bi-speedometer2 me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16"><path d="M8 4a.5.5 0 0 1 .5.5V6a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4M3.732 5.732a.5.5 0 0 1 .707 0l.915.914a.5.5 0 1 1-.708.708l-.914-.915a.5.5 0 0 1 0-.707zM2 10a.5.5 0 0 1 .5-.5h1.586a.5.5 0 0 1 0 1H2.5A.5.5 0 0 1 2 10m9.5 0a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 1 0 1H12a.5.5 0 0 1-.5-.5m.754-4.246a.389.389 0 0 0-.527-.02L7.547 9.31a.91.91 0 1 0 1.302 1.258l3.434-4.297a.389.389 0 0 0-.029-.518z"></path><path fill-rule="evenodd" d="M0 10a8 8 0 1 1 15.547 2.661c-.442 1.253-1.845 1.602-2.932 1.25C11.309 13.488 9.475 13 8 13c-1.474 0-3.31.488-4.615.911-1.087.352-2.49.003-2.932-1.25A7.988 7.988 0 0 1 0 10m8-7a7 7 0 0 0-6.603 9.329c.203.575.923.876 1.68.63C4.397 12.533 6.358 12 8 12s3.604.532 4.923.96c.757.245 1.477-.056 1.68-.631A7 7 0 0 0 8 3"></path></svg> Dashboard</a></li>
                         <li class="nav-item"><a class="nav-link active" href="/student/records"><svg class="bi bi-bar-chart-line me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16"><path d="M0 0h1v15h15v1H0z"></path><path d="M10 10.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5V14h-2zM6 7.5A.5.5 0 0 1 6.5 7h1a.5.5 0 0 1 .5.5V14H6zM2 12.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5V14H2z"></path><path fill-rule="evenodd" d="M14 4.5a.5.5 0 0 1-.5.5h-2.793l-2.146 2.147a.5.5 0 0 1-.708 0L5.5 4.793 2.854 7.439a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0L8.207 6.086l1.793-1.793A1 1 0 0 1 10.707 4H13.5a.5.5 0 0 1 .5.5"></path></svg> Records</a></li>

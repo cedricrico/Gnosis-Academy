@@ -30,6 +30,7 @@
     <div class="container d-flex min-vh-100 justify-content-center align-items-center">
         <div class="card shadow p-4" style="width:100%;max-width:500px;">
             <h2 class="text-center mb-4">Employee Registration</h2>
+            <div class="alert alert-danger" role="alert" th:if="${professorRegisterError}" th:text="${professorRegisterError}"></div>
             <form id="employee-register-form" class="needs-validation" method="post" action="/professor/register" th:action="@{/professor/register}" novalidate="">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <div class="row mb-3">
@@ -61,14 +62,14 @@
                     <div class="invalid-feedback"><span>Please select your department.</span></div>
                 </div>
                 <div class="mb-3"><label class="form-label fw-semibold" for="employeePassword">Password</label>
-                    <div class="input-group"><input class="form-control" type="password" id="employeePassword" name="password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required="" title="Password must be at least 8 characters long, contain at least one number, one lowercase and one uppercase letter"><button class="btn btn-outline-secondary" id="employeeTogglePassword" type="button"><img id="employeeEyeIcon" alt="Toggle Password Visibility" height="20" src="/assets/img/visible.png" width="20"></button></div>
-                    <div class="d-block invalid-feedback"><span>Password must be at least 8 characters long and contain at least one number, one lowercase and one uppercase letter.</span></div>
+                    <div class="input-group has-validation"><input class="form-control" type="password" id="employeePassword" name="password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required="" title="Password must be at least 8 characters long, contain at least one number, one lowercase and one uppercase letter"><button class="btn btn-outline-secondary" id="employeeTogglePassword" type="button"><img id="employeeEyeIcon" alt="Toggle Password Visibility" height="20" src="/assets/img/visible.png" width="20"></button></div>
+                    <div class="invalid-feedback"><span>Password must be at least 8 characters long and contain at least one number, one lowercase and one uppercase letter.</span></div>
                 </div>
                 <div class="mb-3"><label class="form-label fw-semibold" for="confirmEmployeePassword">Confirm Password</label>
-                    <div class="input-group"><input class="form-control" type="password" id="confirmEmployeePassword" name="confirmPassword" required=""><button class="btn btn-outline-secondary" id="employeeToggleConfirmPassword" type="button"><img id="employeeEyeIcon2" alt="Toggle Confirm Password Visibility" height="20" src="/assets/img/visible.png" width="20"></button></div>
-                    <div class="d-block invalid-feedback" id="confirmEmployeePasswordFeedback"><span>Please confirm your password.</span></div>
+                    <div class="input-group has-validation"><input class="form-control" type="password" id="confirmEmployeePassword" name="confirmPassword" required=""><button class="btn btn-outline-secondary" id="employeeToggleConfirmPassword" type="button"><img id="employeeEyeIcon2" alt="Toggle Confirm Password Visibility" height="20" src="/assets/img/visible.png" width="20"></button></div>
+                    <div class="invalid-feedback" id="confirmEmployeePasswordFeedback"><span>Please confirm your password.</span></div>
                 </div>
-                <div class="mb-3 form-check"><input type="checkbox" class="form-check-input" id="employeeTerms" name="employeeTerms" required=""><label class="form-check-label" for="employeeTerms">I agree to the terms and conditions</label>
+                <div class="mb-3 form-check"><input type="checkbox" class="form-check-input" id="employeeTerms" name="employeeTerms" value="accepted" required=""><label class="form-check-label" for="employeeTerms">I agree to the terms and conditions</label>
                     <div class="invalid-feedback"><span>You must agree to the terms and conditions.</span></div>
                 </div><button class="btn btn-primary w-100" type="submit">Register</button>
             </form>
