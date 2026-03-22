@@ -551,7 +551,7 @@ body {
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">
                     <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" id="navbarProfile">
-                        <img id="navbarProfilePhoto" src="https://via.placeholder.com/32" alt="Profile photo" width="32" height="32" class="rounded-circle me-2">
+                        <img id="navbarProfilePhoto" src="data:image/svg+xml,%3Csvg xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27 width%3D%2732%27 height%3D%2732%27%3E%3Crect width%3D%2732%27 height%3D%2732%27 rx%3D%2716%27 fill%3D%27%23dee2e6%27%2F%3E%3C%2Fsvg%3E" alt="Profile photo" width="32" height="32" class="rounded-circle me-2">
                         <span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${professorFullName}">Instructor User</span><span class="text-muted small fw-semibold">ID: <span th:text="${professorId}">I2024001</span></span></span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarProfile">
@@ -822,7 +822,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const quizTableBody = document.querySelector('table.table tbody');
     const quizStore = window.quizStore || { list: [], cache: new Map() };
     window.quizStore = quizStore;
-    
+    // Tracks IDs of quizzes saved within the last 60 s to prevent the
+    // expirePastDueQuizzes timer from immediately re-expiring them.
+    const recentlySavedIds = new Set();
+
     // Add event listeners for filtering
     if (quizSubjectFilter) {
         quizSubjectFilter.addEventListener('change', filterQuizzes);
@@ -1097,6 +1100,22 @@ document.addEventListener('DOMContentLoaded', function() {
             statusSelect.value = normalizedStatus;
         }
         
+        // When due date changes on an expired quiz, auto-switch status to Republish
+        // so the professor gets visual feedback and the save works correctly.
+        const dueDateInput = document.getElementById('editQuizDueDate');
+        const statusSelectForListener = document.getElementById('editQuizStatus');
+        function onDueDateChange() {
+            if (!statusSelectForListener || !dueDateInput) return;
+            if (statusSelectForListener.value !== 'expired') return;
+            if (!isExpired({ dueDate: dueDateInput.value })) {
+                statusSelectForListener.value = 'republish';
+            }
+        }
+        dueDateInput.removeEventListener('change', onDueDateChange);
+        dueDateInput.removeEventListener('input', onDueDateChange);
+        dueDateInput.addEventListener('change', onDueDateChange);
+        dueDateInput.addEventListener('input', onDueDateChange);
+
         // Set up save handler
         const saveButton = document.getElementById('saveQuizChanges');
         saveButton.onclick = function() {
@@ -1136,10 +1155,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const editHours = editHoursRaw === '' ? 0 : parseInt(editHoursRaw, 10);
         const editMinutes = editMinutesRaw === '' ? 0 : parseInt(editMinutesRaw, 10);
         const editTotalMinutes = (Number.isFinite(editHours) ? editHours : 0) * 60 + (Number.isFinite(editMinutes) ? editMinutes : 0);
-        const duration = formatDurationText(editTotalMinutes);
         const rawStatus = document.getElementById('editQuizStatus').value;
-        const status = rawStatus === 'republish' ? 'published' : rawStatus;
         const dueDate = document.getElementById('editQuizDueDate').value;
+        // Auto-promote: if an expired quiz is saved with a future due date, treat as published.
+        const status = (rawStatus === 'republish' || (rawStatus === 'expired' && !isExpired({ dueDate })))
+            ? 'published'
+            : rawStatus;
         const attemptsRaw = document.getElementById('editQuizAttempts').value.trim();
         const attempts = typeof window.parseAllowedAttempts === 'function'
             ? window.parseAllowedAttempts(attemptsRaw)
@@ -1178,7 +1199,15 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Please update the due date before republishing an expired quiz.');
             return;
         }
-        
+
+        // Close the modal immediately after validation so the user sees feedback
+        // right away and the row remains in the DOM for the patch below.
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
+        const editModal = bootstrap.Modal.getInstance(document.getElementById('editQuizModal'));
+        if (editModal) editModal.hide();
+
         const cachedQuiz = quizId && window.quizStore ? window.quizStore.cache.get(String(quizId)) : null;
         const payload = {
             title,
@@ -1199,29 +1228,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'PUT',
                 body: JSON.stringify(payload)
             });
-            if (window.loadQuizzes) {
-                await window.loadQuizzes();
-            } else if (updated) {
+
+            // Mark this quiz as recently saved so expirePastDueQuizzes skips it
+            // for 60 s (prevents the timer from re-expiring the just-updated quiz).
+            recentlySavedIds.add(String(quizId));
+            setTimeout(() => recentlySavedIds.delete(String(quizId)), 60000);
+
+            // Patch the row directly from the server response.
+            const displayStatus = (updated && updated.status) ? updated.status : status;
+            const displayDueDate = (updated && updated.dueDate) ? updated.dueDate : dueDate;
+            if (row && row.parentNode) {
                 const cells = row.querySelectorAll('td');
-                cells[1].textContent = updated.title || title;
-                cells[2].textContent = updated.subject || subject;
-                cells[3].textContent = updated.questionCount || questions;
-                cells[4].textContent = formatDurationText(updated.durationMinutes || editTotalMinutes);
-                cells[5].textContent = formatDueDateDisplay(updated.dueDate || dueDate);
-                row.dataset.dueDate = updated.dueDate || dueDate;
-                const statusBadge = cells[6].querySelector('.badge');
-                statusBadge.textContent = formatStatusLabel(updated.status || status);
-                statusBadge.className = 'badge ' + getStatusColor(updated.status || status);
-                updatePublishButtonState(row, updated.status || status);
+                if (cells.length >= 7) {
+                    cells[1].textContent = (updated && updated.title) || title;
+                    cells[2].textContent = (updated && updated.subject) || subject;
+                    cells[3].textContent = (updated && updated.questionCount) || questions;
+                    cells[4].textContent = formatDurationText((updated && updated.durationMinutes) || editTotalMinutes);
+                    cells[5].textContent = formatDueDateDisplay(displayDueDate);
+                    row.dataset.dueDate = displayDueDate;
+                    const statusBadge = cells[6].querySelector('.badge');
+                    if (statusBadge) {
+                        const resolvedStatus = displayStatus.toLowerCase();
+                        statusBadge.textContent = formatStatusLabel(resolvedStatus);
+                        statusBadge.className = 'badge ' + getStatusColor(resolvedStatus);
+                        updatePublishButtonState(row, resolvedStatus);
+                    }
+                }
+            }
+
+            // Overwrite the cache entry so expirePastDueQuizzes reads fresh data.
+            if (updated && window.quizStore) {
+                window.quizStore.cache.set(String(quizId), updated);
+            }
+
+            // Background-sync the full list (no await — errors don't affect the user).
+            if (window.loadQuizzes) {
+                window.loadQuizzes().catch(err => console.warn('Quiz list refresh failed:', err));
             }
         }
-        
-        // Close modal
-        if (document.activeElement instanceof HTMLElement) {
-            document.activeElement.blur();
-        }
-        const modal = bootstrap.Modal.getInstance(document.getElementById('editQuizModal'));
-        modal.hide();
     }
 
     async function publishQuiz(quizData, row) {
@@ -1400,22 +1444,28 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!statusBadge) return;
             const status = statusBadge.textContent.trim().toLowerCase();
             if (status === 'expired' || status === 'archived') return;
-            const dueDate = row.dataset.dueDate || row.querySelector('td:nth-child(6)')?.textContent || '';
-            if (isExpired({ dueDate })) {
-                statusBadge.textContent = 'Expired';
-                statusBadge.className = 'badge ' + getStatusColor('expired');
-                updatePublishButtonState(row, 'expired');
-                const quizId = row.dataset.id;
-                const cachedQuiz = quizId && quizStore ? quizStore.cache.get(String(quizId)) : null;
-                if (cachedQuiz && window.fetchProfessorJson) {
-                    const payload = buildQuizPayload(cachedQuiz, { status: 'EXPIRED' });
-                    window.fetchProfessorJson(`/professor/api/quizzes/${cachedQuiz.id}`, {
-                        method: 'PUT',
-                        body: JSON.stringify(payload)
-                    }).catch(error => {
-                        console.warn('Failed to mark quiz expired:', error);
-                    });
-                }
+            // Only auto-expire PUBLISHED quizzes whose due date has passed.
+            // Draft quizzes with past due dates should not be auto-expired by the timer.
+            if (status !== 'published') return;
+            // Skip quizzes that were just saved — the professor may have set a future
+            // due date and we don't want to immediately re-expire them.
+            const rowId = row.dataset.id;
+            if (rowId && recentlySavedIds.has(rowId)) return;
+            const dueDate = row.dataset.dueDate || '';
+            if (!dueDate || !isExpired({ dueDate })) return;
+            statusBadge.textContent = 'Expired';
+            statusBadge.className = 'badge ' + getStatusColor('expired');
+            updatePublishButtonState(row, 'expired');
+            const quizId = row.dataset.id;
+            const cachedQuiz = quizId && quizStore ? quizStore.cache.get(String(quizId)) : null;
+            if (cachedQuiz && window.fetchProfessorJson) {
+                const payload = buildQuizPayload(cachedQuiz, { status: 'EXPIRED' });
+                window.fetchProfessorJson(`/professor/api/quizzes/${cachedQuiz.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(payload)
+                }).catch(error => {
+                    console.warn('Failed to mark quiz expired:', error);
+                });
             }
         });
     }
@@ -1490,26 +1540,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return value.replace('T', ' ');
     }
 
-    function formatDueDateDisplay(value) {
-        if (!value) return '';
-        return value.replace('T', ' ');
-    }
-
-    function formatDueDateDisplay(value) {
-        if (!value) return '';
-        return value.replace('T', ' ');
-    }
-
-    function formatDueDateDisplay(value) {
-        if (!value) return '';
-        return value.replace('T', ' ');
-    }
-
-    function formatDueDateDisplay(value) {
-        if (!value) return '';
-        return value.replace('T', ' ');
-    }
-    
     // Create View Modal HTML
     function createViewModal() {
         const modalDiv = document.createElement('div');
@@ -1788,7 +1818,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.renderQuizzes = renderQuizzes;
 
     async function loadQuizzes() {
-        const data = await fetchProfessorJson('/professor/api/quizzes');
+        const data = await fetchProfessorJson('/professor/api/quizzes', { cache: 'no-store' });
         quizStore.list = Array.isArray(data) ? data : [];
         renderQuizzes(quizStore.list);
     }
@@ -2512,7 +2542,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(() => {});
 });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/assets/js/sweetalert2.all.min.js"></script>
     <script>
         window.alert = function(message) {
             let text = '';

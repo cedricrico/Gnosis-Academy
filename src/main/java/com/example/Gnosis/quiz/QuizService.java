@@ -8,6 +8,7 @@ import com.example.Gnosis.activity.ProfessorActivityService;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 @Service
@@ -155,7 +156,19 @@ public class QuizService {
 			questionsJson = "[]";
 		}
 		quiz.setQuestionsJson(questionsJson);
-		quiz.setStatus(status.toUpperCase());
+		// If a professor saves a quiz with status EXPIRED but a future due date,
+		// treat it as PUBLISHED — the quiz is no longer actually expired.
+		String resolvedStatus = status.toUpperCase();
+		if ("EXPIRED".equals(resolvedStatus)) {
+			String dueDateValue = trimToNull(request.getDueDate());
+			if (dueDateValue != null) {
+				LocalDateTime dt = parseDueDate(dueDateValue);
+				if (dt != null && dt.isAfter(LocalDateTime.now())) {
+					resolvedStatus = "PUBLISHED";
+				}
+			}
+		}
+		quiz.setStatus(resolvedStatus);
 		quiz.setProfessorId(professorId);
 		quiz.setProfessorName(professorName);
 	}
@@ -246,11 +259,22 @@ public class QuizService {
 		if (dueDate == null) {
 			return false;
 		}
+		LocalDateTime dt = parseDueDate(dueDate);
+		return dt != null && dt.isBefore(LocalDateTime.now());
+	}
+
+	/** Parses a due-date string that may or may not include seconds
+	 *  (HTML datetime-local inputs omit seconds). */
+	private static LocalDateTime parseDueDate(String value) {
+		if (value == null) return null;
 		try {
-			return LocalDateTime.parse(dueDate).isBefore(LocalDateTime.now());
-		} catch (DateTimeParseException ignored) {
-			return false;
-		}
+			return LocalDateTime.parse(value);
+		} catch (DateTimeParseException ignored) {}
+		try {
+			return LocalDateTime.parse(value,
+					DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
+		} catch (DateTimeParseException ignored) {}
+		return null;
 	}
 
 	private static String resolveDisplayStatus(Quiz quiz) {
@@ -260,6 +284,11 @@ public class QuizService {
 		String status = trimToNull(quiz.getStatus());
 		if (status == null) {
 			return isExpired(quiz) ? "EXPIRED" : null;
+		}
+		// Stored as EXPIRED but due date is in the future → treat as PUBLISHED
+		// (handles rows saved before this fix was applied)
+		if ("expired".equalsIgnoreCase(status) && !isExpired(quiz)) {
+			return "PUBLISHED";
 		}
 		if (!"archived".equalsIgnoreCase(status) && isExpired(quiz)) {
 			return "EXPIRED";

@@ -374,6 +374,7 @@ body {
   border-color: rgba(13, 110, 253, 0.4);
   box-shadow: 0 3px 10px rgba(13, 110, 253, 0.08);
 }
+
 </style>
     <link rel="stylesheet" href="/assets/css/student-admin-parity.css">
 </head>
@@ -401,7 +402,7 @@ body {
                             </div>
                         </div>
                     </div><div class="dropdown">
-                        <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" id="navbarProfile"><img id="navbarProfilePhoto" src="https://via.placeholder.com/32" alt="Profile photo" width="32" height="32" class="rounded-circle me-1"><span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${studentFullName}">Student User</span><span class="text-muted small fw-semibold">ID: <span th:text="${studentId}">S2024001</span></span></span></button>
+                        <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" id="navbarProfile"><img id="navbarProfilePhoto" src="data:image/svg+xml,%3Csvg xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27 width%3D%2732%27 height%3D%2732%27%3E%3Crect width%3D%2732%27 height%3D%2732%27 rx%3D%2716%27 fill%3D%27%23dee2e6%27%2F%3E%3C%2Fsvg%3E" alt="Profile photo" width="32" height="32" class="rounded-circle me-1"><span class="d-inline-flex flex-column align-items-start ms-1"><span th:text="${studentFullName}">Student User</span><span class="text-muted small fw-semibold">ID: <span th:text="${studentId}">S2024001</span></span></span></button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarProfile">
                             <li><a class="dropdown-item" href="/student/profile"><svg class="bi bi-person me-2" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                                         <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"></path>
@@ -437,7 +438,7 @@ body {
                                 <li>Answer all questions before submitting.</li>
                                 <li>You can review your answers before final submission.</li>
                                 <li>Timer will keep running until you submit.</li>
-                                <li>Switching tabs or leaving this page will automatically submit your quiz and consume an attempt.</li>
+                                <li>Switching tabs, minimizing the browser, switching to another window, or resizing the browser will trigger a warning. After <strong>2 warnings</strong> your quiz will be automatically submitted.</li>
                             </ul>
                         </div>
                     </div>
@@ -474,6 +475,7 @@ body {
             </div>
         </div>
     </div>
+
 <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="/assets/js/student-notifications.js"></script>
 <script>
@@ -498,6 +500,15 @@ document.addEventListener('DOMContentLoaded', function() {
     let secondsRemaining = 0;
     let submissionInFlight = false;
     let quizSubmitted = false;
+
+    // Anti-cheat warning state
+    const MAX_WARNINGS = 2;
+    let warningCount = 0;
+    let lastViolationTime = 0;
+    const VIOLATION_COOLDOWN_MS = 1500; // prevent blur + visibilitychange double-counting
+    let pendingWarningReason = null;    // stored while tab is hidden; shown on return
+    let baseWindowWidth = window.innerWidth;
+    let resizeDebounceTimer = null;
 
     if (titleHeading) {
         titleHeading.textContent = title;
@@ -798,6 +809,141 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
+    // --- Anti-cheat warning system (pure SweetAlert2) ---
+
+    // Reuse global-swal.js's swal-cdn tag; load eagerly so Swal is ready on first violation.
+    (function preloadSwal() {
+        if (window.Swal) return;
+        if (document.getElementById('swal-cdn')) return;
+        var s = document.createElement('script');
+        s.id  = 'swal-cdn';
+        s.src = '/assets/js/sweetalert2.all.min.js';
+        document.head.appendChild(s);
+    })();
+
+    function withSwal(fn) {
+        if (window.Swal) { fn(); return; }
+        var s = document.getElementById('swal-cdn');
+        s.addEventListener('load', fn);
+    }
+
+    function resolveViolationDetail(reason) {
+        var r = (reason || '').toLowerCase();
+        if (r.indexOf('resize')      !== -1) return 'You resized the browser window (possible split-screen attempt).';
+        if (r.indexOf('tab')         !== -1) return 'You switched to another browser tab.';
+        if (r.indexOf('minimiz')     !== -1) return 'You minimized the browser window.';
+        if (r.indexOf('application') !== -1 ||
+            r.indexOf('window')      !== -1) return 'You switched to another window or application.';
+        return reason;
+    }
+
+    function hideWarningOverlay() {
+        if (window.Swal) Swal.close();
+    }
+
+    function showWarningOverlay(reason, isFinal) {
+        var detail = resolveViolationDetail(reason);
+
+        // Violation box — yellow for warning, red for final
+        var vBg     = isFinal ? '#f8d7da' : '#fff3cd';
+        var vBorder = isFinal ? '#dc3545' : '#ffc107';
+        var violationHtml =
+            '<div style="background:' + vBg + ';border-left:4px solid ' + vBorder + ';' +
+                         'border-radius:8px;padding:.7rem 1rem;text-align:left;margin:.8rem 0 1rem;">' +
+                '<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;' +
+                             'letter-spacing:.07em;color:#6c757d;margin-bottom:.25rem;">What you did</div>' +
+                '<div style="font-weight:600;color:#212529;font-size:.92rem;">' + detail + '</div>' +
+            '</div>';
+
+        // Progress dots
+        var dot1Bg = isFinal ? '#dc3545' : '#ffc107';
+        var dot2Bg = isFinal ? '#dc3545' : '#dee2e6';
+        var dotLabel = isFinal
+            ? 'Warning 2 of 2 &mdash; quiz is being submitted'
+            : 'Warning 1 of 2 &mdash; one more violation auto-submits';
+        var dotsHtml =
+            '<div style="display:flex;align-items:center;justify-content:center;gap:.45rem;margin-top:.25rem;">' +
+                '<span style="width:11px;height:11px;border-radius:50%;display:inline-block;background:' + dot1Bg + ';"></span>' +
+                '<span style="width:11px;height:11px;border-radius:50%;display:inline-block;background:' + dot2Bg + ';"></span>' +
+                '<span style="font-size:.78rem;color:#6c757d;margin-left:.25rem;">' + dotLabel + '</span>' +
+            '</div>';
+
+        withSwal(function() {
+            if (isFinal) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Quiz Auto-Submitting',
+                    html:
+                        '<p style="color:#495057;font-size:.92rem;margin-bottom:0;">' +
+                            'You have used <strong>all your warnings</strong>. ' +
+                            'Your quiz is being submitted automatically.' +
+                        '</p>' +
+                        violationHtml +
+                        dotsHtml,
+                    timer: 4000,
+                    timerProgressBar: true,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showConfirmButton: false,
+                    willClose: function() {
+                        submitQuiz(true, { suppressAlerts: true });
+                    }
+                });
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Academic Integrity Warning',
+                    html:
+                        '<p style="color:#495057;font-size:.92rem;margin-bottom:0;">' +
+                            'This is <strong>Warning ' + warningCount + ' of ' + MAX_WARNINGS + '</strong>. ' +
+                            'One more violation will automatically submit your quiz.' +
+                        '</p>' +
+                        violationHtml +
+                        dotsHtml,
+                    confirmButtonText: 'I Understand — Return to Quiz',
+                    confirmButtonColor: '#f0ad4e',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showCancelButton: false
+                });
+            }
+        });
+    }
+    // --- End anti-cheat warning system ---
+
+    // Record a violation. Shows the overlay immediately if the tab is visible;
+    // otherwise stores the reason and shows it when the student returns.
+    function recordViolation(reason) {
+        if (quizSubmitted || submissionInFlight) return;
+        const now = Date.now();
+        if (now - lastViolationTime < VIOLATION_COOLDOWN_MS) return; // debounce blur+visibilitychange
+        lastViolationTime = now;
+        warningCount++;
+
+        function doShow() {
+            if (quizSubmitted) return;
+            showWarningOverlay(reason, warningCount >= MAX_WARNINGS);
+        }
+
+        if (document.visibilityState === 'visible') {
+            // Tab is active (e.g. resize, or blur from alt-tab) — show immediately
+            doShow();
+        } else {
+            // Tab is hidden — queue the warning so it shows when student returns
+            pendingWarningReason = doShow;
+        }
+    }
+
+    // Show any queued warning as soon as the student returns to the tab
+    function flushPendingWarning() {
+        if (pendingWarningReason) {
+            const fn = pendingWarningReason;
+            pendingWarningReason = null;
+            fn();
+        }
+    }
+    // --- End anti-cheat warning system ---
+
     async function submitQuiz(forceSubmit, options) {
         const config = options || {};
         if (submissionInFlight || quizSubmitted || !activeQuestions.length) {
@@ -865,13 +1011,40 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Anti-cheat: tab hidden (switch tabs / minimize)
     document.addEventListener('visibilitychange', function() {
-        if (document.visibilityState !== 'hidden') {
-            return;
+        if (document.visibilityState === 'hidden') {
+            recordViolation('You switched tabs or minimized the browser.');
+        } else {
+            // Student returned — show any queued warning
+            flushPendingWarning();
         }
-        submitQuiz(true, { suppressAlerts: true });
     });
 
+    // Anti-cheat: window loses focus without hiding (alt-tab to another app, opening another browser)
+    window.addEventListener('blur', function() {
+        recordViolation('You switched to another window or application.');
+    });
+
+    // Show queued warning when window regains focus (complements the blur listener above)
+    window.addEventListener('focus', function() {
+        flushPendingWarning();
+    });
+
+    // Anti-cheat: window resized (split-screen or dragging to fit a second browser)
+    window.addEventListener('resize', function() {
+        if (quizSubmitted) return;
+        clearTimeout(resizeDebounceTimer);
+        resizeDebounceTimer = setTimeout(function() {
+            const newWidth = window.innerWidth;
+            if (newWidth < baseWindowWidth * 0.85) {
+                recordViolation('You resized the browser window.');
+            }
+            baseWindowWidth = newWidth;
+        }, 500);
+    });
+
+    // Fallback beacon on page unload — last resort if the tab is force-closed
     window.addEventListener('pagehide', function() {
         submitQuizWithBeacon();
     });

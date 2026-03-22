@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"visibilitychange\\\\|pagehide\\\\|sendBeacon\" /c/Users/Administrator/Desktop/Gnosis/src/main/resources/templates --include=*.html)",
+      "Bash(xargs grep:*)",
+      "Bash(curl -L \"https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js\" -o \"C:/Users/Administrator/Desktop/Gnosis/src/main/resources/static/assets/js/sweetalert2.all.min.js\" --max-time 30)",
+      "Bash(while IFS= read -r file)",
+      "Bash(do sed:*)",
+      "Bash(py --version)",
+      "Bash(node -e \":*)"
+    ]
+  }
+}

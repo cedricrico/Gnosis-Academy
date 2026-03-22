@@ -109,7 +109,13 @@ import org.springframework.security.web.context.SecurityContextRepository;
 						"/professor/**"
 				)
 				// Logout CSRF failures commonly present as 403/Whitelabel; logging out is safe to exempt.
-				.csrf(csrf -> csrf.ignoringRequestMatchers("/professor/logout"))
+				// Professor API endpoints use JSON bodies (not HTML forms), so CSRF can be safely
+				// exempted — cross-origin JSON requests are blocked by the browser's same-origin policy.
+				.csrf(csrf -> csrf.ignoringRequestMatchers(
+						"/professor/logout",
+						"/professor/api/**",
+						"/api/quizzes/**"
+				))
 				.authenticationProvider(professorAuthProvider)
 				.securityContext(sc -> sc.securityContextRepository(professorSecurityContextRepository()))
 				.authorizeHttpRequests(auth -> auth

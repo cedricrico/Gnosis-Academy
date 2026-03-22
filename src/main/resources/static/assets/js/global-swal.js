@@ -60,7 +60,7 @@
         }
         const script = document.createElement('script');
         script.id = 'swal-cdn';
-        script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+        script.src = '/assets/js/sweetalert2.all.min.js';
         script.onload = function () {
             while (pending.length) {
                 const next = pending.shift();
