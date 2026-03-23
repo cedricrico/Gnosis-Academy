@@ -492,21 +492,20 @@ document.addEventListener('DOMContentLoaded', function () {
         if (rows.length === 0) {
             masterlistTableBody.innerHTML = `
                 <tr>
-                    <td colspan="4" class="text-muted small">No students found.</td>
+                    <td colspan="3" class="text-muted small">No students found.</td>
                 </tr>
             `;
             return;
         }
 
         masterlistTableBody.innerHTML = rows.map(student => {
-            const status = normalizeText(student.status) || 'Enrolled';
+            const status = normalizeText(student.status) || 'Active';
             const badgeClass = status.toLowerCase().includes('drop') ? 'bg-warning' : 'bg-success';
             return `
                 <tr>
                     <td>${escapeHtml(student.studentId)}</td>
                     <td>${escapeHtml(student.fullName)}</td>
                     <td><span class="badge ${badgeClass}">${escapeHtml(status)}</span></td>
-                    <td><span class="text-muted small">-</span></td>
                 </tr>
             `;
         }).join('');

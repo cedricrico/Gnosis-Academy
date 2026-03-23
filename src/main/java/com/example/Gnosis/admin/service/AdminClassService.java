@@ -83,7 +83,7 @@ public class AdminClassService {
 
 		user.setCourse(course);
 		user.setSectionName(sectionName);
-		user.setStatus("Enrolled");
+		user.setStatus("Active");
 		userRepository.save(user);
 	}
 
@@ -137,7 +137,7 @@ public class AdminClassService {
 			throw new IllegalArgumentException("Student is not enrolled in the selected class.");
 		}
 
-		user.setStatus("Enrolled");
+		user.setStatus("Active");
 		userRepository.save(user);
 	}
 
@@ -168,14 +168,14 @@ public class AdminClassService {
 	private static String normalizeStatus(String status) {
 		String value = trimToNull(status);
 		if (value == null) {
-			return "Enrolled";
+			return "Active";
 		}
 		String lower = value.toLowerCase(Locale.ROOT);
 		if (lower.contains("drop")) {
 			return "Dropped";
 		}
 		if (lower.contains("enroll")) {
-			return "Enrolled";
+			return "Active";
 		}
 		return value;
 	}

@@ -57,6 +57,14 @@ document.addEventListener('DOMContentLoaded', function () {
         return (value || '').trim();
     }
 
+    function formatStudentId(value) {
+        const digits = String(value || '').replace(/\D/g, '').slice(0, 9);
+        if (digits.length <= 4) {
+            return digits;
+        }
+        return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+    }
+
     function escapeHtml(value) {
         return String(value ?? '')
             .replace(/&/g, '&amp;')
@@ -655,21 +663,20 @@ document.addEventListener('DOMContentLoaded', function () {
         if (rows.length === 0) {
             masterlistTableBody.innerHTML = `
                 <tr>
-                    <td colspan="4" class="text-muted small">No students found.</td>
+                    <td colspan="3" class="text-muted small">No students found.</td>
                 </tr>
             `;
             return;
         }
 
         masterlistTableBody.innerHTML = rows.map(student => {
-            const status = normalizeText(student.status) || 'Enrolled';
+            const status = normalizeText(student.status) || 'Active';
             const badgeClass = status.toLowerCase().includes('drop') ? 'bg-warning' : 'bg-success';
             return `
                 <tr>
                     <td>${escapeHtml(student.studentId)}</td>
                     <td>${escapeHtml(student.fullName)}</td>
                     <td><span class="badge ${badgeClass}">${escapeHtml(status)}</span></td>
-                    <td><span class="text-muted small">-</span></td>
                 </tr>
             `;
         }).join('');
@@ -894,9 +901,26 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    if (studentIdInput) {
+        studentIdInput.addEventListener('input', function () {
+            const formatted = formatStudentId(this.value);
+            if (this.value !== formatted) {
+                const cursorAtEnd = this.selectionStart === this.value.length;
+                this.value = formatted;
+                if (cursorAtEnd) {
+                    this.setSelectionRange(this.value.length, this.value.length);
+                }
+            }
+        });
+
+        studentIdInput.addEventListener('blur', function () {
+            this.value = formatStudentId(this.value);
+        });
+    }
+
     if (addStudentBtn) {
         addStudentBtn.addEventListener('click', async function () {
-            const studentId = normalizeText(studentIdInput ? studentIdInput.value : '');
+            const studentId = formatStudentId(studentIdInput ? studentIdInput.value : '');
             if (!activeMasterlistClassId) {
                 showToast('error', 'Select a class first (Section Table -> Manage Students).');
                 return;
@@ -904,6 +928,13 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!studentId) {
                 showToast('error', 'Please enter Student ID.');
                 return;
+            }
+            if (!/^\d{4}-\d{5}$/.test(studentId)) {
+                showToast('error', 'Student ID must match 0000-00000.');
+                return;
+            }
+            if (studentIdInput) {
+                studentIdInput.value = studentId;
             }
 
             showLoading();

@@ -719,48 +719,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Class management tabs: rely on Bootstrap's built-in tab behavior (data-bs-toggle="tab").
 
-    // File Upload functionality for CSV and Excel
-    const uploadFileBtn = document.getElementById('uploadFileBtn');
-    const fileUpload = document.getElementById('fileUpload');
-    
-    if (uploadFileBtn && fileUpload) {
-        uploadFileBtn.addEventListener('click', function() {
-            if (!fileUpload.files.length) {
-                showToast('error', 'Please select a CSV or Excel file to upload');
-                return;
-            }
-            
-            const file = fileUpload.files[0];
-            const fileExtension = file.name.split('.').pop().toLowerCase();
-            
-            if (!['csv', 'xlsx', 'xls'].includes(fileExtension)) {
-                showToast('error', 'Please select a valid CSV or Excel file');
-                return;
-            }
-            
-            showLoading();
-            // Simulate file upload processing
-            setTimeout(() => {
-                hideLoading();
-                showToast('success', `${fileExtension.toUpperCase()} file processed successfully! Students have been added to the class.`);
-                fileUpload.value = ''; // Clear file input
-            }, 2000);
-        });
-    }
-
-    // Export functionality (CSV and Excel only)
-    const exportButtons = document.querySelectorAll('#bulkActionsTab .btn-outline-primary, #bulkActionsTab .btn-outline-success');
-    exportButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const exportType = this.textContent.replace('Export as ', '').toLowerCase();
-            showLoading();
-            setTimeout(() => {
-                hideLoading();
-                showToast('success', `${exportType.toUpperCase()} file downloaded successfully!`);
-            }, 1000);
-        });
-    });
-
     // Add Instructor Form Submission
     const addInstructorForm = document.getElementById('addInstructorForm');
     if (addInstructorForm) {
@@ -855,31 +813,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Allow switching between tabs when in student management mode
-    const bulkActionsNav = document.querySelector('a[href="#bulkActionsTab"]');
-    
-    if (bulkActionsNav) {
-        bulkActionsNav.addEventListener('click', function(e) {
-            // Only allow switching if we're in student management mode (nav tabs are visible)
-            const navTabs = document.querySelector('.nav-tabs');
-            
-            if (navTabs && navTabs.style.display !== 'none') {
-                const target = this.getAttribute('href');
-                
-                // Hide all tab panes
-                tabPanes.forEach(pane => pane.classList.remove('show', 'active'));
-                
-                // Show target tab pane
-                document.querySelector(target).classList.add('show', 'active');
-                
-                // Update active nav link
-                navLinksTabs.forEach(navLink => navLink.classList.remove('active'));
-                this.classList.add('active');
-            }
-            e.preventDefault();
-        });
-    }
-
     // Handle accordion behavior for instructor rows
     document.addEventListener('click', function(e) {
         // Check if we're clicking on an accordion toggle in the instructor management section
