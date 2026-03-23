@@ -1,5 +1,7 @@
 package com.example.Gnosis.quiz;
 
+import com.example.Gnosis.schoolclass.SchoolClassDto;
+import com.example.Gnosis.schoolclass.SchoolClassService;
 import com.example.Gnosis.user.User;
 import com.example.Gnosis.user.UserRepository;
 import org.springframework.stereotype.Service;
@@ -7,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,15 +21,18 @@ public class ProfessorQuizResultsService {
 	private final QuizRepository quizRepository;
 	private final QuizAttemptRepository quizAttemptRepository;
 	private final UserRepository userRepository;
+	private final SchoolClassService schoolClassService;
 
 	public ProfessorQuizResultsService(
 			QuizRepository quizRepository,
 			QuizAttemptRepository quizAttemptRepository,
-			UserRepository userRepository
+			UserRepository userRepository,
+			SchoolClassService schoolClassService
 	) {
 		this.quizRepository = quizRepository;
 		this.quizAttemptRepository = quizAttemptRepository;
 		this.userRepository = userRepository;
+		this.schoolClassService = schoolClassService;
 	}
 
 	@Transactional(readOnly = true)
@@ -42,6 +48,7 @@ public class ProfessorQuizResultsService {
 							.map(String::trim)
 							.distinct()
 							.count();
+					long enrolledCount = resolveEnrolledStudentCount(quiz, professorId);
 					return new QuizResultCard(
 							quiz.getId(),
 							quiz.getTitle(),
@@ -50,7 +57,8 @@ public class ProfessorQuizResultsService {
 							quiz.getSection(),
 							resolveDisplayStatus(quiz),
 							Math.toIntExact(totalAttempts),
-							Math.toIntExact(studentCount)
+							Math.toIntExact(studentCount),
+							Math.toIntExact(enrolledCount)
 					);
 				})
 				.toList();
@@ -194,9 +202,77 @@ public class ProfessorQuizResultsService {
 		return normalize(value) != null;
 	}
 
+	private long resolveEnrolledStudentCount(Quiz quiz, String professorId) {
+		if (quiz == null || !hasText(professorId)) {
+			return 0L;
+		}
+
+		String quizSection = normalize(quiz.getSection());
+		String quizSubject = normalize(quiz.getSubject());
+		if (quizSection == null || quizSubject == null) {
+			return 0L;
+		}
+
+		LinkedHashSet<String> studentIds = new LinkedHashSet<>();
+		for (SchoolClassDto schoolClass : schoolClassService.findAll()) {
+			String sectionName = normalize(schoolClass.getSectionName());
+			if (!equalsIgnoreCase(sectionName, quizSection)) {
+				continue;
+			}
+
+			boolean matchesProfessorSubject = schoolClass.getSubjects().stream().anyMatch(subject ->
+					equalsIgnoreCase(normalize(subject.getInstructorId()), professorId)
+							&& subjectMatches(normalize(subject.getCode()), normalize(subject.getName()), quizSubject)
+			);
+			if (!matchesProfessorSubject) {
+				continue;
+			}
+
+			String courseName = normalize(schoolClass.getCourseName());
+			if (courseName == null) {
+				continue;
+			}
+
+			userRepository.findByCourseIgnoreCaseAndSectionNameIgnoreCaseOrderByLastNameAscFirstNameAsc(courseName, sectionName)
+					.stream()
+					.filter(user -> !isDropped(user.getStatus()))
+					.map(User::getStudentId)
+					.filter(this::hasText)
+					.map(String::trim)
+					.forEach(studentIds::add);
+		}
+
+		return studentIds.size();
+	}
+
+	private static boolean subjectMatches(String code, String name, String quizSubject) {
+		if (quizSubject == null) {
+			return false;
+		}
+		if (equalsIgnoreCase(code, quizSubject) || equalsIgnoreCase(name, quizSubject)) {
+			return true;
+		}
+		if (code != null && name != null) {
+			return equalsIgnoreCase(code + " - " + name, quizSubject);
+		}
+		return false;
+	}
+
+	private static boolean isDropped(String status) {
+		String normalized = normalize(status);
+		return normalized != null && normalized.toLowerCase().contains("drop");
+	}
+
 	private static String fallback(String value, String defaultValue) {
 		String normalized = normalize(value);
 		return normalized != null ? normalized : defaultValue;
+	}
+
+	private static boolean equalsIgnoreCase(String left, String right) {
+		if (left == null || right == null) {
+			return false;
+		}
+		return left.equalsIgnoreCase(right);
 	}
 
 	private static String resolveDisplayStatus(Quiz quiz) {
@@ -221,7 +297,8 @@ public class ProfessorQuizResultsService {
 			String section,
 			String status,
 			Integer totalAttempts,
-			Integer studentCount
+			Integer studentCount,
+			Integer enrolledCount
 	) {
 	}
 

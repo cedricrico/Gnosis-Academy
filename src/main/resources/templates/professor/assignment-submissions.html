@@ -68,6 +68,17 @@
             color: #5f6f83;
             font-size: .84rem;
         }
+        .submission-student-name {
+            display: inline-flex;
+            align-items: center;
+            padding: .2rem .55rem;
+            margin-left: .35rem;
+            border-radius: 999px;
+            background: rgba(67, 97, 238, .12);
+            color: #2f4fd1;
+            font-weight: 700;
+            box-shadow: inset 0 0 0 1px rgba(67, 97, 238, .14);
+        }
         .submission-meta {
             display: flex;
             flex-wrap: wrap;
@@ -442,7 +453,10 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="submission-row-body">
                 <div>
                     <div class="submission-main-title">${submission.assignmentTitle || '-'}</div>
-                    <div class="submission-main-subtitle">${submission.assignmentSubject || '-'} | ${submission.studentName || submission.studentId || '-'}</div>
+                    <div class="submission-main-subtitle">
+                        ${submission.assignmentSubject || '-'} |
+                        <span class="submission-student-name">${submission.studentName || submission.studentId || '-'}</span>
+                    </div>
                     <div class="submission-meta">
                         <span class="badge text-bg-light border">${submission.studentCourse || '-'}</span>
                         <span class="badge text-bg-light border">${submission.studentSection || '-'}</span>

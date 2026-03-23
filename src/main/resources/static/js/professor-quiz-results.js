@@ -102,8 +102,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span class="badge text-bg-light border quiz-status-badge ${escapeHtml(statusClass)}">${escapeHtml(status || 'Draft')}</span>
                     </div>
                     <div class="quiz-result-kpi">
-                        <div class="quiz-attempt-count">${Number(card.totalAttempts ?? 0)}</div>
-                        <div class="quiz-attempt-label">Total Attempts</div>
+                        <div class="quiz-attempt-count">${Number(card.studentCount ?? 0)}/${Number(card.enrolledCount ?? 0)}</div>
+                        <div class="quiz-attempt-label">Students Taken</div>
                     </div>
                     <div class="quiz-result-actions">
                         <button class="btn quiz-action-btn${isActive ? ' view-active' : ''}" type="button" data-action="view" data-quiz-id="${card.id}" aria-label="View quiz results">
