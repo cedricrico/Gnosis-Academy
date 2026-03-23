@@ -5,7 +5,6 @@ import com.example.Gnosis.quiz.QuizAttemptService;
 import com.example.Gnosis.quiz.QuizService;
 import com.example.Gnosis.schoolclass.SchoolClassDto;
 import com.example.Gnosis.schoolclass.SchoolClassService;
-import com.example.Gnosis.user.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,24 +22,27 @@ import java.util.Set;
 public class StudentQuizApiController {
 	private final QuizService quizService;
 	private final QuizAttemptService quizAttemptService;
-	private final UserRepository userRepository;
 	private final SchoolClassService schoolClassService;
+	private final StudentAccessService studentAccessService;
 
 	public StudentQuizApiController(
 			QuizService quizService,
 			QuizAttemptService quizAttemptService,
-			UserRepository userRepository,
-			SchoolClassService schoolClassService
+			SchoolClassService schoolClassService,
+			StudentAccessService studentAccessService
 	) {
 		this.quizService = quizService;
 		this.quizAttemptService = quizAttemptService;
-		this.userRepository = userRepository;
 		this.schoolClassService = schoolClassService;
+		this.studentAccessService = studentAccessService;
 	}
 
 	@GetMapping
 	public List<QuizResponse> list(Authentication authentication) {
-		StudentContext context = resolveStudentContext(authentication);
+		StudentAccessService.StudentAccessContext context = studentAccessService.resolve(authentication);
+		if (!context.canAccessClassContent()) {
+			return List.of();
+		}
 		String studentId = requireStudentId(authentication);
 		Set<String> allowedSubjects = resolveAllowedSubjects(context);
 		return quizService.listForStudentSection(context.section(), allowedSubjects).stream()
@@ -73,7 +75,7 @@ public class StudentQuizApiController {
 			Authentication authentication,
 			@RequestBody QuizJoinRequest request
 	) {
-		StudentContext context = resolveStudentContext(authentication);
+		StudentAccessService.StudentAccessContext context = studentAccessService.requireActiveEnrollment(authentication);
 		com.example.Gnosis.quiz.Quiz quiz = quizService.getEntityForStudentByCode(
 				request == null ? null : request.code(),
 				context.section(),
@@ -93,7 +95,7 @@ public class StudentQuizApiController {
 			@PathVariable Long id,
 			Authentication authentication
 	) {
-		StudentContext context = resolveStudentContext(authentication);
+		StudentAccessService.StudentAccessContext context = studentAccessService.requireActiveEnrollment(authentication);
 		com.example.Gnosis.quiz.Quiz quiz = quizService.getEntityForStudent(id, context.section(), resolveAllowedSubjects(context));
 		String studentId = requireStudentId(authentication);
 		return quizAttemptService.buildSession(quiz, studentId);
@@ -105,7 +107,7 @@ public class StudentQuizApiController {
 			Authentication authentication,
 			@RequestBody QuizSubmissionRequest request
 	) {
-		StudentContext context = resolveStudentContext(authentication);
+		StudentAccessService.StudentAccessContext context = studentAccessService.requireActiveEnrollment(authentication);
 		com.example.Gnosis.quiz.Quiz quiz = quizService.getEntityForStudent(id, context.section(), resolveAllowedSubjects(context));
 		String studentId = requireStudentId(authentication);
 		return quizAttemptService.submit(
@@ -122,26 +124,13 @@ public class StudentQuizApiController {
 			@PathVariable Integer attemptNumber,
 			Authentication authentication
 	) {
-		StudentContext context = resolveStudentContext(authentication);
+		StudentAccessService.StudentAccessContext context = studentAccessService.requireActiveEnrollment(authentication);
 		com.example.Gnosis.quiz.Quiz quiz = quizService.getEntityForStudent(id, context.section(), resolveAllowedSubjects(context));
 		String studentId = requireStudentId(authentication);
 		return quizAttemptService.loadAttemptResult(quiz, studentId, attemptNumber);
 	}
 
-	private StudentContext resolveStudentContext(Authentication authentication) {
-		if (authentication == null) {
-			return new StudentContext(null, null);
-		}
-		String studentId = authentication.getName();
-		if (studentId == null || studentId.isBlank()) {
-			return new StudentContext(null, null);
-		}
-		return userRepository.findByStudentId(studentId)
-				.map(user -> new StudentContext(normalizeValue(user.getCourse()), normalizeValue(user.getSectionName())))
-				.orElse(new StudentContext(null, null));
-	}
-
-	private Set<String> resolveAllowedSubjects(StudentContext context) {
+	private Set<String> resolveAllowedSubjects(StudentAccessService.StudentAccessContext context) {
 		if (context.course() == null || context.section() == null) {
 			return Set.of();
 		}
@@ -198,7 +187,6 @@ public class StudentQuizApiController {
 		}
 	}
 
-	private record StudentContext(String course, String section) {}
 	private record QuizSubmissionRequest(java.util.Map<String, String> answers, boolean forceSubmit) {}
 	private record QuizJoinRequest(String code) {}
 	private record QuizJoinResponse(Long id, String title, String subject, String dueDate, String code) {}

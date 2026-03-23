@@ -10,7 +10,6 @@ import com.example.Gnosis.quiz.QuizResponse;
 import com.example.Gnosis.quiz.QuizService;
 import com.example.Gnosis.schoolclass.SchoolClassDto;
 import com.example.Gnosis.schoolclass.SchoolClassService;
-import com.example.Gnosis.user.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,28 +28,31 @@ public class StudentNotificationService {
 	private final AssignmentService assignmentService;
 	private final LessonService lessonService;
 	private final QuizService quizService;
-	private final UserRepository userRepository;
 	private final SchoolClassService schoolClassService;
+	private final StudentAccessService studentAccessService;
 
 	public StudentNotificationService(
 			AnnouncementService announcementService,
 			AssignmentService assignmentService,
 			LessonService lessonService,
 			QuizService quizService,
-			UserRepository userRepository,
-			SchoolClassService schoolClassService
+			SchoolClassService schoolClassService,
+			StudentAccessService studentAccessService
 	) {
 		this.announcementService = announcementService;
 		this.assignmentService = assignmentService;
 		this.lessonService = lessonService;
 		this.quizService = quizService;
-		this.userRepository = userRepository;
 		this.schoolClassService = schoolClassService;
+		this.studentAccessService = studentAccessService;
 	}
 
 	@Transactional(readOnly = true)
 	public NotificationPayload list(Authentication authentication) {
-		StudentContext context = resolveStudentContext(authentication);
+		StudentAccessService.StudentAccessContext context = studentAccessService.resolve(authentication);
+		if (!context.canAccessClassContent()) {
+			return new NotificationPayload(List.of());
+		}
 		Set<String> allowedSubjects = resolveAllowedSubjects(context);
 
 		List<NotificationItem> items = java.util.stream.Stream.of(
@@ -120,16 +122,7 @@ public class StudentNotificationService {
 		);
 	}
 
-	private StudentContext resolveStudentContext(Authentication authentication) {
-		if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
-			return new StudentContext(null, null);
-		}
-		return userRepository.findByStudentId(authentication.getName().trim())
-				.map(user -> new StudentContext(normalizeValue(user.getCourse()), normalizeValue(user.getSectionName())))
-				.orElse(new StudentContext(null, null));
-	}
-
-	private Set<String> resolveAllowedSubjects(StudentContext context) {
+	private Set<String> resolveAllowedSubjects(StudentAccessService.StudentAccessContext context) {
 		if (context.course() == null || context.section() == null) {
 			return Set.of();
 		}
@@ -173,8 +166,6 @@ public class StudentNotificationService {
 		}
 		return trimmed;
 	}
-
-	private record StudentContext(String course, String section) {}
 
 	public record NotificationPayload(List<NotificationItem> items) {}
 

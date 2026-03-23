@@ -4,7 +4,6 @@ import com.example.Gnosis.lesson.LessonResponse;
 import com.example.Gnosis.lesson.LessonService;
 import com.example.Gnosis.schoolclass.SchoolClassDto;
 import com.example.Gnosis.schoolclass.SchoolClassService;
-import com.example.Gnosis.user.UserRepository;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -24,22 +23,25 @@ import java.util.Set;
 @RequestMapping("/student/api/lessons")
 public class StudentLessonApiController {
 	private final LessonService lessonService;
-	private final UserRepository userRepository;
 	private final SchoolClassService schoolClassService;
+	private final StudentAccessService studentAccessService;
 
 	public StudentLessonApiController(
 			LessonService lessonService,
-			UserRepository userRepository,
-			SchoolClassService schoolClassService
+			SchoolClassService schoolClassService,
+			StudentAccessService studentAccessService
 	) {
 		this.lessonService = lessonService;
-		this.userRepository = userRepository;
 		this.schoolClassService = schoolClassService;
+		this.studentAccessService = studentAccessService;
 	}
 
 	@GetMapping
 	public List<LessonResponse> list(Authentication authentication) {
-		StudentContext context = resolveStudentContext(authentication);
+		StudentAccessService.StudentAccessContext context = studentAccessService.resolve(authentication);
+		if (!context.canAccessClassContent()) {
+			return List.of();
+		}
 		Set<String> allowedSubjects = resolveAllowedSubjects(context);
 		return lessonService.listForStudentSection(context.section(), allowedSubjects)
 				.stream()
@@ -56,7 +58,7 @@ public class StudentLessonApiController {
 			@PathVariable Long id,
 			Authentication authentication
 	) {
-		StudentContext context = resolveStudentContext(authentication);
+		StudentAccessService.StudentAccessContext context = studentAccessService.requireActiveEnrollment(authentication);
 		Set<String> allowedSubjects = resolveAllowedSubjects(context);
 		com.example.Gnosis.lesson.Lesson lesson = lessonService.getForStudent(id, context.section(), allowedSubjects);
 		if (lesson.getAttachmentPath() == null || lesson.getAttachmentPath().isBlank()) {
@@ -76,20 +78,7 @@ public class StudentLessonApiController {
 				.body(resource);
 	}
 
-	private StudentContext resolveStudentContext(Authentication authentication) {
-		if (authentication == null) {
-			return new StudentContext(null, null);
-		}
-		String studentId = authentication.getName();
-		if (studentId == null || studentId.isBlank()) {
-			return new StudentContext(null, null);
-		}
-		return userRepository.findByStudentId(studentId)
-				.map(user -> new StudentContext(normalizeValue(user.getCourse()), normalizeValue(user.getSectionName())))
-				.orElse(new StudentContext(null, null));
-	}
-
-	private Set<String> resolveAllowedSubjects(StudentContext context) {
+	private Set<String> resolveAllowedSubjects(StudentAccessService.StudentAccessContext context) {
 		if (context.course() == null || context.section() == null) {
 			return Set.of();
 		}
@@ -127,5 +116,4 @@ public class StudentLessonApiController {
 		return trimmed;
 	}
 
-	private record StudentContext(String course, String section) {}
 }

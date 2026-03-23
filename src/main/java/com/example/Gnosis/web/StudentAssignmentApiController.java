@@ -7,7 +7,6 @@ import com.example.Gnosis.assignment.AssignmentSubmissionService;
 import com.example.Gnosis.schoolclass.SchoolClassDto;
 import com.example.Gnosis.schoolclass.SchoolClassService;
 import com.example.Gnosis.user.User;
-import com.example.Gnosis.user.UserRepository;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.http.MediaType;
 
 import java.util.List;
 import java.util.LinkedHashSet;
@@ -31,26 +29,29 @@ import java.util.Set;
 @RequestMapping("/student/api/assignments")
 public class StudentAssignmentApiController {
 	private final AssignmentService assignmentService;
-	private final UserRepository userRepository;
 	private final SchoolClassService schoolClassService;
 	private final AssignmentSubmissionService submissionService;
+	private final StudentAccessService studentAccessService;
 
 	public StudentAssignmentApiController(
 			AssignmentService assignmentService,
-			UserRepository userRepository,
 			SchoolClassService schoolClassService,
-			AssignmentSubmissionService submissionService
+			AssignmentSubmissionService submissionService,
+			StudentAccessService studentAccessService
 	) {
 		this.assignmentService = assignmentService;
-		this.userRepository = userRepository;
 		this.schoolClassService = schoolClassService;
 		this.submissionService = submissionService;
+		this.studentAccessService = studentAccessService;
 	}
 
 	@GetMapping
 	public List<AssignmentResponse> list(Authentication authentication) {
-		StudentContext context = resolveStudentContext(authentication);
-		User student = resolveStudent(authentication);
+		StudentAccessService.StudentAccessContext context = studentAccessService.resolve(authentication);
+		if (!context.canAccessClassContent()) {
+			return List.of();
+		}
+		User student = studentAccessService.requireStudent(authentication);
 		Set<String> allowedSubjects = resolveAllowedSubjects(context);
 		java.util.Map<Long, AssignmentSubmissionResponse> submissionsByAssignmentId =
 				submissionService.listForStudent(student.getStudentId()).stream()
@@ -82,7 +83,7 @@ public class StudentAssignmentApiController {
 			@PathVariable Long id,
 			Authentication authentication
 	) {
-		StudentContext context = resolveStudentContext(authentication);
+		StudentAccessService.StudentAccessContext context = studentAccessService.requireActiveEnrollment(authentication);
 		Set<String> allowedSubjects = resolveAllowedSubjects(context);
 		com.example.Gnosis.assignment.Assignment assignment = assignmentService.getForStudent(id, context.section(), allowedSubjects);
 		if (assignment.getAttachmentPath() == null || assignment.getAttachmentPath().isBlank()) {
@@ -107,7 +108,7 @@ public class StudentAssignmentApiController {
 			@PathVariable Long id,
 			Authentication authentication
 	) {
-		StudentContext context = resolveStudentContext(authentication);
+		StudentAccessService.StudentAccessContext context = studentAccessService.requireActiveEnrollment(authentication);
 		Set<String> allowedSubjects = resolveAllowedSubjects(context);
 		com.example.Gnosis.assignment.Assignment assignment = assignmentService.getForStudent(id, context.section(), allowedSubjects);
 		if (assignment.getAttachmentPath() == null || assignment.getAttachmentPath().isBlank()) {
@@ -137,10 +138,10 @@ public class StudentAssignmentApiController {
 			Authentication authentication,
 			@RequestPart("file") MultipartFile file
 	) {
-		StudentContext context = resolveStudentContext(authentication);
+		StudentAccessService.StudentAccessContext context = studentAccessService.requireActiveEnrollment(authentication);
 		Set<String> allowedSubjects = resolveAllowedSubjects(context);
 		assignmentService.getForStudent(id, context.section(), allowedSubjects);
-		User student = resolveStudent(authentication);
+		User student = studentAccessService.requireStudent(authentication);
 		AssignmentSubmissionResponse response = submissionService.submit(id, student, file);
 		response.setDownloadUrl("/student/api/assignments/submissions/" + response.getId() + "/download");
 		return ResponseEntity.ok(response);
@@ -151,7 +152,8 @@ public class StudentAssignmentApiController {
 			@PathVariable Long id,
 			Authentication authentication
 	) {
-		User student = resolveStudent(authentication);
+		studentAccessService.requireActiveEnrollment(authentication);
+		User student = studentAccessService.requireStudent(authentication);
 		if (student == null) {
 			return ResponseEntity.status(401).build();
 		}
@@ -171,32 +173,7 @@ public class StudentAssignmentApiController {
 				.body(resource);
 	}
 
-	private StudentContext resolveStudentContext(Authentication authentication) {
-		if (authentication == null) {
-			return new StudentContext(null, null);
-		}
-		String studentId = authentication.getName();
-		if (studentId == null || studentId.isBlank()) {
-			return new StudentContext(null, null);
-		}
-		return userRepository.findByStudentId(studentId)
-				.map(user -> new StudentContext(normalizeValue(user.getCourse()), normalizeValue(user.getSectionName())))
-				.orElse(new StudentContext(null, null));
-	}
-
-	private User resolveStudent(Authentication authentication) {
-		if (authentication == null) {
-			throw new IllegalArgumentException("Student is required.");
-		}
-		String studentId = authentication.getName();
-		if (studentId == null || studentId.isBlank()) {
-			throw new IllegalArgumentException("Student is required.");
-		}
-		return userRepository.findByStudentId(studentId)
-				.orElseThrow(() -> new IllegalArgumentException("Student not found."));
-	}
-
-	private Set<String> resolveAllowedSubjects(StudentContext context) {
+	private Set<String> resolveAllowedSubjects(StudentAccessService.StudentAccessContext context) {
 		if (context.course() == null || context.section() == null) {
 			return Set.of();
 		}
@@ -245,6 +222,4 @@ public class StudentAssignmentApiController {
 		String lowered = filename.toLowerCase();
 		return lowered.endsWith(".pdf") || lowered.endsWith(".png") || lowered.endsWith(".jpg") || lowered.endsWith(".jpeg");
 	}
-
-	private record StudentContext(String course, String section) {}
 }

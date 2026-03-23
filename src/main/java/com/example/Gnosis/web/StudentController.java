@@ -23,10 +23,16 @@ import java.util.Locale;
 public class StudentController {
 	private final UserRepository userRepository;
 	private final AnnouncementService announcementService;
+	private final StudentAccessService studentAccessService;
 
-	public StudentController(UserRepository userRepository, AnnouncementService announcementService) {
+	public StudentController(
+			UserRepository userRepository,
+			AnnouncementService announcementService,
+			StudentAccessService studentAccessService
+	) {
 		this.userRepository = userRepository;
 		this.announcementService = announcementService;
+		this.studentAccessService = studentAccessService;
 	}
 
 	@ModelAttribute
@@ -62,10 +68,10 @@ public class StudentController {
 
 	@GetMapping("/dashboard")
 	public String studentDashboard(Authentication authentication, Model model) {
-		String studentId = authentication != null ? authentication.getName() : null;
-		if (studentId != null && !studentId.isBlank()) {
-			userRepository.findByStudentId(studentId).ifPresent(student -> {
-				String sectionName = student.getSectionName();
+		StudentAccessService.StudentAccessContext context = studentAccessService.resolve(authentication);
+		if (context.canAccessClassContent()) {
+			userRepository.findByStudentId(context.studentId()).ifPresent(student -> {
+				String sectionName = context.section();
 				List<AnnouncementResponse> announcements = announcementService.listForStudentSection(sectionName);
 				List<StudentAnnouncementRow> rows = announcements.stream()
 						.map(StudentController::toStudentAnnouncementRow)
