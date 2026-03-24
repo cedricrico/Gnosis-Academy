@@ -42,7 +42,7 @@
                 </div>
                 <div class="alert alert-success mt-3" role="alert" th:if="${loginInfo}" th:text="${loginInfo}"></div>
                 <div class="alert alert-danger mt-3" role="alert" th:if="${loginError}" th:text="${loginError}"></div>
-                <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="adminRememberMe"><label class="form-check-label" for="adminRememberMe">Remember me</label></div><button class="btn btn-primary w-100" type="submit">Login</button>
+                <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="adminRememberMe" name="remember-me" value="true"><label class="form-check-label" for="adminRememberMe">Remember me</label></div><button class="btn btn-primary w-100" type="submit">Login</button>
             </form>
         </div>
     </div>

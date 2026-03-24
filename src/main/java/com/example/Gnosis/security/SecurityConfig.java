@@ -5,16 +5,19 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 
 @Configuration
-	public class SecurityConfig {
+public class SecurityConfig {
 	private static final String ADMIN_COOKIE_NAME = "ADMIN_SESSION";
 	private static final String PROFESSOR_COOKIE_NAME = "PROFESSOR_SESSION";
+	private static final String ADMIN_REMEMBER_ME_COOKIE_NAME = "ADMIN_REMEMBER_ME";
+	private static final String PROFESSOR_REMEMBER_ME_COOKIE_NAME = "PROFESSOR_REMEMBER_ME";
+	private static final String STUDENT_REMEMBER_ME_COOKIE_NAME = "STUDENT_REMEMBER_ME";
+	private static final int REMEMBER_ME_VALIDITY_SECONDS = 60 * 60 * 24 * 30;
 
 	@Order(1)
 	@Bean
@@ -53,6 +56,13 @@ import org.springframework.security.web.context.SecurityContextRepository;
 						.failureUrl("/admin-login?error")
 						.permitAll()
 				)
+				.rememberMe(rememberMe -> rememberMe
+						.rememberMeParameter("remember-me")
+						.rememberMeCookieName(ADMIN_REMEMBER_ME_COOKIE_NAME)
+						.tokenValiditySeconds(REMEMBER_ME_VALIDITY_SECONDS)
+						.key("gnosis-admin-remember-me")
+						.userDetailsService(adminUserDetailsService)
+				)
 				.exceptionHandling(ex -> ex
 						.authenticationEntryPoint((request, response, authException) -> {
 							String uri = request.getRequestURI();
@@ -74,7 +84,7 @@ import org.springframework.security.web.context.SecurityContextRepository;
 				.logout(logout -> logout
 						.logoutUrl("/admin/logout")
 						.invalidateHttpSession(false)
-						.deleteCookies(ADMIN_COOKIE_NAME)
+						.deleteCookies(ADMIN_COOKIE_NAME, ADMIN_REMEMBER_ME_COOKIE_NAME)
 						.addLogoutHandler((request, response, authentication) -> {
 							if (request.getSession(false) != null) {
 								request.getSession(false).removeAttribute("ADMIN_SECURITY_CONTEXT");
@@ -142,10 +152,17 @@ import org.springframework.security.web.context.SecurityContextRepository;
 						.failureUrl("/Professor-login?error")
 						.permitAll()
 				)
+				.rememberMe(rememberMe -> rememberMe
+						.rememberMeParameter("remember-me")
+						.rememberMeCookieName(PROFESSOR_REMEMBER_ME_COOKIE_NAME)
+						.tokenValiditySeconds(REMEMBER_ME_VALIDITY_SECONDS)
+						.key("gnosis-professor-remember-me")
+						.userDetailsService(professorIdUserDetailsService)
+				)
 				.logout(logout -> logout
 						.logoutUrl("/professor/logout")
 						.invalidateHttpSession(false)
-						.deleteCookies(PROFESSOR_COOKIE_NAME)
+						.deleteCookies(PROFESSOR_COOKIE_NAME, PROFESSOR_REMEMBER_ME_COOKIE_NAME)
 						.addLogoutHandler((request, response, authentication) -> {
 							if (request.getSession(false) != null) {
 								request.getSession(false).removeAttribute("PROFESSOR_SECURITY_CONTEXT");
@@ -184,9 +201,11 @@ import org.springframework.security.web.context.SecurityContextRepository;
 
 								// Backward-compatible aliases (safe to keep while you update old links).
 								"/loginPage",
+								"/login",
 								"/Login",
 								"/Login.html",
 								"/registrationPage",
+								"/register",
 								"/Register",
 								"/Register.html",
 								"/register",
@@ -212,9 +231,17 @@ import org.springframework.security.web.context.SecurityContextRepository;
 						.failureUrl("/Student-login?error")
 						.permitAll()
 				)
+				.rememberMe(rememberMe -> rememberMe
+						.rememberMeParameter("remember-me")
+						.rememberMeCookieName(STUDENT_REMEMBER_ME_COOKIE_NAME)
+						.tokenValiditySeconds(REMEMBER_ME_VALIDITY_SECONDS)
+						.key("gnosis-student-remember-me")
+						.userDetailsService(studentIdUserDetailsService)
+				)
 				.logout(logout -> logout
 						.logoutUrl("/logout")
 						.invalidateHttpSession(false)
+						.deleteCookies(STUDENT_REMEMBER_ME_COOKIE_NAME)
 						.addLogoutHandler((request, response, authentication) -> {
 							if (request.getSession(false) != null) {
 								request.getSession(false).removeAttribute("STUDENT_SECURITY_CONTEXT");
@@ -230,6 +257,7 @@ import org.springframework.security.web.context.SecurityContextRepository;
 				"/logout",
 				"/login",
 				"/api/quiz-attempts/**",
+				"/student/api/chat/**",
 				"/student/api/assignments/**",
 				"/student/api/quizzes/**"
 		));
@@ -240,7 +268,7 @@ import org.springframework.security.web.context.SecurityContextRepository;
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
+		return new LegacyCompatiblePasswordEncoder();
 	}
 
 	private SecurityContextRepository adminSecurityContextRepository() {

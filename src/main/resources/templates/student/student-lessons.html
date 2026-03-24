@@ -445,6 +445,134 @@ body {
   }
 }
 
+.student-chat-launcher {
+  position: fixed;
+  right: 1.75rem;
+  bottom: 1.75rem;
+  z-index: 1080;
+  width: 76px;
+  height: 76px;
+  border: none;
+  border-radius: 22px;
+  background: #0d6efd;
+  color: #fff;
+  box-shadow: 0 16px 32px rgba(13, 110, 253, 0.24);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.student-chat-launcher:hover {
+  transform: translateY(-1px);
+  background: #0b5ed7;
+  box-shadow: 0 18px 36px rgba(13, 110, 253, 0.28);
+}
+
+.student-chat-panel {
+  position: fixed;
+  right: 1.75rem;
+  bottom: 7.25rem;
+  z-index: 1080;
+  width: min(520px, calc(100vw - 2rem));
+  height: min(720px, calc(100vh - 8rem));
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 20px 44px rgba(15, 23, 42, 0.14);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.student-chat-panel.d-none {
+  display: none !important;
+}
+
+.student-chat-header {
+  padding: 1.25rem 1.4rem 1rem;
+  background: #ffffff;
+  color: #1f2937;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.student-chat-header p {
+  margin: 0.35rem 0 0;
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+.student-chat-body {
+  flex: 1;
+  padding: 1.25rem;
+  overflow-y: auto;
+  background: #f8fafc;
+}
+
+.student-chat-message {
+  max-width: 92%;
+  margin-bottom: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  line-height: 1.6;
+  font-size: 1rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.student-chat-message.user {
+  margin-left: auto;
+  background: #0d6efd;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.student-chat-message.assistant {
+  margin-right: auto;
+  background: #ffffff;
+  color: #1f2937;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-bottom-left-radius: 4px;
+}
+
+.student-chat-footer {
+  padding: 1rem 1.1rem 1.1rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff;
+}
+
+.student-chat-status {
+  font-size: 0.95rem;
+  color: #6c757d;
+  min-height: 1.5rem;
+}
+
+.student-chat-input {
+  resize: none;
+  min-height: 82px;
+  max-height: 200px;
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+  border-radius: 14px;
+}
+
+@media (max-width: 576px) {
+  .student-chat-launcher {
+    right: 1rem;
+    bottom: 1rem;
+    width: 68px;
+    height: 68px;
+    border-radius: 18px;
+  }
+
+  .student-chat-panel {
+    right: 1rem;
+    bottom: 6rem;
+    width: calc(100vw - 2rem);
+    height: min(78vh, 680px);
+  }
+}
+
 </style>
     <link rel="stylesheet" href="/assets/css/student-admin-parity.css">
 </head>
@@ -556,7 +684,36 @@ body {
                 </div>
             </div>
         </div>
-    </div><script>
+    </div>
+    <button class="student-chat-launcher" id="studentChatLauncher" type="button" aria-controls="studentChatPanel" aria-expanded="false" aria-label="Open lesson assistant">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 3a5 5 0 0 0-5 5c0 1.02.304 1.968.826 2.76.245.372.282.677.194.955-.1.316-.304.63-.623.948-.482.48-.98.868-1.33 1.123a.5.5 0 0 0 .275.904c1.01 0 1.932-.232 2.723-.617.294-.143.584-.169.858-.086A4.98 4.98 0 0 0 8 13a5 5 0 1 0 0-10"/>
+        </svg>
+    </button>
+    <section class="student-chat-panel d-none" id="studentChatPanel" aria-label="Lesson assistant">
+        <div class="student-chat-header d-flex align-items-start justify-content-between gap-3">
+            <div>
+                <div class="fw-semibold fs-5">Lesson Coach</div>
+                <p>Practice one question at a time and use hints to review your lesson files.</p>
+            </div>
+            <button class="btn btn-outline-secondary" id="studentChatCloseBtn" type="button" aria-label="Close chat">Close</button>
+        </div>
+        <div class="student-chat-body" id="studentChatMessages">
+            <div class="student-chat-message assistant">Ready when you are. Ask for a practice question about the selected lesson, or answer the coach when it prompts you.</div>
+        </div>
+        <div class="student-chat-footer">
+            <div class="student-chat-status" id="studentChatStatus">Connected to the lesson assistant.</div>
+            <form id="studentChatForm" class="mt-2">
+                <div class="mb-2">
+                    <textarea class="form-control student-chat-input" id="studentChatInput" rows="3" placeholder="Ask for a recall question, or type your answer here..." maxlength="2000"></textarea>
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <button class="btn btn-outline-secondary px-4" id="studentChatClearBtn" type="button">Clear</button>
+                    <button class="btn btn-primary px-4" id="studentChatSendBtn" type="submit">Send</button>
+                </div>
+            </form>
+        </div>
+    </section><script>
         // Mobile sidebar toggle functionality
         document.addEventListener('DOMContentLoaded', function() {
             const sidebarToggle = document.getElementById('sidebarToggle');
@@ -581,6 +738,7 @@ body {
     </script>
 <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="/assets/js/student-notifications.js"></script>
+<script src="/assets/js/student-lessons-chat.js"></script>
 <script>
 // Lesson subject tiles + filter
 document.addEventListener('DOMContentLoaded', function() {

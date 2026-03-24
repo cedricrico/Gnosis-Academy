@@ -35,7 +35,7 @@
                 </div>
                 <div class="alert alert-success mt-3" role="alert" th:if="${loginInfo}" th:text="${loginInfo}"></div>
                 <div class="alert alert-danger mt-3" role="alert" th:if="${loginError}" th:text="${loginError}"></div>
-                <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="rememberMe"><label class="form-check-label" for="rememberMe">Remember me</label></div><button class="btn btn-primary w-100" type="submit">Submit</button>
+                <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="rememberMe" name="remember-me" value="true"><label class="form-check-label" for="rememberMe">Remember me</label></div><button class="btn btn-primary w-100" type="submit">Submit</button>
             </form>
             <div class="text-center mt-4"><small class="text-muted">Don't have an account? </small><a class="fw-semibold text-decoration-none" href="/Student-registration" th:href="@{/Student-registration}">Register</a></div>
         </div>

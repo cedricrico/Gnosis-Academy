@@ -4,11 +4,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const toggleBtn = document.getElementById('professorTogglePassword');
     const eyeIcon = document.getElementById('professorEyeIcon');
     const form = document.getElementById('professor-login-form');
+    const rememberMeCheckbox = document.getElementById('professorRememberMe');
+    const rememberedProfessorKey = 'gnosis.rememberedProfessorId';
     const showIcon = '/assets/img/visible.png';
     const hideIcon = '/assets/img/hide.png';
 
     if (!professorIdInput || !professorPasswordInput || !toggleBtn || !eyeIcon || !form) {
         return;
+    }
+
+    const rememberedProfessorId = window.localStorage.getItem(rememberedProfessorKey);
+    if (rememberMeCheckbox && rememberedProfessorId) {
+        professorIdInput.value = formatEmployeeId(rememberedProfessorId);
+        rememberMeCheckbox.checked = true;
+        validateEmployeeId();
     }
 
     function formatEmployeeId(value) {
@@ -77,6 +86,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!idOk || !passwordOk) {
             event.preventDefault();
             event.stopPropagation();
+            return;
+        }
+
+        if (rememberMeCheckbox && rememberMeCheckbox.checked) {
+            window.localStorage.setItem(rememberedProfessorKey, professorIdInput.value.trim());
+        } else {
+            window.localStorage.removeItem(rememberedProfessorKey);
         }
     });
 

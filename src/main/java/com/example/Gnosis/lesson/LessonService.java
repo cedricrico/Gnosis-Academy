@@ -48,6 +48,14 @@ public class LessonService {
 
 	@Transactional(readOnly = true)
 	public List<LessonResponse> listForStudentSection(String section, Set<String> allowedSubjects) {
+		return listEntitiesForStudentSection(section, allowedSubjects)
+				.stream()
+				.map(this::toResponse)
+				.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public List<Lesson> listEntitiesForStudentSection(String section, Set<String> allowedSubjects) {
 		Set<String> normalizedSubjects = normalizeSubjects(allowedSubjects);
 		if (normalizedSubjects.isEmpty()) {
 			return List.of();
@@ -60,7 +68,6 @@ public class LessonService {
 		return lessonRepository.findBySectionInOrderByCreatedAtDesc(sections)
 				.stream()
 				.filter(lesson -> subjectAllowed(lesson.getSubject(), normalizedSubjects))
-				.map(this::toResponse)
 				.toList();
 	}
 

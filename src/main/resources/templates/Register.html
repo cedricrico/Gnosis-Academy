@@ -61,6 +61,11 @@
                                 <div class="invalid-feedback" id="confirmPasswordFeedback"><span>Please confirm your password.</span></div>
                             </div>
                             <div class="alert alert-danger" role="alert" th:if="${registerError}" th:text="${registerError}"></div>
+                            <div class="mb-4 form-check">
+                                <input type="checkbox" class="form-check-input" id="studentTerms" name="studentTerms" value="accepted" required data-terms-checkbox="true" data-terms-modal-id="termsModalStudent">
+                                <label class="form-check-label" for="studentTerms">I agree to the <a href="#" data-terms-link="true" data-terms-modal-id="termsModalStudent">terms and conditions</a></label>
+                                <div class="invalid-feedback"><span>You must agree to the terms and conditions.</span></div>
+                            </div>
                             <div class="d-grid"><button class="btn btn-primary btn-lg" type="submit">Create Account</button></div>
                             <div class="text-center mt-4"><small class="text-muted">Already have an account? </small><a class="fw-semibold text-decoration-none" href="/Student-login" th:href="@{/Student-login}">Log In</a></div>
                         </form>
@@ -78,8 +83,30 @@
             </div>
         </div>
     </footer>
+    <div class="modal fade" id="termsModalStudent" tabindex="-1" aria-labelledby="termsModalStudentLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="termsModalStudentLabel">Terms and Conditions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>By creating a Gnosis Academy account, you agree to provide accurate registration details and keep your credentials confidential.</p>
+                    <p>Your account is for your personal academic use only. You must not share access, impersonate another user, or attempt unauthorized access to school systems, class materials, or records.</p>
+                    <p>Activity performed using your account may be logged for security, academic integrity, and platform support. Gnosis Academy may suspend or restrict access if the platform is used in a way that violates school policies or disrupts service.</p>
+                    <p>Personal information submitted during registration will be used to manage your account, classes, and academic records in accordance with applicable school policies and privacy requirements.</p>
+                    <p>If you do not agree to these terms, choose Cancel and do not complete registration.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-terms-decline="true" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" data-terms-accept="true">I Agree</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="/assets/js/Registerscript.js"></script>
+    <script src="/assets/js/terms-modal.js"></script>
     <script src="/assets/js/global-swal.js"></script>
 </body>
 

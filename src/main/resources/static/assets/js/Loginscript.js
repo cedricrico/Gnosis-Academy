@@ -4,9 +4,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const toggleBtn = document.getElementById('togglePassword');
     const eyeIcon = document.getElementById('confirmEyeIcon');
     const form = document.getElementById('student-login-form');
+    const rememberMeCheckbox = document.getElementById('rememberMe');
+    const rememberedStudentKey = 'gnosis.rememberedStudentId';
 
     if (!idNumberInput || !passwordInput || !toggleBtn || !eyeIcon || !form) {
         return;
+    }
+
+    const rememberedStudentId = window.localStorage.getItem(rememberedStudentKey);
+    if (rememberMeCheckbox && rememberedStudentId) {
+        idNumberInput.value = formatStudentId(rememberedStudentId);
+        rememberMeCheckbox.checked = true;
+        validateStudentId();
     }
 
     function formatStudentId(value) {
@@ -75,6 +84,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!idOk || !passwordOk) {
             event.preventDefault();
             event.stopPropagation();
+            return;
+        }
+
+        if (rememberMeCheckbox && rememberMeCheckbox.checked) {
+            window.localStorage.setItem(rememberedStudentKey, idNumberInput.value.trim());
+        } else {
+            window.localStorage.removeItem(rememberedStudentKey);
         }
     });
 

@@ -15,7 +15,7 @@ public class 	GnosisApplication {
 	@GetMapping("/landingPage")
 	public String landing(Model model) {
 
-		return "Landing.html";
+		return "landing";
 	}
 
 	

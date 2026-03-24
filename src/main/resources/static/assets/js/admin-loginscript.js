@@ -3,11 +3,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const adminPasswordInput = document.getElementById('adminPassword');
     const adminToggleBtn = document.getElementById('adminTogglePassword');
     const adminEyeIcon = document.getElementById('adminEyeIcon');
+    const adminRememberMeCheckbox = document.getElementById('adminRememberMe');
+    const rememberedAdminKey = 'gnosis.rememberedAdminUsername';
     const showIcon = '/assets/img/visible.png';
     const hideIcon = '/assets/img/hide.png';
     
     // Form validation
     const adminLoginForm = document.getElementById('adminLoginForm');
+    if (adminRememberMeCheckbox) {
+        const rememberedAdminUsername = window.localStorage.getItem(rememberedAdminKey);
+        if (rememberedAdminUsername) {
+            adminUsernameInput.value = rememberedAdminUsername;
+            adminRememberMeCheckbox.checked = true;
+        }
+    }
+
     if (adminLoginForm && adminUsernameInput && adminPasswordInput) {
         adminLoginForm.addEventListener('submit', function(event) {
         const usernameValue = adminUsernameInput.value.trim();
@@ -32,13 +42,12 @@ document.addEventListener('DOMContentLoaded', function() {
             adminPasswordInput.classList.remove('is-invalid');
         }
         
-        // Here you would typically make an API call to authenticate the admin
-        // For now, we'll just prevent the form submission to demonstrate validation
-            console.log('Admin login attempt:', {
-                username: usernameValue,
-                password: passwordValue
-            });
-            // event.preventDefault(); // Remove this line when connecting to backend
+        if (adminRememberMeCheckbox && adminRememberMeCheckbox.checked) {
+            window.localStorage.setItem(rememberedAdminKey, usernameValue);
+        } else {
+            window.localStorage.removeItem(rememberedAdminKey);
+        }
+
         });
     }
     

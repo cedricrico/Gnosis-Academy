@@ -17,12 +17,12 @@ public class AuthController {
 		this.userService = userService;
 	}
 
-	@GetMapping({"/Student-registration", "/registrationPage", "/Register", "/Register.html"})
+	@GetMapping({"/Student-registration", "/registrationPage", "/register", "/Register", "/Register.html"})
 	public String registrationPage(Model model) {
 		if (!model.containsAttribute("registerRequest")) {
 			model.addAttribute("registerRequest", new RegisterRequest());
 		}
-		return "Register";
+		return "register";
 	}
 
 	@PostMapping("/register")
@@ -32,20 +32,20 @@ public class AuthController {
 			Model model
 	) {
 		if (bindingResult.hasErrors()) {
-			return "Register";
+			return "register";
 		}
 
 		try {
 			userService.register(registerRequest);
 		} catch (IllegalArgumentException e) {
 			model.addAttribute("registerError", e.getMessage());
-			return "Register";
+			return "register";
 		}
 
 		return "redirect:/Student-login?registered";
 	}
 
-	@GetMapping({"/Student-login", "/loginPage", "/Login", "/Login.html"})
+	@GetMapping({"/Student-login", "/loginPage", "/login", "/Login", "/Login.html"})
 	public String loginPage(
 			@RequestParam(value = "error", required = false) String error,
 			@RequestParam(value = "registered", required = false) String registered,
@@ -61,7 +61,7 @@ public class AuthController {
 		if (logout != null) {
 			model.addAttribute("loginInfo", "You have been logged out.");
 		}
-		return "Login";
+		return "login";
 	}
 
 }

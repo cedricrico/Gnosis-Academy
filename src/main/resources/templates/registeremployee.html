@@ -69,7 +69,7 @@
                     <div class="input-group has-validation"><input class="form-control" type="password" id="confirmEmployeePassword" name="confirmPassword" required=""><button class="btn btn-outline-secondary" id="employeeToggleConfirmPassword" type="button"><img id="employeeEyeIcon2" alt="Toggle Confirm Password Visibility" height="20" src="/assets/img/visible.png" width="20"></button></div>
                     <div class="invalid-feedback" id="confirmEmployeePasswordFeedback"><span>Please confirm your password.</span></div>
                 </div>
-                <div class="mb-3 form-check"><input type="checkbox" class="form-check-input" id="employeeTerms" name="employeeTerms" value="accepted" required=""><label class="form-check-label" for="employeeTerms">I agree to the terms and conditions</label>
+                <div class="mb-3 form-check"><input type="checkbox" class="form-check-input" id="employeeTerms" name="employeeTerms" value="accepted" required="" data-terms-checkbox="true" data-terms-modal-id="termsModalEmployee"><label class="form-check-label" for="employeeTerms">I agree to the <a href="#" data-terms-link="true" data-terms-modal-id="termsModalEmployee">terms and conditions</a></label>
                     <div class="invalid-feedback"><span>You must agree to the terms and conditions.</span></div>
                 </div><button class="btn btn-primary w-100" type="submit">Register</button>
             </form>
@@ -85,8 +85,30 @@
             </div>
         </div>
     </footer>
+    <div class="modal fade" id="termsModalEmployee" tabindex="-1" aria-labelledby="termsModalEmployeeLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="termsModalEmployeeLabel">Terms and Conditions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>By creating a Gnosis Academy staff account, you confirm that the information you submit is accurate and authorized for institutional use.</p>
+                    <p>Your account must only be used for approved academic or administrative work. You must not share your credentials, misuse student or faculty data, or attempt to bypass access controls.</p>
+                    <p>Staff activity may be monitored and logged for security, audit, and operational support. Access may be limited or revoked if usage violates school policy, confidentiality obligations, or system integrity requirements.</p>
+                    <p>Any personal and institutional information collected during registration will be used to manage employment-related access, communication, and records within the platform.</p>
+                    <p>If you do not agree to these terms, choose Cancel and do not proceed with registration.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-terms-decline="true" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" data-terms-accept="true">I Agree</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="/assets/js/registeremployeescript.js"></script>
+    <script src="/assets/js/terms-modal.js"></script>
     <script src="/assets/js/global-swal.js"></script>
 </body>
 
